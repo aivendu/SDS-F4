@@ -1,4 +1,4 @@
-#ifndef _VERSION_H
+﻿#ifndef _VERSION_H
 #define _VERSION_H
 
 //	版本号

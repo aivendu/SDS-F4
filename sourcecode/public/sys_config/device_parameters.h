@@ -1,4 +1,4 @@
-#ifndef _DEVICE_PARAMETERS_H_
+﻿#ifndef _DEVICE_PARAMETERS_H_
 #define _DEVICE_PARAMETERS_H_
 
 typedef struct s_device_parameters

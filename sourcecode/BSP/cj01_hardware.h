@@ -1,4 +1,4 @@
-#ifndef __HARDWARE__
+﻿#ifndef __HARDWARE__
 #define __HARDWARE__
 #include "stdint.h"
 

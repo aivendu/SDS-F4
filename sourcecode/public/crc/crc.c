@@ -1,4 +1,4 @@
-#include "crc.h"
+﻿#include "crc.h"
 
 
 /* Table of CRC values  */

@@ -1,4 +1,4 @@
-#ifndef _WDT_H
+﻿#ifndef _WDT_H
 #define _WDT_H
 #include "stdint.h"
 #if (__DEBUG_FLASH == 0)            //Release模式下的看门狗设置

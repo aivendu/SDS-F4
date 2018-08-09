@@ -1,4 +1,4 @@
-#include "modbus_register.h"
+ï»¿#include "modbus_register.h"
 #include "string.h"
 #include "modbus_slave.h"
 #include "sys_config.h"
@@ -18,16 +18,16 @@ uint16_t relay_state[14];
 u_pump_st_t  pump_state;
 
 /******************************************************************
-** º¯ÊıÃû³Æ:   SetFirmwareUpdataState
-** ¹¦ÄÜÃèÊö:   ¸ü¸Ä³ÌĞò¸üĞÂµÄ×´Ì¬
-** ÊäÈë:	   func_code£º¹¦ÄÜÂë
-**			   *dat£ºĞ´ÈëµÄÊı¾İ
-** Êä³ö:	   ÎŞ
-** È«¾Ö±äÁ¿:
-** µ÷ÓÃÄ£¿é:
-** ±¸×¢:	   
-** ×÷Õß:	   arjun
-** ÈÕÆÚ:	   20160316
+** å‡½æ•°åç§°:   SetFirmwareUpdataState
+** åŠŸèƒ½æè¿°:   æ›´æ”¹ç¨‹åºæ›´æ–°çš„çŠ¶æ€
+** è¾“å…¥:	   func_codeï¼šåŠŸèƒ½ç 
+**			   *datï¼šå†™å…¥çš„æ•°æ®
+** è¾“å‡º:	   æ— 
+** å…¨å±€å˜é‡:
+** è°ƒç”¨æ¨¡å—:
+** å¤‡æ³¨:	   
+** ä½œè€…:	   arjun
+** æ—¥æœŸ:	   20160316
 ******************************************************************/
 uint32_t ModbusResetSystem(uint8_t func_code, const uint8_t *dat)
 {
@@ -41,7 +41,7 @@ uint32_t ModbusResetSystem(uint8_t func_code, const uint8_t *dat)
 s_modbus_coils_t sds_coils[COILS_NUM] =
 {
     {
-        //  ¼ÌµçÆ÷Êä³ö
+        //  ç»§ç”µå™¨è¾“å‡º
         0x0000,
         0x000E,
         (1 << MODBUS_FUNC_CODE_05) + 
@@ -50,16 +50,16 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
         0
     },
     {
-        //  bool Á¿´«¸ĞÆ÷ÊäÈëĞÅºÅ
-        0x0400,
+        //  bool é‡ä¼ æ„Ÿå™¨è¾“å…¥ä¿¡å·
+        0x03FF,
         0x0008,
         (1 << MODBUS_FUNC_CODE_01),
         (uint8_t *)&yw_input,
         0
     },
     {
-        //  ¹¦ÄÜ¿ØÖÆÊäÈëÊä³ö
-        0x0800,
+        //  åŠŸèƒ½æ§åˆ¶è¾“å…¥è¾“å‡º
+        0x07FF,
         0x0030,
         (1 << MODBUS_FUNC_CODE_01) +
         (1 << MODBUS_FUNC_CODE_05) +
@@ -72,7 +72,7 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
 s_modbus_register_t parkinglock_register[REGISTER_NUM] =
 {
     {
-        // 1  Éè±¸±êÊ¶
+        // 1  è®¾å¤‡æ ‡è¯†
         0x0005,
         0x0001,
         (1 << MODBUS_FUNC_CODE_03) + 
@@ -81,7 +81,7 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
         0
     },
     {
-        // ±ÃµÄ×´Ì¬
+        // æ³µçš„çŠ¶æ€
         0x000F,
         sizeof(pump_state.regs),
         (1 << MODBUS_FUNC_CODE_03),
@@ -89,7 +89,7 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
         0
     },
     {
-        // 1  ´«¸ĞÆ÷
+        // 1  ä¼ æ„Ÿå™¨
         0x00FF,
         sizeof(sensor_reg),
         (1 << MODBUS_FUNC_CODE_03) + 
@@ -99,7 +99,7 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
         0
     },
     {
-        // ¹¤ÒÕ²ÎÊı
+        // å·¥è‰ºå‚æ•°
         0x03FF,
         sizeof(technology_argv.a2o),
         (1 << MODBUS_FUNC_CODE_03) + 

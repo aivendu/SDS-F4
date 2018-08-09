@@ -1,4 +1,4 @@
-#ifndef __INTERNAL_FLASH_H__
+﻿#ifndef __INTERNAL_FLASH_H__
 #define __INTERNAL_FLASH_H__
 #include "stdint.h"
 

@@ -1,4 +1,4 @@
-#ifndef _MOD_TIME_H_
+﻿#ifndef _MOD_TIME_H_
 #define _MOD_TIME_H_
 #include "stdint.h"
 

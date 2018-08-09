@@ -1,4 +1,4 @@
-#ifndef __RTC__
+﻿#ifndef __RTC__
 #define __RTC__
 #include "stdint.h"
 #include "stdarg.h"

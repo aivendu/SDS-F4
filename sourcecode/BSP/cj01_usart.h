@@ -1,4 +1,4 @@
-#ifndef _USART_H_
+﻿#ifndef _USART_H_
 #define _USART_H_
 #include "stdint.h"
 #include "stdarg.h"

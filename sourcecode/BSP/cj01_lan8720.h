@@ -1,4 +1,4 @@
-#ifndef __LAN8720_H
+﻿#ifndef __LAN8720_H
 #define __LAN8720_H
 #include "stm32f4x7_eth.h"
 #include "stdint.h"

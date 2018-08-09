@@ -1,4 +1,4 @@
-#include "stdint.h"
+Ôªø#include "stdint.h"
 #include "ff.h"
 #include "sys_config.h"
 #include "ucos_ii.h"
@@ -25,8 +25,9 @@ void UpdateRelayCtl(void)
     memset(relay_ctl_data, 0, sizeof(relay_ctl_data));
     if (flag)
     {
-        PumpCtrl(flag & temp, 1);     //  ø™
-        PumpCtrl(flag & (~temp), 0);  //  πÿ
+        relay_ctl = relay_out;
+        PumpCtrl(flag & temp, 1);     //  ÂºÄ
+        PumpCtrl(flag & (~temp), 0);  //  ÂÖ≥
     }
 }
 
@@ -88,14 +89,16 @@ void TaskInit(void *pdata)
     OSTimeDly(1000);
     InitFileSystem();
     InitSpiUart(TaskSpiUartPrio);
+    IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
     IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
     IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
     while (1)
     {
         //Printf_D("", "-------- system start ----------\r\n");
         //OSTimeDly(5000);
-        //IoWrite(COM3, "-------- COM3 ----------\r\n", 27);
-        //IoWrite(COM6, "-------- COM6 ----------\r\n", 27);
+        IoWrite(COM1, "-------- COM1 ----------\r\n", 27);
+        IoWrite(COM3, "-------- COM3 ----------\r\n", 27);
+        IoWrite(COM6, "-------- COM6 ----------\r\n", 27);
         //memset(open, 0x01, sizeof(open));
         //ChipWriteFrame(0, 0, 14, open);
         //OSTimeDly(5000);
@@ -111,7 +114,7 @@ void TaskInit(void *pdata)
         //    SpiUart2Write(0, open, len);
         //}
         
-        if (sys_config_ram.coil_g1.ctrl.manual)  //   «∑ÒΩ¯»Î ÷∂Øøÿ÷∆
+        if (sys_config_ram.coil_g1.ctrl.manual)  //  ÊòØÂê¶ËøõÂÖ•ÊâãÂä®ÊéßÂà∂
         {
             UpdateRelayCtl();
         }

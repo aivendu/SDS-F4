@@ -1,4 +1,4 @@
-
+﻿
 #include "sys_config.h"
 #define  DEVICE_TYPE     0x58465344  //"XFSD"
 s_sys_config_t  sys_config_ram;

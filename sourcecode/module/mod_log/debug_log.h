@@ -1,4 +1,4 @@
-#ifndef __DEBUG_LOG__
+﻿#ifndef __DEBUG_LOG__
 #define __DEBUG_LOG__
 #include <stdint.h>
 #include "stdint.h"

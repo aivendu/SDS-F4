@@ -1,4 +1,4 @@
-#ifndef _MALLOC_H
+﻿#ifndef _MALLOC_H
 #define _MALLOC_H
 #include "stdint.h"
 	 

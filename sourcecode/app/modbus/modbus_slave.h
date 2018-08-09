@@ -1,4 +1,4 @@
-#ifndef _MODBUS_H
+ï»¿#ifndef _MODBUS_H
 #define _MODBUS_H
 #include "stdint.h"
 //#include "stm32f10x.h"
@@ -39,18 +39,18 @@ typedef struct s_modbus_register
     int16_t  length;
     uint32_t cmd_support[(SUPPORT_CODE_NUMBER + 31) / 32];
     uint16_t *buffer;
-    //  µÚÒ»¸ö²ÎÊıÊÇ¹¦ÄÜÂë£¬µÚ¶ş¸ö²ÎÊıÊÇ½ÓÊÕµ½µÄ¹¦ÄÜÂëÒÔºóµÄÊı¾İ
-    //  ·µ»ØĞ¡ÓÚ0x100±íÊ¾´íÎó´úÂë£¬0--Ã»ÓĞ´íÎó£¬´óÓÚ0x100±íÊ¾ĞèÒª·µ»ØµÄÊı¾İ
+    //  ç¬¬ä¸€ä¸ªå‚æ•°æ˜¯åŠŸèƒ½ç ï¼Œç¬¬äºŒä¸ªå‚æ•°æ˜¯æ¥æ”¶åˆ°çš„åŠŸèƒ½ç ä»¥åçš„æ•°æ®
+    //  è¿”å›å°äº0x100è¡¨ç¤ºé”™è¯¯ä»£ç ï¼Œ0--æ²¡æœ‰é”™è¯¯ï¼Œå¤§äº0x100è¡¨ç¤ºéœ€è¦è¿”å›çš„æ•°æ®
     uint32_t (*func)(uint8_t, const uint8_t *);
 } s_modbus_register_t;
 
 
 typedef struct
 {
-    uint16_t file_no;         //  ÎÄ¼şºÅ
-    uint16_t max_record_num;  //  ×î´óµÄ¼ÇÂ¼ºÅ
-    void    **file_p;         //  ÎÄ¼şÖ¸Õë
-    uint32_t (*func)(void **, const uint8_t *);  //  ²Ù×÷º¯Êı µÚÒ»¸ö²ÎÊıÎÄ¼şÖ¸Õë,µÚ¶ş¸ö²ÎÊı½ÓÊÕµÄÊı¾İ
+    uint16_t file_no;         //  æ–‡ä»¶å·
+    uint16_t max_record_num;  //  æœ€å¤§çš„è®°å½•å·
+    void    **file_p;         //  æ–‡ä»¶æŒ‡é’ˆ
+    uint32_t (*func)(void **, const uint8_t *);  //  æ“ä½œå‡½æ•° ç¬¬ä¸€ä¸ªå‚æ•°æ–‡ä»¶æŒ‡é’ˆ,ç¬¬äºŒä¸ªå‚æ•°æ¥æ”¶çš„æ•°æ®
 } s_modbus_record_t;
 
 typedef struct
@@ -59,7 +59,7 @@ typedef struct
     int16_t coils_num;
     uint32_t cmd_support[(SUPPORT_CODE_NUMBER + 31) / 32];
     uint8_t  *coils;
-    uint32_t (*func)(uint8_t , const uint8_t *);  //  ²Ù×÷º¯Êı µÚÒ»¸ö²ÎÊıÎÄ¼şÖ¸Õë,µÚ¶ş¸ö²ÎÊı½ÓÊÕµÄÊı¾İ
+    uint32_t (*func)(uint8_t , const uint8_t *);  //  æ“ä½œå‡½æ•° ç¬¬ä¸€ä¸ªå‚æ•°æ–‡ä»¶æŒ‡é’ˆ,ç¬¬äºŒä¸ªå‚æ•°æ¥æ”¶çš„æ•°æ®
 } s_modbus_coils_t;
 
 extern uint8_t reboot_flag;

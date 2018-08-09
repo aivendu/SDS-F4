@@ -1,4 +1,4 @@
-#ifndef _MDB_H
+﻿#ifndef _MDB_H
 #define _MDB_H
 #include "stdint.h"
 

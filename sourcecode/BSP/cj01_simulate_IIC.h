@@ -1,4 +1,4 @@
-#ifndef __SIMULATE_IIC_H
+﻿#ifndef __SIMULATE_IIC_H
 #define __SIMULATE_IIC_H
 
 #include "stm32f4xx.h"

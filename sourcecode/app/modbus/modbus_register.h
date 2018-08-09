@@ -1,14 +1,14 @@
-#ifndef _MODBUS_REGISTER_H
+ï»¿#ifndef _MODBUS_REGISTER_H
 #define _MODBUS_REGISTER_H
 
 //#include "stm32f10x.h"
 #include "stdint.h"
 #include "modbus_slave.h"
 
-#define REGISTER_NUM      4//MODBUS¹¦ÄÜÃüÁîÌõÊı    
+#define REGISTER_NUM      4//MODBUSåŠŸèƒ½å‘½ä»¤æ¡æ•°    
 #define COILS_NUM         3
 
-//  ÏßÈ¦¶¨Òå½á¹¹
+//  çº¿åœˆå®šä¹‰ç»“æ„
 typedef union u_coil_rw
 {
     struct s_ctrl
@@ -21,13 +21,13 @@ typedef union u_coil_rw
         uint16_t  manual :1;
         uint16_t  unused0:10; 
         
-        uint16_t  alarm_sw_pump_lift:1;  //  ÌáÉı±Ã
-        uint16_t  alarm_sw_pump_subm:1;  //  Ç±ÎÛ±Ã
-        uint16_t  alarm_sw_pump_rflx:1;  //  »ØÁ÷±Ã
-        uint16_t  alarm_sw_pump_watr:1;  //  ³öË®±Ã
-        uint16_t  alarm_sw_pump_dosg:1;  //  ¼ÓÒ©±Ã
-        uint16_t  alarm_sw_pump_aera:1;  //  ÆØÆø±Ã
-        uint16_t  alarm_sw_pump_wash:1;  //  Ï´Ä¤±Ã
+        uint16_t  alarm_sw_pump_lift:1;  //  æå‡æ³µ
+        uint16_t  alarm_sw_pump_subm:1;  //  æ½œæ±¡æ³µ
+        uint16_t  alarm_sw_pump_rflx:1;  //  å›æµæ³µ
+        uint16_t  alarm_sw_pump_watr:1;  //  å‡ºæ°´æ³µ
+        uint16_t  alarm_sw_pump_dosg:1;  //  åŠ è¯æ³µ
+        uint16_t  alarm_sw_pump_aera:1;  //  æ›æ°”æ³µ
+        uint16_t  alarm_sw_pump_wash:1;  //  æ´—è†œæ³µ
         uint16_t  unused2:9;
         
         uint16_t  install_T:1;
@@ -57,13 +57,13 @@ enum e_pump_st
 
 typedef struct s_pump_st
 {
-    uint16_t  pump_lift;  //  ÌáÉı±Ã
-    uint16_t  pump_subm;  //  Ç±ÎÛ±Ã
-    uint16_t  pump_rflx;  //  »ØÁ÷±Ã
-    uint16_t  pump_watr;  //  ³öË®±Ã
-    uint16_t  pump_dosg;  //  ¼ÓÒ©±Ã
-    uint16_t  pump_aera;  //  ÆØÆø±Ã
-    uint16_t  pump_wash;  //  Ï´Ä¤±Ã
+    uint16_t  pump_lift;  //  æå‡æ³µ
+    uint16_t  pump_subm;  //  æ½œæ±¡æ³µ
+    uint16_t  pump_rflx;  //  å›æµæ³µ
+    uint16_t  pump_watr;  //  å‡ºæ°´æ³µ
+    uint16_t  pump_dosg;  //  åŠ è¯æ³µ
+    uint16_t  pump_aera;  //  æ›æ°”æ³µ
+    uint16_t  pump_wash;  //  æ´—è†œæ³µ
 } s_pump_st_t;
 
 typedef union u_pump_st
@@ -72,7 +72,7 @@ typedef union u_pump_st
     uint16_t regs[sizeof(s_pump_st_t)];
 } u_pump_st_t;
 
-#if 1  //  ¹¤ÒÕ²ÎÊı½á¹¹Ìå
+#if 1  //  å·¥è‰ºå‚æ•°ç»“æ„ä½“
 typedef struct s_A2O_technology_argv
 {
     uint16_t pump_aera1_port;
@@ -123,30 +123,30 @@ typedef union  u_technology_argv
 } u_technology_argv_t;
 #endif
 
-#if 1  //  ´«¸ĞÆ÷¼Ä´æÆ÷½á¹¹
-//  ´«¸ĞÆ÷¿ØÖÆ½á¹¹
+#if 1  //  ä¼ æ„Ÿå™¨å¯„å­˜å™¨ç»“æ„
+//  ä¼ æ„Ÿå™¨æ§åˆ¶ç»“æ„
 typedef struct s_sensor_ctrl
 {
-    float max;  //  ×î´óÖµ
-    float min;  //  ×îĞ¡Öµ
-    float accuracy;  //  ¾«¶È
-    uint16_t port;   //  ¶Ë¿Ú
-    uint16_t unused;  //  Î´Ê¹ÓÃ
+    float max;  //  æœ€å¤§å€¼
+    float min;  //  æœ€å°å€¼
+    float accuracy;  //  ç²¾åº¦
+    uint16_t port;   //  ç«¯å£
+    uint16_t unused;  //  æœªä½¿ç”¨
     
-    uint16_t calib1;  //  ±ê¶¨1
-    uint16_t sampling1;  //  ²ÉÑùÖµ1
-    uint16_t calib2;  //  ±ê¶¨2
-    uint16_t sampling2;  //  ²ÉÑù2
+    uint16_t calib1;  //  æ ‡å®š1
+    uint16_t sampling1;  //  é‡‡æ ·å€¼1
+    uint16_t calib2;  //  æ ‡å®š2
+    uint16_t sampling2;  //  é‡‡æ ·2
 } s_sensor_ctrl_t;
 
-//  ´«¸ĞÆ÷Êı¾İ
+//  ä¼ æ„Ÿå™¨æ•°æ®
 typedef struct s_sensors
 {
-    float t_value;  //  ÎÂ¶È²ÉÑùÖµ
-    float ph_value;  //  ph²ÉÑùÖµ
-    float cod_value;  //  COD²ÉÑùÖµ
-    float orp_value;  //  ORP²ÉÑùÖµ
-    float nh3_value;  //  NH3²ÉÑùÖµ
+    float t_value;  //  æ¸©åº¦é‡‡æ ·å€¼
+    float ph_value;  //  phé‡‡æ ·å€¼
+    float cod_value;  //  CODé‡‡æ ·å€¼
+    float orp_value;  //  ORPé‡‡æ ·å€¼
+    float nh3_value;  //  NH3é‡‡æ ·å€¼
     float DO_value;
     float ss_value;
     float p_value;

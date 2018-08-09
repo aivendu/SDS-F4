@@ -1,4 +1,4 @@
-
+﻿
 #if CRC16_MODBUS_ENABLE==1
 /* Table of CRC values  */
 const static unsigned short auchCRC[] =

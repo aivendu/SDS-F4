@@ -1,4 +1,4 @@
-
+ï»¿
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -22,12 +22,12 @@ uint32_t app_program_addr;
 
 typedef struct
 {
-    uint8_t code;     //  ¹¦ÄÜÂë
-    uint8_t length;   //  »ù´¡Êı¾İ³¤¶È
-    uint8_t length_index;  //  Êı¾İ³¤¶ÈµÄË÷Òı
-    uint8_t length_align  : 4;   //  Êı¾İ³¤¶È¶ÔÆëµÄ×Ö½ÚÊı
-    uint8_t length_type   : 4;   //  Êı¾İ³¤¶ÈÕ¼ÓÃµÄ×Ö½ÚÊı
-    //  µÚÒ»¸ö²ÎÊıÎª¸Ã¹¦ÄÜÂëµÄË÷Òı±àºÅ£¬µÚ¶ş¸ö×Ö½ÚÎª½ÓÊÕµ½µÄÊı¾İ
+    uint8_t code;     //  åŠŸèƒ½ç 
+    uint8_t length;   //  åŸºç¡€æ•°æ®é•¿åº¦
+    uint8_t length_index;  //  æ•°æ®é•¿åº¦çš„ç´¢å¼•
+    uint8_t length_align  : 4;   //  æ•°æ®é•¿åº¦å¯¹é½çš„å­—èŠ‚æ•°
+    uint8_t length_type   : 4;   //  æ•°æ®é•¿åº¦å ç”¨çš„å­—èŠ‚æ•°
+    //  ç¬¬ä¸€ä¸ªå‚æ•°ä¸ºè¯¥åŠŸèƒ½ç çš„ç´¢å¼•ç¼–å·ï¼Œç¬¬äºŒä¸ªå­—èŠ‚ä¸ºæ¥æ”¶åˆ°çš„æ•°æ®
     uint32_t (*code_func)(uint8_t, uint8_t *);
 } s_support_code_t;
 
@@ -37,13 +37,13 @@ s_modbus_coils_t    *modbus_coil;
 uint32_t reg_number;
 uint32_t record_num;
 uint32_t coils_num;
-uint8_t modbus_datatimeout;//½ÓÊÕµ½Á½¸ö´®¿ÚÖĞ¶ÏµÄÊ±¼ä¼ä¸ô
+uint8_t modbus_datatimeout;//æ¥æ”¶åˆ°ä¸¤ä¸ªä¸²å£ä¸­æ–­çš„æ—¶é—´é—´éš”
 uint8_t device_addr=1;
-uint8_t reboot_flag;    //  485ÖØÆô±êÖ¾
+uint8_t reboot_flag;    //  485é‡å¯æ ‡å¿—
 
 
-//func_code:¹¦ÄÜÂë£»addr£ºÆôÊ¼µØÖ·£»len:Êı¾İµÄ³¤¶È
-//Æ¥Åä¹¦ÄÜÂë¡¢ÆôÊ¼µØÖ·¡¢Êı¾İ³¤¶ÈÊÇ·ñÂú×ãĞ­Òé¹æ¶¨
+//func_code:åŠŸèƒ½ç ï¼›addrï¼šå¯å§‹åœ°å€ï¼›len:æ•°æ®çš„é•¿åº¦
+//åŒ¹é…åŠŸèƒ½ç ã€å¯å§‹åœ°å€ã€æ•°æ®é•¿åº¦æ˜¯å¦æ»¡è¶³åè®®è§„å®š
 static int8_t MatchModbusRegister(uint8_t func_code, uint16_t addr, uint16_t len)
 {
     uint8_t i;
@@ -56,15 +56,15 @@ static int8_t MatchModbusRegister(uint8_t func_code, uint16_t addr, uint16_t len
     {
         return -1;
     }
-	if((addr == 0x0020)&&(func_code == 0x05)&&(len == 0x0001))//ÌØÊâ´¦Àí0x0020µÄĞ´²Ù×÷
+	if((addr == 0x0020)&&(func_code == 0x05)&&(len == 0x0001))//ç‰¹æ®Šå¤„ç†0x0020çš„å†™æ“ä½œ
 	{
 		return 3;	
 	}
-	else if((addr == 0x0020)&&(func_code == 0x02)&&(len == 0x0008))//ÌØÊâ´¦Àí0x0020µÄÁ¬Ğø¶Á²Ù×÷
+	else if((addr == 0x0020)&&(func_code == 0x02)&&(len == 0x0008))//ç‰¹æ®Šå¤„ç†0x0020çš„è¿ç»­è¯»æ“ä½œ
 	{
 		return 2;
 	}
-	else if((addr == 0x0021)&&(func_code == 0x05)&&(len == 0x0001))//ÌØÊâ´¦Àí0x0021µÄĞ´²Ù×÷
+	else if((addr == 0x0021)&&(func_code == 0x05)&&(len == 0x0001))//ç‰¹æ®Šå¤„ç†0x0021çš„å†™æ“ä½œ
 	{
 		return 4;
 	}
@@ -88,12 +88,12 @@ static int8_t MatchModbusRegister(uint8_t func_code, uint16_t addr, uint16_t len
             //return -1;
         }
     }
-    while (i != min_i)  // ÅĞ¶ÏÊÇ·ñµ½×îºóÈı¸ö
+    while (i != min_i)  // åˆ¤æ–­æ˜¯å¦åˆ°æœ€åä¸‰ä¸ª
     {
-        //  ²ÉÓÃ¶ş·Ö·¨²éÕÒ
+        //  é‡‡ç”¨äºŒåˆ†æ³•æŸ¥æ‰¾
         if ((modbus_register[i].start_addr > addr) || (modbus_register[i].length == 0))
         {
-            //  ĞèÒªÕÒµÄcodeÔÚĞ¡°ëÇø
+            //  éœ€è¦æ‰¾çš„codeåœ¨å°åŠåŒº
             max_i = i;
             i = (i + min_i) >> 1;
         }
@@ -101,7 +101,7 @@ static int8_t MatchModbusRegister(uint8_t func_code, uint16_t addr, uint16_t len
                  ((modbus_register[i].start_addr + modbus_register[i].length) <= addr)) ||
                  ((modbus_register[i].length < 0) && (modbus_register[i].start_addr < addr)))
         {
-            //  ĞèÒªÕÒµÄcodeÔÚ´ó°ëÇø
+            //  éœ€è¦æ‰¾çš„codeåœ¨å¤§åŠåŒº
             min_i = i;
             i = (i + max_i) >> 1;
         }
@@ -132,8 +132,8 @@ static int8_t MatchModbusRegister(uint8_t func_code, uint16_t addr, uint16_t len
     return -1;
 }
 
-//func_code:¹¦ÄÜÂë£»addr£ºÆôÊ¼µØÖ·£»len:Êı¾İµÄ³¤¶È
-//Æ¥Åä¹¦ÄÜÂë¡¢ÆôÊ¼µØÖ·¡¢Êı¾İ³¤¶ÈÊÇ·ñÂú×ãĞ­Òé¹æ¶¨
+//func_code:åŠŸèƒ½ç ï¼›addrï¼šå¯å§‹åœ°å€ï¼›len:æ•°æ®çš„é•¿åº¦
+//åŒ¹é…åŠŸèƒ½ç ã€å¯å§‹åœ°å€ã€æ•°æ®é•¿åº¦æ˜¯å¦æ»¡è¶³åè®®è§„å®š
 static int8_t MatchModbusCoils(uint8_t func_code, uint16_t addr, uint16_t len)
 {
     uint8_t i;
@@ -165,12 +165,12 @@ static int8_t MatchModbusCoils(uint8_t func_code, uint16_t addr, uint16_t len)
             //return -1;
         }
     }
-    while (i != min_i)  // ÅĞ¶ÏÊÇ·ñµ½×îºóÈı¸ö
+    while (i != min_i)  // åˆ¤æ–­æ˜¯å¦åˆ°æœ€åä¸‰ä¸ª
     {
-        //  ²ÉÓÃ¶ş·Ö·¨²éÕÒ
+        //  é‡‡ç”¨äºŒåˆ†æ³•æŸ¥æ‰¾
         if ((modbus_coil[i].start_addr > addr) || (modbus_coil[i].coils_num == 0))
         {
-            //  ĞèÒªÕÒµÄcodeÔÚĞ¡°ëÇø
+            //  éœ€è¦æ‰¾çš„codeåœ¨å°åŠåŒº
             max_i = i;
             i = (i + min_i) >> 1;
         }
@@ -178,7 +178,7 @@ static int8_t MatchModbusCoils(uint8_t func_code, uint16_t addr, uint16_t len)
                  ((modbus_coil[i].start_addr + modbus_coil[i].coils_num) <= addr)) ||
                  ((modbus_coil[i].coils_num < 0) && (modbus_coil[i].start_addr < addr)))
         {
-            //  ĞèÒªÕÒµÄcodeÔÚ´ó°ëÇø
+            //  éœ€è¦æ‰¾çš„codeåœ¨å¤§åŠåŒº
             min_i = i;
             i = (i + max_i) >> 1;
         }
@@ -210,7 +210,7 @@ static int8_t MatchModbusCoils(uint8_t func_code, uint16_t addr, uint16_t len)
 }
 
 
-//´ó¶Ë²Ù×÷
+//å¤§ç«¯æ“ä½œ
 void HalfWordBigEndianCopy(void *dst, void *src, uint32_t len)
 {
     uint8_t *dst_t = dst, *src_t = src;
@@ -236,7 +236,7 @@ void CopyCoilFromBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *da
 {
     uint8_t j;
     uint8_t offset = start & 0x07;
-    uint16_t start_byte = start>>3;  //  16bit ¶ÔÆë
+    uint16_t start_byte = start>>3;  //  16bit å¯¹é½
     uint16_t temp;
     for (j=0; j<((size+15)>>3); j++)
     {
@@ -252,7 +252,7 @@ void CopyCoilToBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data
 {
     uint8_t j;
     uint8_t offset = start & 0x07;
-    uint16_t start_byte = start>>3;  //  16bit ¶ÔÆë
+    uint16_t start_byte = start>>3;  //  16bit å¯¹é½
     uint16_t temp;
     for (j=0; j<((size)>>3); j++)
     {
@@ -271,7 +271,7 @@ void CopyCoilToBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data
     }
 }
 
-//  ¶Á¶à¸öÏßÈ¦
+//  è¯»å¤šä¸ªçº¿åœˆ
 uint32_t ModbusSlave_01_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff, *rec_dat;
@@ -299,6 +299,7 @@ uint32_t ModbusSlave_01_Reply(uint8_t code, uint8_t *dat)
         {
             if (modbus_coil[i].coils)
             {
+                start -= modbus_coil[i].start_addr;
                 CopyCoilFromBuffer(start, size, i, &buff[4]);
             }
             else
@@ -314,6 +315,7 @@ uint32_t ModbusSlave_01_Reply(uint8_t code, uint8_t *dat)
         }
         else
         {
+            start -= modbus_coil[i].start_addr;
             memcpy(&buff[4], (void *)rec_dat, buff[3]);
             free(rec_dat);
         }
@@ -330,7 +332,7 @@ uint32_t ModbusSlave_01_Reply(uint8_t code, uint8_t *dat)
     return (uint32_t)buff;
 }
 
-//  ¶Á¶à¸öÊäÈë
+//  è¯»å¤šä¸ªè¾“å…¥
 uint32_t ModbusSlave_02_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff, *rec_dat;
@@ -358,6 +360,7 @@ uint32_t ModbusSlave_02_Reply(uint8_t code, uint8_t *dat)
         {
             if (modbus_coil[i].coils)
             {
+                start -= modbus_coil[i].start_addr;
                 CopyCoilFromBuffer(start, size, i, &buff[4]);
             }
             else
@@ -379,6 +382,7 @@ uint32_t ModbusSlave_02_Reply(uint8_t code, uint8_t *dat)
     }
     else if (modbus_coil[i].coils)
     {
+        start -= modbus_coil[i].start_addr;
         CopyCoilFromBuffer(start, size, i, &buff[4]);
     }
     else
@@ -391,7 +395,7 @@ uint32_t ModbusSlave_02_Reply(uint8_t code, uint8_t *dat)
 
 
 
-//  ¶Á¶à¸ö¼Ä´æÆ÷
+//  è¯»å¤šä¸ªå¯„å­˜å™¨
 uint32_t ModbusSlave_03_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff, *rec_dat;
@@ -454,7 +458,7 @@ uint32_t ModbusSlave_03_Reply(uint8_t code, uint8_t *dat)
     return (uint32_t)buff;
 }
 
-//  ¶ÁÊäÈë
+//  è¯»è¾“å…¥
 uint32_t ModbusSlave_04_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff;
@@ -496,7 +500,7 @@ uint32_t ModbusSlave_04_Reply(uint8_t code, uint8_t *dat)
 }
 
 
-//  Ğ´µ¥¸öÏßÈ¦
+//  å†™å•ä¸ªçº¿åœˆ
 uint32_t ModbusSlave_05_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff;
@@ -523,6 +527,7 @@ uint32_t ModbusSlave_05_Reply(uint8_t code, uint8_t *dat)
         }
         if (modbus_coil[i].coils)
         {
+            addr -= modbus_coil[i].start_addr;
             modbus_coil[i].coils[addr>>3] |= (1<<(addr & 7));
         }
         
@@ -542,6 +547,7 @@ uint32_t ModbusSlave_05_Reply(uint8_t code, uint8_t *dat)
         }
         if (modbus_coil[i].coils)
         {
+            addr -= modbus_coil[i].start_addr;
             modbus_coil[i].coils[addr>>3] &= (~(1<<(addr & 7)));
         }
         
@@ -565,7 +571,7 @@ uint32_t ModbusSlave_05_Reply(uint8_t code, uint8_t *dat)
 }
 
 
-//  Ğ´µ¥¸ö¼Ä´æÆ÷
+//  å†™å•ä¸ªå¯„å­˜å™¨
 uint32_t ModbusSlave_06_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff;
@@ -606,7 +612,7 @@ uint32_t ModbusSlave_06_Reply(uint8_t code, uint8_t *dat)
     return (uint32_t)buff;
 }
 
-//  Ğ´¶à¸ö¼Ä´æÆ÷
+//  å†™å¤šä¸ªå¯„å­˜å™¨
 uint32_t ModbusSlave_0F_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff;
@@ -630,6 +636,7 @@ uint32_t ModbusSlave_0F_Reply(uint8_t code, uint8_t *dat)
     }
     if (modbus_coil[i].coils)
     {
+        start -= modbus_coil[i].start_addr;
         CopyCoilToBuffer(start, size, i, &dat[7]);
     }
     while ((buff = malloc(8)) == 0)
@@ -646,7 +653,7 @@ uint32_t ModbusSlave_0F_Reply(uint8_t code, uint8_t *dat)
     return (uint32_t)buff;
 }
 
-//  Ğ´¶à¸ö¼Ä´æÆ÷
+//  å†™å¤šä¸ªå¯„å­˜å™¨
 uint32_t ModbusSlave_10_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff;
@@ -691,7 +698,7 @@ uint32_t ModbusSlave_10_Reply(uint8_t code, uint8_t *dat)
 
 
 
-//  ¶ÁÉè±¸Ê¶±ğÂë
+//  è¯»è®¾å¤‡è¯†åˆ«ç 
 uint32_t ModbusSlave_15_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff = 0;
@@ -701,7 +708,7 @@ uint32_t ModbusSlave_15_Reply(uint8_t code, uint8_t *dat)
     
     if ((dat[2] <= 7) && (dat[2] >= 0xF5))
     {
-        return 3;  //  Êı¾İ³¤¶È´íÎó
+        return 3;  //  æ•°æ®é•¿åº¦é”™è¯¯
     }
     index = 3;
     while (1)
@@ -731,7 +738,7 @@ uint32_t ModbusSlave_15_Reply(uint8_t code, uint8_t *dat)
     return (uint32_t)buff;
 }
 
-//  ¶ÁÉè±¸Ê¶±ğÂë
+//  è¯»è®¾å¤‡è¯†åˆ«ç 
 uint32_t ModbusSlave_2B_Reply(uint8_t code, uint8_t *dat)
 {
     return 0;
@@ -762,31 +769,31 @@ const s_support_code_t support_code[SUPPORT_CODE_NUMBER] =
 
 
 
-/*  ²éÑ¯±¾»úÊÇ·ñÖ§³Ö¸Ã¹¦ÄÜÂë  */
+/*  æŸ¥è¯¢æœ¬æœºæ˜¯å¦æ”¯æŒè¯¥åŠŸèƒ½ç   */
 static int8_t MatchModbusCode(uint8_t code)
 {
     uint8_t i = SUPPORT_CODE_NUMBER / 2, max_i = SUPPORT_CODE_NUMBER, min_i = 0;
 
-    if (support_code[0].code == code)  // È·±£µÚ0¸ö²»ÊÇÒªÕÒµÄcode
+    if (support_code[0].code == code)  // ç¡®ä¿ç¬¬0ä¸ªä¸æ˜¯è¦æ‰¾çš„code
     {
         if (support_code[0].code_func == NULL)
         {
-            return -1;//²»Ö§³ÖĞ©¹¦ÄÜÂë
+            return -1;//ä¸æ”¯æŒäº›åŠŸèƒ½ç 
         }
         return 0;
     }
-    while (i != min_i)  // ÅĞ¶ÏÊÇ·ñµ½×îºóÈı¸ö
+    while (i != min_i)  // åˆ¤æ–­æ˜¯å¦åˆ°æœ€åä¸‰ä¸ª
     {
-        //  ²ÉÓÃ¶ş·Ö·¨²éÕÒ
+        //  é‡‡ç”¨äºŒåˆ†æ³•æŸ¥æ‰¾
         if (support_code[i].code > code)
         {
-            //  ĞèÒªÕÒµÄcodeÔÚĞ¡°ëÇø
+            //  éœ€è¦æ‰¾çš„codeåœ¨å°åŠåŒº
             max_i = i;
             i = (i + min_i) >> 1;
         }
         else if (support_code[i].code < code)
         {
-            //  ĞèÒªÕÒµÄcodeÔÚ´ó°ëÇø
+            //  éœ€è¦æ‰¾çš„codeåœ¨å¤§åŠåŒº
             min_i = i;
             i = (i + max_i) >> 1;
         }
@@ -794,12 +801,12 @@ static int8_t MatchModbusCode(uint8_t code)
         {
             if (support_code[i].code_func == NULL)
             {
-                return -1;//²»Ö§³ÖĞ©¹¦ÄÜÂë
+                return -1;//ä¸æ”¯æŒäº›åŠŸèƒ½ç 
             }
             return (int8_t)i;
         }
     }
-    return -1;//²»Ö§³ÖĞ©¹¦ÄÜÂë
+    return -1;//ä¸æ”¯æŒäº›åŠŸèƒ½ç 
 }
 
 enum e_modbus_state
@@ -815,50 +822,50 @@ enum e_modbus_state
     MODBUS_ST_ERRCODE,
 };
 
-/*  ·¢ËÍmodbusÊı¾İ  */
+/*  å‘é€modbusæ•°æ®  */
 //#define  ModbusReply(buf, len)    IoWrite(MODBUS_PORT, buf, len)
 
 /******************************************************************
-** º¯ÊıÃû³Æ:   ModbusReply
-** ¹¦ÄÜÃèÊö:   485·¢ËÍÊı¾İ
-** ÊäÈë:	   
+** å‡½æ•°åç§°:   ModbusReply
+** åŠŸèƒ½æè¿°:   485å‘é€æ•°æ®
+** è¾“å…¥:	   
 **			   
 **             
-** Êä³ö:	   ·µ»Ø½ÓÊÕµ½µÄÊıÖµ
-** È«¾Ö±äÁ¿:
-** µ÷ÓÃÄ£¿é: 
-** ±¸×¢:
-** ×÷Õß:	   arjun
-** ÈÕÆÚ:	   20150405
+** è¾“å‡º:	   è¿”å›æ¥æ”¶åˆ°çš„æ•°å€¼
+** å…¨å±€å˜é‡:
+** è°ƒç”¨æ¨¡å—: 
+** å¤‡æ³¨:
+** ä½œè€…:	   arjun
+** æ—¥æœŸ:	   20150405
 ******************************************************************/
 void ModbusReply(uint8_t *sendbuf,uint8_t len)
 {
 	uint8_t temp;
     uint16_t crc = 0xFFFF;
     crc = CRC16(crc, sendbuf, len);
-//	GPIO_SetBits(GPIOB, RS485_CTL1);//485·¢ËÍÊ¹ÄÜ£¬½ÓÊÕ½ûÖ¹
-//    for(temp=0; temp<50; temp++);  ÑÓÊ±Ò»»á¶ù£¬±£Ö¤IO¿Ú±ä»¯³É¹¦
+//	GPIO_SetBits(GPIOB, RS485_CTL1);//485å‘é€ä½¿èƒ½ï¼Œæ¥æ”¶ç¦æ­¢
+//    for(temp=0; temp<50; temp++);  å»¶æ—¶ä¸€ä¼šå„¿ï¼Œä¿è¯IOå£å˜åŒ–æˆåŠŸ
 	while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
 	for (temp = 0; temp < len; temp++)
 	{
-		USART_SendData(USART6,sendbuf[temp]); //Í¨¹ıÍâÉè USART1 ·¢ËÍµ¥¸öÊı¾İ 
+		USART_SendData(USART6,sendbuf[temp]); //é€šè¿‡å¤–è®¾ USART1 å‘é€å•ä¸ªæ•°æ® 
 	    while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
 	}
-	USART_SendData(USART6,(crc>>8)&0xFF); //Í¨¹ıÍâÉè USART1 ·¢ËÍµ¥¸öÊı¾İ 
+	USART_SendData(USART6,(crc>>8)&0xFF); //é€šè¿‡å¤–è®¾ USART1 å‘é€å•ä¸ªæ•°æ® 
 	while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
-	USART_SendData(USART6,crc&0xFF); //Í¨¹ıÍâÉè USART1 ·¢ËÍµ¥¸öÊı¾İ 
+	USART_SendData(USART6,crc&0xFF); //é€šè¿‡å¤–è®¾ USART1 å‘é€å•ä¸ªæ•°æ® 
 	while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
-	//CLAR_QUEUE_UART1R;//Çå½ÓÊÕ¶ÓÁĞ
+	//CLAR_QUEUE_UART1R;//æ¸…æ¥æ”¶é˜Ÿåˆ—
     Delay_ms(3);
-//	GPIO_ResetBits(GPIOB, RS485_CTL1);//485½ÓÊÕÊ¹ÄÜ£¬·¢ËÍ½ûÖ¹
+//	GPIO_ResetBits(GPIOB, RS485_CTL1);//485æ¥æ”¶ä½¿èƒ½ï¼Œå‘é€ç¦æ­¢
 }
 /*
-dat -- ÊÕ·¢µÄÊı¾İ
-flag -- µ÷ÓÃº¯ÊıÊ±£¬ÊÇÊÕ½áÊø»¹ÊÇ·¢½áÊø
+dat -- æ”¶å‘çš„æ•°æ®
+flag -- è°ƒç”¨å‡½æ•°æ—¶ï¼Œæ˜¯æ”¶ç»“æŸè¿˜æ˜¯å‘ç»“æŸ
 */
 
 uint8_t *rvceivedata = NULL;
-uint8_t reveive_stu;//Îª1Ê±½ÓÊÕµ½ÕıÈ·Êı¾İ
+uint8_t reveive_stu;//ä¸º1æ—¶æ¥æ”¶åˆ°æ­£ç¡®æ•°æ®
 void ModbusSlaveReceive(uint8_t *dat)
 {
     static int8_t modbus_state, code_index;
@@ -866,12 +873,12 @@ void ModbusSlaveReceive(uint8_t *dat)
     static uint16_t modbus_crc, modbus_rec_index;
     static uint8_t modbus_rec_buffer[256];
 
-    //Á½´ÎÖĞ¶ÏÊ±¼ä³¬¹ı5MSºó£¬ÖØĞÂ´ÓµØÖ·Î»¿ªÊ¼½ÓÊÕ
+    //ä¸¤æ¬¡ä¸­æ–­æ—¶é—´è¶…è¿‡5MSåï¼Œé‡æ–°ä»åœ°å€ä½å¼€å§‹æ¥æ”¶
 	if(modbus_datatimeout == 0)
 	{
 		modbus_state = MODBUS_ST_ADDR;
 	}
-	modbus_datatimeout = 5;//»ñÈ¡µ±Ç°µÄÃë¼ÆÊıÆ÷
+	modbus_datatimeout = 5;//è·å–å½“å‰çš„ç§’è®¡æ•°å™¨
 
     switch (modbus_state)
     {
@@ -950,7 +957,7 @@ void ModbusSlaveReceive(uint8_t *dat)
 	            data_length *= support_code[code_index].length_align;
 	            if ((data_length + support_code[code_index].length + 4) >= 256)
 	            {
-	                //  ËùÓĞÊı¾İ×Ü³¤¶È±ØĞëĞ¡ÓÚ256byte
+	                //  æ‰€æœ‰æ•°æ®æ€»é•¿åº¦å¿…é¡»å°äº256byte
 	                modbus_state = MODBUS_ST_OTHER;
 	            }
 	            else
@@ -995,7 +1002,7 @@ void ModbusSlaveReceive(uint8_t *dat)
     }
 }
 
-/*±ØĞëÎª×î¸ßÓÅÏÈ¼¶*/
+/*å¿…é¡»ä¸ºæœ€é«˜ä¼˜å…ˆçº§*/
 void TaskModbus(void)
 {
     uint8_t temp, code_index;
@@ -1005,8 +1012,8 @@ void TaskModbus(void)
     if(reveive_stu == 1)
     {
         reveive_stu = 0;
-		rec_dat = rvceivedata;//Ö¸Ïò½ÓÊÕµ½µÄÊı¾İµØÖ·
-		//ÅäÖÃ¼Ä´æÆ÷µÄ´óĞ¡¼°Ö¸ÕëÎ»ÖÃ
+		rec_dat = rvceivedata;//æŒ‡å‘æ¥æ”¶åˆ°çš„æ•°æ®åœ°å€
+		//é…ç½®å¯„å­˜å™¨çš„å¤§å°åŠæŒ‡é’ˆä½ç½®
 		modbus_register = parkinglock_register;
         modbus_coil = sds_coils;
         code_index = MatchModbusCode(rec_dat[3]);
@@ -1015,7 +1022,7 @@ void TaskModbus(void)
         res_data = (void *)support_code[code_index].code_func(code_index, &rec_dat[2]);
 		if (rec_dat[2] == 0)
         {
-            //  Èç¹ûÊÇ¹ã²¥ĞÅÏ¢£¬²»»Ø¸´
+            //  å¦‚æœæ˜¯å¹¿æ’­ä¿¡æ¯ï¼Œä¸å›å¤
             if ((uint32_t)res_data >= 0x100)
             {
                 free(res_data);
@@ -1024,7 +1031,7 @@ void TaskModbus(void)
         else if ((int32_t)res_data < 0x100)
         {
 			Delay_ms(3);
-            //  ·µ»Ø´íÎó
+            //  è¿”å›é”™è¯¯
             rec_dat[2] = ModbusLocalAddr();
             rec_dat[3] |= 0x80;
             rec_dat[4] = (uint32_t)res_data;
@@ -1038,7 +1045,7 @@ void TaskModbus(void)
         else
         {
 			Delay_ms(3);
-            //  Õı³£»Ø¸´
+            //  æ­£å¸¸å›å¤
 			res_data[1] = ModbusLocalAddr();
             temp = res_data[0];
             //crc = 0xFFFF;

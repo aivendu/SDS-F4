@@ -1,4 +1,4 @@
-#ifndef __IRQ_PRIORITY__
+﻿#ifndef __IRQ_PRIORITY__
 #define __IRQ_PRIORITY__
 #include "stdint.h"
 

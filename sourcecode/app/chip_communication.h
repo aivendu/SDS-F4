@@ -1,4 +1,4 @@
-#ifndef _CHIP_COMMUNICATION_H
+ï»¿#ifndef _CHIP_COMMUNICATION_H
 #define _CHIP_COMMUNICATION_H
 
 #include "stdint.h"
@@ -31,9 +31,9 @@ typedef struct
 
 typedef struct
 {
-	uint8_t station_no;				//	Õ¾µã±àºÅ
-	char  station_name[11];			//	Õ¾µãÃû×Ö
-	uint32_t gps_data[2];				//	 gps_data[0] -- ¾­¶È;  gps_data[1]--Î¬¶È
+	uint8_t station_no;				//	ç«™ç‚¹ç¼–å·
+	char  station_name[11];			//	ç«™ç‚¹åå­—
+	uint32_t gps_data[2];				//	 gps_data[0] -- ç»åº¦;  gps_data[1]--ç»´åº¦
 } _station_mess_s;
 
 typedef struct
@@ -46,21 +46,21 @@ typedef struct
 
 typedef struct
 {
-	uint8_t regist_time[4];		//	´ò¿¨Ê±¼ä
-	uint8_t user_role;			//	ÓÃ»§½ÇÉ«£¬ÓÃÓÚÅĞ±ğÓÃ»§µÄ¹¦ÄÜÈ¨ÏŞ
-	char staffid[7];			//	¹¤ºÅ£¬Ö§³Ö×î¶à7¸ö×Ö·û
-	char driver_name[8];		//	Ë¾»úÃû×Ö£¬Ö§³Ö×î¶à4¸ö×ÖµÄÃû×Ö
-	uint8_t ID_card[8];			//	Ë¾»úÉí·İÖ¤ºÅ£¬XÓÃ0±íÊ¾£¬ÕûĞÎÊı
+	uint8_t regist_time[4];		//	æ‰“å¡æ—¶é—´
+	uint8_t user_role;			//	ç”¨æˆ·è§’è‰²ï¼Œç”¨äºåˆ¤åˆ«ç”¨æˆ·çš„åŠŸèƒ½æƒé™
+	char staffid[7];			//	å·¥å·ï¼Œæ”¯æŒæœ€å¤š7ä¸ªå­—ç¬¦
+	char driver_name[8];		//	å¸æœºåå­—ï¼Œæ”¯æŒæœ€å¤š4ä¸ªå­—çš„åå­—
+	uint8_t ID_card[8];			//	å¸æœºèº«ä»½è¯å·ï¼ŒXç”¨0è¡¨ç¤ºï¼Œæ•´å½¢æ•°
 } _user_info_s;
 
 typedef struct
 {
-	uint8_t guid[16];				//	GUID, Â·ÏßÎ¨Ò»±àºÅ
-	char vehicle_plate[8];		//	³µÅÆºÅ
-	uint16_t routenum;			//	Â·Ïß±àºÅ
+	uint8_t guid[16];				//	GUID, è·¯çº¿å”¯ä¸€ç¼–å·
+	char vehicle_plate[8];		//	è½¦ç‰Œå·
+	uint16_t routenum;			//	è·¯çº¿ç¼–å·
 } _route_info_s;
 
-//	Ğ¾Æ¬¼äÍ¨ĞÅÍ¬²½Êı¾İ
+//	èŠ¯ç‰‡é—´é€šä¿¡åŒæ­¥æ•°æ®
 typedef struct
 {
 	_user_info_s uinfo;

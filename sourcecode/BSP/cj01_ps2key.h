@@ -1,4 +1,4 @@
-#ifndef __PS2KEY__
+﻿#ifndef __PS2KEY__
 #define __PS2KEY__
 #include "stdint.h"
 

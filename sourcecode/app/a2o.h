@@ -1,4 +1,4 @@
-#ifndef _A2O_H_
+﻿#ifndef _A2O_H_
 #define _A2O_H_
 #include "stdint.h"
 
