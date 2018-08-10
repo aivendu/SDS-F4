@@ -2,6 +2,7 @@
 #include "ucos_ii.h"
 #include "CRC.h"
 #include "stm32f4xx.h"
+#include "sys_timer.h"
 
 /******************************************************************
 ** 函数名称:   SPI2_Configuration

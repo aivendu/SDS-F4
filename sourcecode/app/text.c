@@ -25,7 +25,7 @@ void UpdateRelayCtl(void)
     memset(relay_ctl_data, 0, sizeof(relay_ctl_data));
     if (flag)
     {
-        relay_ctl = relay_out;
+        relay_ctl = temp;
         PumpCtrl(flag & temp, 1);     //  开
         PumpCtrl(flag & (~temp), 0);  //  关
     }
@@ -89,16 +89,16 @@ void TaskInit(void *pdata)
     OSTimeDly(1000);
     InitFileSystem();
     InitSpiUart(TaskSpiUartPrio);
-    IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
+    //IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
     IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
     IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
     while (1)
     {
         //Printf_D("", "-------- system start ----------\r\n");
         //OSTimeDly(5000);
-        IoWrite(COM1, "-------- COM1 ----------\r\n", 27);
-        IoWrite(COM3, "-------- COM3 ----------\r\n", 27);
-        IoWrite(COM6, "-------- COM6 ----------\r\n", 27);
+        //IoWrite(COM1, "-------- COM1 ----------\r\n", 27);
+        //IoWrite(COM3, "-------- COM3 ----------\r\n", 27);
+        //IoWrite(COM6, "-------- COM6 ----------\r\n", 27);
         //memset(open, 0x01, sizeof(open));
         //ChipWriteFrame(0, 0, 14, open);
         //OSTimeDly(5000);

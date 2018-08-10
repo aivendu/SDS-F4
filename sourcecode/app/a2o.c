@@ -125,6 +125,7 @@ void A2OSubmCtrl(uint32_t channel, uint8_t value)
     if ((yw_input & (1<<3)) && value)
     {
         SinglePumpCtrl(channel, 1);
+        pump_state.pump_st.pump_subm = 1;
     }
     else
     {
@@ -133,6 +134,7 @@ void A2OSubmCtrl(uint32_t channel, uint8_t value)
 }
 void A2OSubmersibleSewagePumpCtrl(void)
 {
+    uint8_t pump_st = 0;
     static uint8_t state = A2O_PUMP_ST_INIT;
     static uint32_t time_change = 0;
     static uint32_t time_cycle = 0;
@@ -144,19 +146,23 @@ void A2OSubmersibleSewagePumpCtrl(void)
             time_cycle = time_now;
             state = A2O_PUMP_ST_PRIMARY_A;
             A2OSubmCtrl(technology_argv.a2o.pump_subm1_port, 1);
+            pump_st = 1;
             break;
         case A2O_PUMP_ST_PRIMARY_A:
             if ((time_now - time_change) > technology_argv.a2o.pump_subm_on_time)  //  开启时间超时
             {
                 A2OSubmCtrl(technology_argv.a2o.pump_subm1_port, 0);  //  关闭主泵
+                A2OSubmCtrl(technology_argv.a2o.pump_subm2_port, 0);  //  关闭备用泵
                 time_change = time_now;
                 state = A2O_PUMP_ST_PRIMARY_B;
+                pump_st = 2;
             }
             else if (GetPumpState(technology_argv.a2o.pump_subm1_port - 1) == PUMP_ST_ERROR)  //  检测泵是否坏
             {
                 A2OSubmCtrl(technology_argv.a2o.pump_subm1_port, 0);
                 A2OSubmCtrl(technology_argv.a2o.pump_subm2_port, 1);
                 state = A2O_PUMP_ST_MINOR_A;
+                pump_st = 1;
             }
             break;
         case A2O_PUMP_ST_PRIMARY_B:
@@ -174,20 +180,24 @@ void A2OSubmersibleSewagePumpCtrl(void)
                     A2OSubmCtrl(technology_argv.a2o.pump_subm1_port, 1);  //  开启主泵
                     state = A2O_PUMP_ST_PRIMARY_A;
                 }
+                pump_st = 1;
             }
             break;
         case A2O_PUMP_ST_MINOR_A:
             if ((time_now - time_change) > technology_argv.a2o.pump_subm_on_time)  //  开启时间超时
             {
+                A2OSubmCtrl(technology_argv.a2o.pump_subm1_port, 0);  //  关闭主泵
                 A2OSubmCtrl(technology_argv.a2o.pump_subm2_port, 0);  //  关闭备用泵
                 time_change = time_now;
                 state = A2O_PUMP_ST_MINOR_B;
+                pump_st = 2;
             }
             else if (GetPumpState(technology_argv.a2o.pump_subm2_port - 1) == PUMP_ST_ERROR)  //  检测泵是否坏
             {
                 A2OSubmCtrl(technology_argv.a2o.pump_subm2_port, 0);
                 A2OSubmCtrl(technology_argv.a2o.pump_subm1_port, 1);
                 state = A2O_PUMP_ST_MINOR_A;
+                pump_st = 1;
             }
             break;
         case A2O_PUMP_ST_MINOR_B:
@@ -204,6 +214,7 @@ void A2OSubmersibleSewagePumpCtrl(void)
                     A2OSubmCtrl(technology_argv.a2o.pump_subm2_port, 1);  //  开启备用泵
                     state = A2O_PUMP_ST_MINOR_A;
                 }
+                pump_st = 1;
                 time_change = time_now;
             }
             break;
@@ -217,7 +228,11 @@ void A2OSubmersibleSewagePumpCtrl(void)
     }
     else
     {
-        SinglePumpCtrl(technology_argv.a2o.pump_subm3_port, 1);
+        SinglePumpCtrl(technology_argv.a2o.pump_subm3_port, 0);
+        if (pump_st == 2)
+        {
+            pump_state.pump_st.pump_subm = 0;
+        }
     }
 }
 
@@ -230,6 +245,7 @@ void A2OReflexCtrl(uint32_t channel, uint8_t value)
     if (value)
     {
         SinglePumpCtrl(channel, 1);
+        pump_state.pump_st.pump_rflx = 1;
     }
     else
     {
@@ -238,6 +254,7 @@ void A2OReflexCtrl(uint32_t channel, uint8_t value)
 }
 void A2OReflexPumpCtrl(void)
 {   
+    uint8_t pump_st = 0;
     static uint8_t refx_state = A2O_PUMP_ST_INIT;
     static uint32_t refx_time_change = 0;
     static uint32_t refx_time_cycle = 0;
@@ -254,8 +271,10 @@ void A2OReflexPumpCtrl(void)
             if ((time_now - refx_time_change) > technology_argv.a2o.pump_rflx_on_time)  //  开启时间超时
             {
                 A2OReflexCtrl(technology_argv.a2o.pump_rflx1_port, 0);  //  关闭主泵
+                A2OReflexCtrl(technology_argv.a2o.pump_rflx2_port, 0);  //  关闭备用泵
                 refx_time_change = time_now;
                 refx_state = A2O_PUMP_ST_PRIMARY_B;
+                pump_st = 2;
             }
             else if (GetPumpState(technology_argv.a2o.pump_rflx1_port - 1) == PUMP_ST_ERROR)  //  检测泵是否坏
             {
@@ -284,9 +303,11 @@ void A2OReflexPumpCtrl(void)
         case A2O_PUMP_ST_MINOR_A:
             if ((time_now - refx_time_change) > technology_argv.a2o.pump_rflx_on_time)  //  开启时间超时
             {
+                A2OReflexCtrl(technology_argv.a2o.pump_rflx1_port, 0);  //  关闭主泵
                 A2OReflexCtrl(technology_argv.a2o.pump_rflx2_port, 0);  //  关闭备用泵
                 refx_time_change = time_now;
                 refx_state = A2O_PUMP_ST_MINOR_B;
+                pump_st = 2;
             }
             else if (GetPumpState(technology_argv.a2o.pump_rflx2_port - 1) == PUMP_ST_ERROR)  //  检测泵是否坏
             {
@@ -316,6 +337,10 @@ void A2OReflexPumpCtrl(void)
             refx_state = A2O_PUMP_ST_INIT;
             break;
     }
+    if (pump_st == 2)
+    {
+       pump_state.pump_st.pump_rflx = 0;
+    }
 }
 
 /**  @breif  设备4、出水泵
@@ -329,15 +354,20 @@ void A2OWaterCtrl(uint32_t channel, uint8_t value)
     if ((yw_input & (1<<5)) && value)
     {
         SinglePumpCtrl(channel, 1);
+        pump_state.pump_st.pump_watr = 1;
     }
     else
     {
         SinglePumpCtrl(channel, 0);
     }
+    if ((yw_input & (1<<5)) == 0)
+    {
+        pump_state.pump_st.pump_watr = 0;
+    }
 }
 void A2OWaterPumpCtrl(void)
 {
-    
+//    uint8_t pump_st = 0;
     static uint8_t watr_state = A2O_PUMP_ST_INIT;
     static uint32_t watr_time_cycle = 0;
     uint32_t time_now = time(0)/60;   //  以分钟为单位
@@ -359,6 +389,7 @@ void A2OWaterPumpCtrl(void)
                 watr_time_cycle = time_now;
             }
             A2OWaterCtrl(technology_argv.a2o.pump_watr1_port, 1);
+            A2OWaterCtrl(technology_argv.a2o.pump_watr2_port, 0);
             break;
         
         case A2O_PUMP_ST_MINOR_A:
@@ -372,6 +403,7 @@ void A2OWaterPumpCtrl(void)
                 watr_state = A2O_PUMP_ST_PRIMARY_A;
                 watr_time_cycle = time_now;
             }
+            A2OWaterCtrl(technology_argv.a2o.pump_watr1_port, 0);
             A2OWaterCtrl(technology_argv.a2o.pump_watr2_port, 1);
             break;
         default:
@@ -387,6 +419,7 @@ void A2OWaterPumpCtrl(void)
 
 void A2ODosingPumpCtrl(void)
 {
+    uint8_t pump_st = 0;
     static uint8_t dosg_state = A2O_PUMP_ST_INIT;
     static uint32_t watr_time_delay = 0;
     uint32_t time_now = time(0)/60;   //  以分钟为单位
@@ -406,11 +439,13 @@ void A2ODosingPumpCtrl(void)
                 {
                     SinglePumpCtrl(technology_argv.a2o.pump_dosg1_port, 1);
                     SinglePumpCtrl(technology_argv.a2o.pump_dosg2_port, 1);
+                    pump_st = 1;
                 }  
                 else
                 {
                     SinglePumpCtrl(technology_argv.a2o.pump_dosg1_port, 0);
                     SinglePumpCtrl(technology_argv.a2o.pump_dosg2_port, 0);
+                    pump_st = 2;
                 }    
             }
             if (pump_state.pump_st.pump_subm != PUMP_ST_OPEN)
@@ -424,6 +459,7 @@ void A2ODosingPumpCtrl(void)
             {  
                 SinglePumpCtrl(technology_argv.a2o.pump_dosg1_port, 0);
                 SinglePumpCtrl(technology_argv.a2o.pump_dosg2_port, 0);
+                pump_st = 2;
                 dosg_state = A2O_PUMP_ST_INIT;
             }
             else
@@ -432,17 +468,27 @@ void A2ODosingPumpCtrl(void)
                 {
                     SinglePumpCtrl(technology_argv.a2o.pump_dosg1_port, 1);
                     SinglePumpCtrl(technology_argv.a2o.pump_dosg2_port, 1);
+                    pump_st = 1;
                 }  
                 else
                 {
                     SinglePumpCtrl(technology_argv.a2o.pump_dosg1_port, 0);
                     SinglePumpCtrl(technology_argv.a2o.pump_dosg2_port, 0);
+                    pump_st = 2;
                 }  
             }
             break;
         default:
             
             break;
+    }
+    if (pump_st == 1)
+    {
+        pump_state.pump_st.pump_dosg = 1;
+    }
+    else if (pump_st == 2)
+    {
+        pump_state.pump_st.pump_dosg = 0;
     }
 }
 
@@ -453,7 +499,7 @@ void A2ODosingPumpCtrl(void)
  **/
 void A2OLiftingPumpCtrl(void)
 {
-    
+    uint8_t pump_st = 0;    
     static uint8_t lift_state = A2O_PUMP_ST_INIT;
     static uint32_t lift_time_cycle = 0;
     uint32_t time_now = time(0)/60;   //  以分钟为单位
@@ -473,16 +519,19 @@ void A2OLiftingPumpCtrl(void)
             {
                 SinglePumpCtrl(technology_argv.a2o.pump_lift1_port, 1);
                 SinglePumpCtrl(technology_argv.a2o.pump_lift2_port, 1);
+                pump_st = 1;
             }
             else if ((yw_input & (1<<1)) && ((yw_input & (1<<3)) == 0))
             {
                 SinglePumpCtrl(technology_argv.a2o.pump_lift1_port, 1);
                 SinglePumpCtrl(technology_argv.a2o.pump_lift2_port, 0);
+                pump_st = 1;
             }
             else if ((yw_input & (1<<1)) == 0)
             {
                 SinglePumpCtrl(technology_argv.a2o.pump_lift1_port, 0);
                 SinglePumpCtrl(technology_argv.a2o.pump_lift2_port, 0);
+                pump_st = 2;
             }
             break;
             
@@ -499,21 +548,32 @@ void A2OLiftingPumpCtrl(void)
             {
                 SinglePumpCtrl(technology_argv.a2o.pump_lift1_port, 1);
                 SinglePumpCtrl(technology_argv.a2o.pump_lift2_port, 1);
+                pump_st = 1;
             }
             else if ((yw_input & (1<<0)) && ((yw_input & (1<<2)) == 0))
             {
                 SinglePumpCtrl(technology_argv.a2o.pump_lift1_port, 1);
                 SinglePumpCtrl(technology_argv.a2o.pump_lift2_port, 0);
+                pump_st = 1;
             }
             else if ((yw_input & (1<<0)) == 0)
             {
                 SinglePumpCtrl(technology_argv.a2o.pump_lift1_port, 0);
                 SinglePumpCtrl(technology_argv.a2o.pump_lift2_port, 0);
+                pump_st = 2;
             }
             break;
         default:
             lift_state = A2O_PUMP_ST_INIT;
             break;
+    }
+    if (pump_st == 1)
+    {
+        pump_state.pump_st.pump_lift = 1;
+    }
+    else if (pump_st == 2)
+    {
+        pump_state.pump_st.pump_lift = 0;
     }
 }
 

@@ -79,6 +79,17 @@ void SysTick_Handler(void)
 
 
 
+//延时nus
+//nus为要延时的us数.		    								   
+void delay_us(uint32_t nus)
+{		
+    uint16_t i=0;     
+    while(nus--)    
+    {        
+        i=200;  //自己定义       
+        while(i--)  ;
+    } 
+}
 
 
 #define DEBUG_PORT      0xff

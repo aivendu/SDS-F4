@@ -1,17 +1,6 @@
 ﻿#include "cj01_simulate_IIC.h"
+#include "sys_timer.h"
 
-
-//延时nus
-//nus为要延时的us数.		    								   
-void delay_us(uint32_t nus)
-{		
-    uint16_t i=0;     
-    while(nus--)    
-    {        
-        i=200;  //自己定义       
-        while(i--)  ;
-    } 
-}
 /******************************************************************
 ** 函数名称:   IIC_Init
 ** 功能描述:   初始化IIC的IO口
