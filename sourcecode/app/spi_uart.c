@@ -1,4 +1,4 @@
-﻿#include "spi_uart.h"
+#include "spi_uart.h"
 #include "queue.h"
 #include "ucos_ii.h"
 #include "chip_communication.h"
@@ -30,7 +30,7 @@ void TaskSpiUart(void *pdata)
     while (1)
     {
         OSTimeDly(5);
-        if (ChipReadFrame(1, 42, sizeof(uart_st), &uart_st) == 0)
+        if (ChipReadFrame(1, CH2_UART_ST_ADDR, sizeof(uart_st), &uart_st) == 0)
         {
             spi_int = 0;
             //  处理uart1
@@ -216,7 +216,7 @@ void TaskSpiUart(void *pdata)
     }
 }
 
-int8_t SpiUart1Write(int32_t port, void *buf, uint32_t buf_len)
+int32_t SpiUart1Write(int32_t port, void *buf, uint32_t buf_len)
 {
     uint8_t * data = (uint8_t *)buf;
     uint32_t i = 0;
@@ -228,7 +228,7 @@ int8_t SpiUart1Write(int32_t port, void *buf, uint32_t buf_len)
             OSTimeDly(5);
         }
     }
-    return 0;
+    return buf_len;
 }
 
 int32_t SpiUart1Read(int32_t port, void *buf, uint32_t buf_len)
@@ -246,7 +246,7 @@ int32_t SpiUart1Read(int32_t port, void *buf, uint32_t buf_len)
 }
 
 
-int8_t SpiUart2Write(int32_t port, void *buf, uint32_t buf_len)
+int32_t SpiUart2Write(int32_t port, void *buf, uint32_t buf_len)
 {
     uint8_t * data = (uint8_t *)buf;
     uint32_t i = 0;
@@ -258,7 +258,7 @@ int8_t SpiUart2Write(int32_t port, void *buf, uint32_t buf_len)
             OSTimeDly(5);
         }
     }
-    return 0;
+    return buf_len;
 }
 
 int32_t SpiUart2Read(int32_t port, void *buf, uint32_t buf_len)
@@ -276,7 +276,7 @@ int32_t SpiUart2Read(int32_t port, void *buf, uint32_t buf_len)
 }
 
 
-int8_t SpiUart3Write(int32_t port, void *buf, uint32_t buf_len)
+int32_t SpiUart3Write(int32_t port, void *buf, uint32_t buf_len)
 {
     uint8_t * data = (uint8_t *)buf;
     uint32_t i = 0;
@@ -288,7 +288,7 @@ int8_t SpiUart3Write(int32_t port, void *buf, uint32_t buf_len)
             OSTimeDly(5);
         }
     }
-    return 0;
+    return buf_len;
 }
 
 int32_t SpiUart3Read(int32_t port, void *buf, uint32_t buf_len)

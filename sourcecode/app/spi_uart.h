@@ -1,4 +1,4 @@
-﻿#ifndef _SPI_UART_H_
+#ifndef _SPI_UART_H_
 #define _SPI_UART_H_
 #include "stdint.h"
 
@@ -19,11 +19,11 @@ typedef struct s_channel_2
 } s_channel_2_t;
 
 extern void InitSpiUart(uint32_t prio);
-extern int8_t SpiUart1Write(int32_t port, void *buf, uint32_t buf_len);
+extern int32_t SpiUart1Write(int32_t port, void *buf, uint32_t buf_len);
 extern int32_t SpiUart1Read(int32_t port, void *buf, uint32_t buf_len);
-extern int8_t SpiUart2Write(int32_t port, void *buf, uint32_t buf_len);
+extern int32_t SpiUart2Write(int32_t port, void *buf, uint32_t buf_len);
 extern int32_t SpiUart2Read(int32_t port, void *buf, uint32_t buf_len);
-extern int8_t SpiUart3Write(int32_t port, void *buf, uint32_t buf_len);
+extern int32_t SpiUart3Write(int32_t port, void *buf, uint32_t buf_len);
 extern int32_t SpiUart3Read(int32_t port, void *buf, uint32_t buf_len);
 
 

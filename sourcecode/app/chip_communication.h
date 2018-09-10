@@ -73,7 +73,9 @@ typedef struct
 #define	READ			1
 
 
-
+#define CH2_VERSION_ADDR      0
+#define CH2_RELAY_ST_ADDR     32
+#define CH2_UART_ST_ADDR      (CH2_RELAY_ST_ADDR+42)
 
 
 extern void ChipCommInit(void);

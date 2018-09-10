@@ -5,7 +5,7 @@
 #include "stdint.h"
 #include "modbus_slave.h"
 
-#define REGISTER_NUM      4//MODBUS功能命令条数    
+#define REGISTER_NUM      7//MODBUS功能命令条数    
 #define COILS_NUM         3
 
 //  线圈定义结构
@@ -20,6 +20,7 @@ typedef union u_coil_rw
         uint16_t  calib  :1;
         uint16_t  manual :1;
         uint16_t  unused0:10; 
+        uint16_t  unused00:16; 
         
         uint16_t  alarm_sw_pump_lift:1;  //  提升泵
         uint16_t  alarm_sw_pump_subm:1;  //  潜污泵
@@ -42,7 +43,7 @@ typedef union u_coil_rw
         uint16_t  unused3:7;
         
     } ctrl;
-    uint16_t coil[3];
+    uint16_t coil[sizeof(struct s_ctrl) / 2];
 }  u_coil_group_1_t;
 
 
@@ -69,7 +70,7 @@ typedef struct s_pump_st
 typedef union u_pump_st
 {
     s_pump_st_t pump_st;
-    uint16_t regs[sizeof(s_pump_st_t)];
+    uint16_t regs[sizeof(s_pump_st_t)/2];
 } u_pump_st_t;
 
 #if 1  //  工艺参数结构体
@@ -90,37 +91,138 @@ typedef struct s_A2O_technology_argv
     uint16_t pump_lift1_port;
     uint16_t pump_lift2_port;
     uint16_t unused1[48-14];
-    
+    //  曝气泵    
     uint32_t pump_aera1_time;
     uint32_t pump_aera2_time;
     uint32_t pump_aera3_time;
     uint16_t unused2[16-6];
-    
+    //  潜污泵
     uint16_t pump_subm_on_time;
     uint16_t pump_subm_off_time;
     uint16_t pump_subm_cycle_time;
     uint16_t unused3[16-3];
-    
+    //  回流泵
     uint16_t pump_rflx_on_time;
     uint16_t pump_rflx_off_time;
     uint16_t pump_rflx_cycle_time;
     uint16_t unused4[16-3];
-    
+    //  出水泵
     uint16_t pump_watr_cycle_time;
     uint16_t unused5[16-1];
-    
+    //  加药泵
     uint16_t pump_dosg_delay_time;
     uint16_t unused6[16-1];
-    
+    //  提升泵
     uint16_t pump_lift_cycle_time;
     uint16_t unused7[16-1];
 } s_A2O_technology_argv_t;
 
-typedef union  u_technology_argv
+typedef union  u_A2O_technology_argv
 {
-    s_A2O_technology_argv_t a2o;
-    uint16_t  registers[256];
-} u_technology_argv_t;
+    s_A2O_technology_argv_t member;
+    uint16_t  registers[sizeof(s_A2O_technology_argv_t)/2];
+} u_A2O_technology_argv_t;
+
+
+typedef struct s_MBR_technology_argv
+{
+    uint16_t pump_aera1_port;
+    uint16_t pump_aera2_port;
+    uint16_t pump_subm1_port;
+    uint16_t pump_subm2_port;
+    uint16_t pump_wmbr1_port;
+    uint16_t pump_wmbr2_port;
+    uint16_t pump_rflx1_port;
+    uint16_t pump_rflx2_port;
+    uint16_t pump_watr1_port;
+    uint16_t pump_watr2_port;
+    uint16_t pump_dosg1_port;
+    uint16_t pump_dosg2_port;
+    uint16_t pump_lift1_port;
+    uint16_t pump_lift2_port;
+    uint16_t unused1[48-14];
+    
+    //  出水泵
+    uint16_t pump_watr_cycle_time;
+    uint16_t pump_watr_delay_time;
+    uint16_t unused5[16-2];
+    //  加药泵
+    uint16_t pump_dosg_delay_time;
+    uint16_t unused6[16-1];
+    //  提升泵
+    uint16_t pump_lift_cycle_time;
+    uint16_t unused7[16-1];
+    //  洗膜泵
+    uint16_t pump_wmbr_on_time;
+    uint16_t pump_wmbr_off_time;
+    uint16_t pump_wmbr_cycle_time;
+    uint16_t unused8[16-3];
+    //  曝气泵    
+    uint32_t pump_aera1_time;
+    uint32_t pump_aera2_time;
+    uint32_t pump_aera3_time;
+    uint16_t unused2[16-6];
+    //  潜污泵
+    uint16_t pump_subm_on_time;
+    uint16_t pump_subm_off_time;
+    uint16_t pump_subm_cycle_time;
+    uint16_t unused3[16-3];
+    //  回流泵
+    uint16_t pump_rflx_on_time;
+    uint16_t pump_rflx_off_time;
+    uint16_t pump_rflx_cycle_time;
+    uint16_t unused4[16-3];
+} s_MBR_technology_argv_t;
+
+typedef union  u_MBR_technology_argv
+{
+    s_MBR_technology_argv_t member;
+    uint16_t  registers[sizeof(s_MBR_technology_argv_t)/2];
+} u_MBR_technology_argv_t;
+
+
+typedef struct s_SBR_technology_argv
+{
+    uint16_t pump_aera1_port;
+    uint16_t pump_aera2_port;
+    uint16_t pump_aera3_port;
+    uint16_t pump_subm1_port;
+    uint16_t pump_subm2_port;
+    uint16_t pump_subm3_port;
+    uint16_t pump_watr1_port;
+    uint16_t pump_watr2_port;
+    uint16_t pump_dosg1_port;
+    uint16_t pump_dosg2_port;
+    uint16_t pump_lift1_port;
+    uint16_t pump_lift2_port;
+    uint16_t unused1[48-16];
+    
+    //  当前阶段
+    uint16_t current_phase;
+    uint16_t precipitate_time;
+    uint16_t unused8[16-2];
+    //  曝气泵    
+    uint16_t pump_aera_on_time;
+    uint16_t unused2[16-1];
+    //  潜污泵
+    uint16_t pump_subm_cycle_time;
+    uint16_t unused3[16-1];
+    //  出水泵
+    uint16_t pump_watr_cycle_time;
+    uint16_t unused5[16-1];
+    //  加药泵
+    uint16_t pump_dosg_delay_time;
+    uint16_t unused6[16-1];
+    //  提升泵
+    uint16_t pump_lift_cycle_time;
+    uint16_t unused7[16-1];
+} s_SBR_technology_argv_t;
+
+typedef union  u_SBR_technology_argv
+{
+    s_SBR_technology_argv_t member;
+    uint16_t  registers[sizeof(s_SBR_technology_argv_t)/2];
+} u_SBR_technology_argv_t;
 #endif
 
 #if 1  //  传感器寄存器结构
@@ -133,10 +235,10 @@ typedef struct s_sensor_ctrl
     uint16_t port;   //  端口
     uint16_t unused;  //  未使用
     
-    uint16_t calib1;  //  标定1
-    uint16_t sampling1;  //  采样值1
-    uint16_t calib2;  //  标定2
-    uint16_t sampling2;  //  采样2
+    float calib1;  //  标定1
+    float sampling1;  //  采样值1
+    float calib2;  //  标定2
+    float sampling2;  //  采样2
 } s_sensor_ctrl_t;
 
 //  传感器数据
@@ -151,7 +253,8 @@ typedef struct s_sensors
     float ss_value;
     float p_value;
     float flux_value;
-    float unused1[0x40];
+    float unused1[23]; //  占位
+     
     
     s_sensor_ctrl_t t;
     s_sensor_ctrl_t ph;
@@ -167,7 +270,7 @@ typedef struct s_sensors
 typedef union u_sensor_reg_rw
 { 
     s_sensors_t ctrl;
-    uint16_t reg[sizeof(s_sensors_t)];
+    uint16_t reg[sizeof(s_sensors_t)/2];
 } u_sensor_reg_t;
 #endif
 

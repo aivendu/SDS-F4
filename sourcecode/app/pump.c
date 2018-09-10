@@ -74,7 +74,7 @@ int8_t GetPumpCtrlState(uint32_t channel)
     {
         return -1;
     }
-    if (ChipReadFrame(1, i, 1, &status) < 0)
+    if (ChipReadFrame(1, CH2_RELAY_ST_ADDR+i, 1, &status) < 0)
     {
         return -1;
     }

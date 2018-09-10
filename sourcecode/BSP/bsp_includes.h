@@ -14,7 +14,6 @@
 #include "cj01_timer.h"
 #include "cj01_ps2key.h"
 #include "cj01_rtc.h"
-#include "cj01_mdb.h"
 #include "cj01_wdt.h"
 #include "cj01_usart.h"
 #include "cj01_gpio.h"
@@ -24,5 +23,7 @@
 #include "cj01_lan8720.h"
 #include "cj01_sram.h"
 #include "sys_timer.h"
+#include "dma.h"
+#include "adc.h"
 
 #endif

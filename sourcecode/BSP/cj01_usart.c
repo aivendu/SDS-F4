@@ -124,21 +124,7 @@ int8_t UartOpen(int32_t port, const void *config, uint8_t len)
 		recv_queue_buff_len = sizeof(UART3RecvBuf);
 		send_queue_buff_len = sizeof(UART3SendBuf);
 		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); //使能GPIOB时钟
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); //使能USART3时钟
-        
-        //串口通道选择
-        RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);//使能GPIO时钟
-        GPIO_InitStructure.GPIO_Pin = GPIO_PIN_0 | GPIO_PIN_1;//
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-        GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
-        GPIO_ResetBits(GPIOB,GPIO_PIN_0);   //选择通道00
-        GPIO_ResetBits(GPIOB,GPIO_PIN_1);
-        OSTimeDly(OS_TICKS_PER_SEC/200);
-//        GPIO_SetBits(GPIOB,GPIO_PIN_0);
-//        GPIO_SetBits(GPIOB,GPIO_PIN_1);
+		RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); //使能USART3时钟        
 	}
     else
     {
@@ -593,7 +579,7 @@ void USART3_IRQHandler(void)    //串口3中断服务程序
 {
     if (usart_mode == 1)
     {   //如果工作模式为MDB模式，执行MDB中断函数
-        MDB_IRQHandler();
+        //MDB_IRQHandler();
         return;
     }
     else

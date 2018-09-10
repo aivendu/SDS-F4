@@ -1,4 +1,4 @@
-﻿#include "cj01_io_api.h"
+#include "cj01_io_api.h"
 #include "bsp_includes.h"
 #include "spi.h"
 
@@ -414,10 +414,10 @@ void BSPInit(void)
     SysTimeInit();
     GPIOInit();
     ChipCommInit();
-//    SPIMspInit();
-//    spi_to_uart_BSP_init();
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4); //中断分组配置
     MX_FATFS_Init();
+    DMA_AllInit(); 
+    ADC_AllInit();
 }
 
 void AppInit(void);
@@ -462,12 +462,7 @@ void TaskBsp(void *pdata)
         {
             GPIODebounce();
             TaskModbus();
-            
-//        memset(openddd, 0x01, sizeof(openddd));
-//        ChipWriteFrame(0, 0, 14, openddd);
-//        memset(openddd, 0x02, sizeof(openddd));
-//        ChipWriteFrame(0, 0, 14, openddd);
-            
+            CUR_DataToVoltage();
         }
     }
 }

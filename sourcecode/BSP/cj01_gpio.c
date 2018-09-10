@@ -52,6 +52,7 @@
 /* USER CODE BEGIN 0 */
 #include "ls595.h"
 #include "cj01_io_api.h"
+#include "stm32f4xx.h"
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -96,7 +97,7 @@ void GPIOInit(void)
   GPIO_WriteBit(F1_SPI2_NSS_GPIO_Port, F1_SPI2_NSS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  GPIO_WriteBit(GPIOG, W5500_RSTn_Pin|W5500_SCSn_Pin|SDIO_CD_Pin, GPIO_PIN_RESET);
+  GPIO_WriteBit(SDIO_CD_GPIO_Port, SDIO_CD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   GPIO_WriteBit(RUN_STU_GPIO_Port, RUN_STU_Pin, GPIO_PIN_RESET);
@@ -115,7 +116,7 @@ void GPIOInit(void)
   GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC13 PC3 */
-  GPIO_InitStruct.GPIO_Pin = GPIO_PIN_13|GPIO_PIN_3;
+  GPIO_InitStruct.GPIO_Pin = GPIO_PIN_13;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AN;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
@@ -131,15 +132,15 @@ void GPIOInit(void)
   GPIO_Init(GPIOF, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.GPIO_Pin = F1_PC12_Pin;
+  GPIO_InitStruct.GPIO_Pin = F1_PC12_Pin | SIM_PWRKEY_Pin;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUT;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(F1_PC12_GPIO_Port, &GPIO_InitStruct);
+  GPIO_Init(GPIOF, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PF10 PF11 */
-  GPIO_InitStruct.GPIO_Pin = GPIO_PIN_10|GPIO_PIN_11;
+  GPIO_InitStruct.GPIO_Pin = GPIO_PIN_10;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AN;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
@@ -168,8 +169,8 @@ void GPIOInit(void)
   //GPIO_InitStruct.Pull = GPIO_NOPULL;
   //GPIO_Init(F1_PD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB1 PB2 */
-  GPIO_InitStruct.GPIO_Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2;
+  /*Configure GPIO pins : PB2 */
+  GPIO_InitStruct.GPIO_Pin = GPIO_PIN_2;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AN;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
@@ -184,17 +185,11 @@ void GPIOInit(void)
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_Init(F1_SPI2_NSS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PGPin PGPin PGPin */
-  GPIO_InitStruct.GPIO_Pin = W5500_INTn_Pin|W5500_DUPLED_Pin|W5500_SPDLED_Pin;
-  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(GPIOG, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PGPin PGPin PGPin */
-  GPIO_InitStruct.GPIO_Pin = W5500_RSTn_Pin|W5500_SCSn_Pin|SDIO_CD_Pin;
-  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUT;
+  /*Configure GPIO pins : PG6 PG7 PG8 PG9 
+                           PG12 */
+  GPIO_InitStruct.GPIO_Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9 
+                          |GPIO_PIN_12;
+  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AN;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
@@ -223,6 +218,14 @@ void GPIOInit(void)
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PGPin PGPin PGPin */
+  GPIO_InitStruct.GPIO_Pin = SDIO_CD_Pin;
+  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_Init(SDIO_CD_GPIO_Port, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 2 */

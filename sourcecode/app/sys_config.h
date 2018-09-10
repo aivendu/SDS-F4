@@ -10,7 +10,9 @@ typedef struct
     uint16_t version;
     uint16_t crc;
     uint16_t tech_type;
-    u_technology_argv_t tech_argv;
+    u_A2O_technology_argv_t tech_argv;
+    u_MBR_technology_argv_t mbr_argv;
+    u_SBR_technology_argv_t sbr_argv;
     u_sensor_reg_t  sensor;
     u_coil_group_1_t  coil_g1;
 } s_sys_config_t;
@@ -42,7 +44,9 @@ extern int8_t CheckSenorPort (e_sensor_port_t type, uint8_t port);
 extern s_sys_config_t  sys_config_ram;
 
 #define process_technology_type     sys_config_ram.tech_type
-#define technology_argv             sys_config_ram.tech_argv
+#define a2o_technology_argv         sys_config_ram.tech_argv
+#define mbr_technology_argv         sys_config_ram.mbr_argv
+#define sbr_technology_argv         sys_config_ram.sbr_argv
 #define sensor_reg                  sys_config_ram.sensor
 #define coil_group_1                sys_config_ram.coil_g1
 

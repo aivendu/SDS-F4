@@ -2,7 +2,8 @@
 #include "string.h"
 #include "modbus_slave.h"
 #include "sys_config.h"
-
+#include "modbus_core.h"
+#include "mod_time.h"
 
 extern void UpdataStatusInfo(void);
 extern uint8_t device_addr;
@@ -16,6 +17,29 @@ uint16_t senser_ad[4];
 uint16_t relay_state[14];
 
 u_pump_st_t  pump_state;
+
+uint32_t RTCSet(struct s_modbus_register *reg, const uint8_t *data)
+{
+    uint16_t buffer[12];
+    uint16_t addr = (data[1]<<8) + data[2];
+    uint16_t len = (data[3]<<8) + data[4];
+    struct tm new_time;
+    uint32_t time_tt;
+    if ((len != 6) || (addr != reg->start_addr))
+    {
+        return 2;
+    }
+    HalfWordBigEndianCopy(buffer, (uint8_t *)&data[6], 12);
+    new_time.tm_year = buffer[0];
+    new_time.tm_mon = buffer[1];
+    new_time.tm_mday = buffer[2];
+    new_time.tm_hour = buffer[3];
+    new_time.tm_min = buffer[4];
+    new_time.tm_sec = buffer[5];
+    time_tt = mktime(&new_time);
+    time(&time_tt);
+    return 0;
+}
 
 /******************************************************************
 ** 函数名称:   SetFirmwareUpdataState
@@ -42,7 +66,7 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
 {
     {
         //  继电器输出
-        0x0000,
+        0x0001,
         0x000E,
         (1 << MODBUS_FUNC_CODE_05) + 
         (1 << MODBUS_FUNC_CODE_0F),
@@ -51,7 +75,7 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
     },
     {
         //  bool 量传感器输入信号
-        0x03FF,
+        0x0400,
         0x0008,
         (1 << MODBUS_FUNC_CODE_01),
         (uint8_t *)&yw_input,
@@ -59,8 +83,8 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
     },
     {
         //  功能控制输入输出
-        0x07FF,
-        0x0030,
+        0x0800,
+        sizeof(coil_group_1.coil) * 8,
         (1 << MODBUS_FUNC_CODE_01) +
         (1 << MODBUS_FUNC_CODE_05) +
         (1 << MODBUS_FUNC_CODE_0F),
@@ -69,11 +93,22 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
     }
 };
 
+#define GetRegisterLen(a)     (sizeof(a)>>1)
+
 s_modbus_register_t parkinglock_register[REGISTER_NUM] =
 {
     {
         // 1  设备标识
-        0x0005,
+        0x0000,
+        0x0006,
+        (1 << MODBUS_FUNC_CODE_03) + 
+        (1 << MODBUS_FUNC_CODE_10),
+        0,
+        RTCSet
+    },
+    {
+        // 1  设备标识
+        0x0006,
         0x0001,
         (1 << MODBUS_FUNC_CODE_03) + 
         (1 << MODBUS_FUNC_CODE_06),
@@ -82,16 +117,16 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
     },
     {
         // 泵的状态
-        0x000F,
-        sizeof(pump_state.regs),
+        0x0010,
+        GetRegisterLen(pump_state.regs),
         (1 << MODBUS_FUNC_CODE_03),
         pump_state.regs,
         0
     },
     {
         // 1  传感器
-        0x00FF,
-        sizeof(sensor_reg),
+        0x0100,
+        GetRegisterLen(sensor_reg),
         (1 << MODBUS_FUNC_CODE_03) + 
         (1 << MODBUS_FUNC_CODE_06) +
         (1 << MODBUS_FUNC_CODE_10) ,
@@ -100,12 +135,32 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
     },
     {
         // 工艺参数
-        0x03FF,
-        sizeof(technology_argv.a2o),
+        0x0400,
+        GetRegisterLen(a2o_technology_argv.member),
         (1 << MODBUS_FUNC_CODE_03) + 
         (1 << MODBUS_FUNC_CODE_06) +
         (1 << MODBUS_FUNC_CODE_10) ,
-        technology_argv.registers,
+        a2o_technology_argv.registers,
+        0
+    },
+    {
+        // 工艺参数
+        0x0500,
+        GetRegisterLen(mbr_technology_argv.member),
+        (1 << MODBUS_FUNC_CODE_03) + 
+        (1 << MODBUS_FUNC_CODE_06) +
+        (1 << MODBUS_FUNC_CODE_10) ,
+        mbr_technology_argv.registers,
+        0
+    },
+    {
+        // 工艺参数
+        0x0600,
+        GetRegisterLen(sbr_technology_argv.member),
+        (1 << MODBUS_FUNC_CODE_03) + 
+        (1 << MODBUS_FUNC_CODE_06) +
+        (1 << MODBUS_FUNC_CODE_10) ,
+        sbr_technology_argv.registers,
         0
     },
 };

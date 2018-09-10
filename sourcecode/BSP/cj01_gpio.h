@@ -9,7 +9,6 @@
 #include "stdint.h"
 #include "os_includes.h"
 
-
 #define YW_IN1_Pin GPIO_PIN_2
 #define YW_IN1_GPIO_Port GPIOE
 #define YW_IN2_Pin GPIO_PIN_3
@@ -28,10 +27,12 @@
 #define YW_IN8_GPIO_Port GPIOF
 #define F1_PC12_Pin GPIO_PIN_9
 #define F1_PC12_GPIO_Port GPIOF
-#define SIM_PWRKEY_Pin GPIO_PIN_0
-#define SIM_PWRKEY_GPIO_Port GPIOC
+#define ADC_CUR_IN6_Pin GPIO_PIN_0
+#define ADC_CUR_IN6_GPIO_Port GPIOC
 #define SIM_WWAN_Pin GPIO_PIN_2
 #define SIM_WWAN_GPIO_Port GPIOC
+#define ADC_CUR_IN5_Pin GPIO_PIN_3
+#define ADC_CUR_IN5_GPIO_Port GPIOC
 #define F1_PD2_Pin GPIO_PIN_0
 #define F1_PD2_GPIO_Port GPIOA
 #define ADC_CUR_IN1_Pin GPIO_PIN_3
@@ -42,24 +43,21 @@
 #define ADC_CUR_IN3_GPIO_Port GPIOA
 #define ADC_CUR_IN4_Pin GPIO_PIN_6
 #define ADC_CUR_IN4_GPIO_Port GPIOA
+#define ADC_CUR_IN7_Pin GPIO_PIN_0
+#define ADC_CUR_IN7_GPIO_Port GPIOB
+#define ADC_CUR_IN8_Pin GPIO_PIN_1
+#define ADC_CUR_IN8_GPIO_Port GPIOB
+#define SIM_PWRKEY_Pin GPIO_PIN_11
+#define SIM_PWRKEY_GPIO_Port GPIOF
 #define F1_SPI2_NSS_Pin GPIO_PIN_12
 #define F1_SPI2_NSS_GPIO_Port GPIOB
-#define W5500_INTn_Pin GPIO_PIN_6
-#define W5500_INTn_GPIO_Port GPIOG
-#define W5500_RSTn_Pin GPIO_PIN_7
-#define W5500_RSTn_GPIO_Port GPIOG
-#define W5500_DUPLED_Pin GPIO_PIN_8
-#define W5500_DUPLED_GPIO_Port GPIOG
 #define RUN_STU_Pin GPIO_PIN_8
 #define RUN_STU_GPIO_Port GPIOA
 #define ETH_RESET_Pin GPIO_PIN_3
 #define ETH_RESET_GPIO_Port GPIOD
-#define W5500_SPDLED_Pin GPIO_PIN_9
-#define W5500_SPDLED_GPIO_Port GPIOG
-#define W5500_SCSn_Pin GPIO_PIN_12
-#define W5500_SCSn_GPIO_Port GPIOG
 #define SDIO_CD_Pin GPIO_PIN_15
 #define SDIO_CD_GPIO_Port GPIOG
+
 
 
 #define GPIO_OUT            1                   //GPIO口为输入出

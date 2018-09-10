@@ -8,6 +8,7 @@
 #include "modbus_register.h"
 #include "crc.h"
 #include "modbus_slave.h"
+#include "modbus_core.h"
 
 
 #define CRC16_MODBUS_ENABLE      1
@@ -20,16 +21,6 @@ uint32_t app_program_addr;
 
 //extern s_flash_parameters_t * program_parameters;
 
-typedef struct
-{
-    uint8_t code;     //  功能码
-    uint8_t length;   //  基础数据长度
-    uint8_t length_index;  //  数据长度的索引
-    uint8_t length_align  : 4;   //  数据长度对齐的字节数
-    uint8_t length_type   : 4;   //  数据长度占用的字节数
-    //  第一个参数为该功能码的索引编号，第二个字节为接收到的数据
-    uint32_t (*code_func)(uint8_t, uint8_t *);
-} s_support_code_t;
 
 s_modbus_register_t *modbus_register;
 s_modbus_record_t   *modbus_record;
@@ -209,21 +200,6 @@ static int8_t MatchModbusCoils(uint8_t func_code, uint16_t addr, uint16_t len)
     return -1;
 }
 
-
-//大端操作
-void HalfWordBigEndianCopy(void *dst, void *src, uint32_t len)
-{
-    uint8_t *dst_t = dst, *src_t = src;
-    while (len)
-    {
-        dst_t[0] = src_t[1];
-        dst_t[1] = src_t[0];
-        dst_t += 2;
-        src_t += 2;
-        len -= 2;
-    }
-}
-
 const uint32_t bit_mask[33] = 
 {
     0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000F, 0x0000001F, 0x0000003F, 0x0000007F,
@@ -238,10 +214,10 @@ void CopyCoilFromBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *da
     uint8_t offset = start & 0x07;
     uint16_t start_byte = start>>3;  //  16bit 对齐
     uint16_t temp;
-    for (j=0; j<((size+15)>>3); j++)
+    for (j=0; j<((size+7)>>3); j++)
     {
         temp = ((modbus_coil[reg].coils[start_byte+j] >> offset) & bit_mask[8-offset])
-                   |(((modbus_coil[reg].coils[start_byte+1+j]) & bit_mask[offset]) << (8-offset));
+                   |(((modbus_coil[reg].coils[start_byte+j+1]) & bit_mask[offset]) << (8-offset));
         data[j] = temp & 0xFF;
     }
     if (j) {
@@ -264,10 +240,10 @@ void CopyCoilToBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data
             modbus_coil[reg].coils[start_byte+j+1] &= (~bit_mask[offset]);
             modbus_coil[reg].coils[start_byte+j+1] |= (temp >> (8-offset));
         }
-        data[j] = temp & 0xFF;
     }
-    if (j) {
-        data[j] &= bit_mask[size&0x03];     
+    if (size & 0x07)
+    {
+        //temp = data
     }
 }
 
@@ -289,8 +265,8 @@ uint32_t ModbusSlave_01_Reply(uint8_t code, uint8_t *dat)
     }
     buff[1] = ModbusLocalAddr();
     buff[2] = 0x01;
-    buff[3] = dat[(size+7) >> 3];
-    buff[0] = buff[3] + 2;
+    buff[3] = (size+7) >> 3;
+    buff[0] = buff[3] + 3;
 
     if (modbus_coil[i].func)
     {
@@ -315,13 +291,13 @@ uint32_t ModbusSlave_01_Reply(uint8_t code, uint8_t *dat)
         }
         else
         {
-            start -= modbus_coil[i].start_addr;
             memcpy(&buff[4], (void *)rec_dat, buff[3]);
             free(rec_dat);
         }
     }
     else if (modbus_coil[i].coils)
     {
+        start -= modbus_coil[i].start_addr;
         CopyCoilFromBuffer(start, size, i, &buff[4]);
     }
     else
@@ -350,8 +326,8 @@ uint32_t ModbusSlave_02_Reply(uint8_t code, uint8_t *dat)
     }
     buff[1] = ModbusLocalAddr();
     buff[2] = 0x02;
-    buff[3] = dat[(size+7) >> 3];
-    buff[0] = buff[3] + 2;
+    buff[3] = (size+7) >> 3;
+    buff[0] = buff[3] + 3;
 
     if (modbus_coil[i].func)
     {
@@ -418,7 +394,7 @@ uint32_t ModbusSlave_03_Reply(uint8_t code, uint8_t *dat)
 
     if (modbus_register[i].func)
     {
-        rec_dat = (void *)modbus_register[i].func(0x03, &dat[2]);
+        rec_dat = (void *)modbus_register[i].func(&modbus_register[i], &dat[1]);
         if (rec_dat == 0)
         {
             if (modbus_register[i].buffer)
@@ -471,7 +447,7 @@ uint32_t ModbusSlave_04_Reply(uint8_t code, uint8_t *dat)
 
     if (modbus_register[i].func)
     {
-        buff = (void *)modbus_register[i].func(0x06, &dat[2]);
+        buff = (void *)modbus_register[i].func(&modbus_register[i], &dat[1]);
         if (buff == 0)
         {
         }
@@ -584,7 +560,7 @@ uint32_t ModbusSlave_06_Reply(uint8_t code, uint8_t *dat)
 
     if (modbus_register[i].func)
     {
-        buff = (void *)modbus_register[i].func(0x06, &dat[2]);
+        buff = (void *)modbus_register[i].func(&modbus_register[i], &dat[1]);
         if (buff == 0)
         {
         }
@@ -612,7 +588,7 @@ uint32_t ModbusSlave_06_Reply(uint8_t code, uint8_t *dat)
     return (uint32_t)buff;
 }
 
-//  写多个寄存器
+//  写多个线圈
 uint32_t ModbusSlave_0F_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff;
@@ -667,7 +643,7 @@ uint32_t ModbusSlave_10_Reply(uint8_t code, uint8_t *dat)
     }
     if (modbus_register[i].func)
     {
-        buff = (void *)modbus_register[i].func(code, &dat[2]);
+        buff = (void *)modbus_register[i].func(&modbus_register[i], &dat[1]);
         if (buff == 0)
         {
         }
@@ -678,7 +654,7 @@ uint32_t ModbusSlave_10_Reply(uint8_t code, uint8_t *dat)
     }
     if (modbus_register[i].buffer)
     {
-        memset(modbus_register[i].buffer, 0, modbus_register[i].length);
+        //memset(modbus_register[i].buffer, 0, modbus_register[i].length*2);
         buff = (uint8_t *)&modbus_register[i].buffer[(dat[2] << 8) + dat[3] - modbus_register[i].start_addr];
         HalfWordBigEndianCopy(buff, &dat[7], dat[5] * 2);
     }
@@ -703,7 +679,8 @@ uint32_t ModbusSlave_15_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff = 0;
     uint32_t file_record;
-    uint8_t  index = 0, record_len; 
+    uint8_t  index = 0; 
+    uint8_t  record_len;
     uint8_t  ret_len = 0, ret_index=0;
     
     if ((dat[2] <= 7) && (dat[2] >= 0xF5))
@@ -716,6 +693,7 @@ uint32_t ModbusSlave_15_Reply(uint8_t code, uint8_t *dat)
         file_record = (dat[index+1] << 8) + dat[index + 2];
         file_record = (file_record << 16) + (dat[index+3] << 8) + dat[index + 4];
         record_len = (dat[index+5] << 8) + dat[index + 6];
+        record_len = record_len;
         break;
     }
     while ((buff = malloc(ret_len+8)) == 0)
@@ -737,33 +715,143 @@ uint32_t ModbusSlave_15_Reply(uint8_t code, uint8_t *dat)
     
     return (uint32_t)buff;
 }
+typedef struct s_device_info
+{
+    uint16_t id;
+    uint16_t len;
+    uint8_t *data;
+    int8_t (*read)(uint8_t *, uint8_t *);
+} s_device_info_t;
+
+#include "version.h"
+#include "chip_communication.h"
+
+const char VendorName[] = {"Sewage Disposal System"}; 
+const char ProductCode[] = {"1234567890"};  
+const char MajorMinorRevision[] = {VERSION};  
+const char VendorUrl[] = {""};  
+const char ProductName[] = {"Sewage Disposal System"};   
+const char ModelName[] = {""};  
+const char UserApplicationName[] = {"Sewage Disposal System"};  
+
+
+int8_t ReadF1Version(uint8_t * buf, uint8_t *len)
+{
+    uint8_t buffer[32];
+    if (ChipReadFrame(1, CH2_VERSION_ADDR, 32, buffer) >= 0)
+    {
+        buffer[31] = 0;
+        *len = strlen((char *)buffer);
+        strcpy((char *)buf, (char *)buffer);
+        return 0;
+    }
+    return 3;
+}
+
+
+const s_device_info_t  sds_device_modbus_info[] = 
+{
+    {0, sizeof(VendorName), (uint8_t *)VendorName, 0},
+    {1, sizeof(ProductCode), (uint8_t *)ProductCode, 0},
+    {2, sizeof(MajorMinorRevision), (uint8_t *)MajorMinorRevision, 0},
+    {3, sizeof(VendorUrl), (uint8_t *)VendorUrl, 0},
+    {4, sizeof(ProductName), (uint8_t *)ProductName, 0},
+    {5, sizeof(ModelName), (uint8_t *)ModelName, 0},
+    {6, sizeof(UserApplicationName), (uint8_t *)UserApplicationName, 0},
+    {7, 0, 0, ReadF1Version},
+};
+#define DEVICE_INFO_NUM   (sizeof(sds_device_modbus_info)/sizeof(s_device_info_t))
+uint8_t * ReadDeviceIdentification(uint8_t *dat)
+{
+    uint8_t index;
+    uint8_t *ret_buf = 0;
+    uint8_t Device_id = dat[3];
+    ret_buf = (void *)1;
+    if ((Device_id == 1) || (Device_id == 2))
+    {
+        for (index=0; index<DEVICE_INFO_NUM; index++)
+        {
+            if (sds_device_modbus_info[index].id == dat[4])
+            {
+                break;
+            }
+        }
+        if (index == DEVICE_INFO_NUM)
+        {
+            return (void *)2;
+        }
+        while ((ret_buf = malloc(256)) == 0)
+        {
+            OSTimeDly(1);
+        }
+        ret_buf[1] = dat[0];
+        ret_buf[2] = dat[1];
+        ret_buf[3] = dat[2];
+        ret_buf[4] = dat[3];
+        ret_buf[5] = dat[3];
+        ret_buf[8] = 0;
+        for (; index<DEVICE_INFO_NUM; index++)
+        {
+            //  读取数据
+            //if ()
+            {
+            }
+        }
+        if (++index < DEVICE_INFO_NUM)
+        {
+            ret_buf[6] = 0xFF;
+            ret_buf[7] = sds_device_modbus_info[index].id;
+        }
+        else
+        {
+            ret_buf[6] = 0;
+            ret_buf[7] = 0;
+        }
+    }
+    else 
+    {
+        ret_buf = (void *)2;  //  不支持数据等级
+    }
+    return ret_buf;
+}
 
 //  读设备识别码
 uint32_t ModbusSlave_2B_Reply(uint8_t code, uint8_t *dat)
 {
-    return 0;
+    uint32_t ret = 1;
+    uint8_t subcode = dat[2];
+    switch (subcode)
+    {
+        case 0x0E:
+            //ret = (uint32_t)ReadDeviceIdentification(dat);
+            break;
+        default:
+            ret = 1;
+            break;
+    }
+    return ret;
 }
 const s_support_code_t support_code[SUPPORT_CODE_NUMBER] =
 {
-    {0x01, 0x04, 0x00, 0x00, 0x00,  ModbusSlave_01_Reply},  //  Read Coils
-    {0x02, 0x04, 0x00, 0x00, 0x00,  ModbusSlave_02_Reply},  //  Read Discrete Inputs
-    {0x03, 0x04, 0x00, 0x00, 0x00,  ModbusSlave_03_Reply},  //  Read Holding Registers
-    {0x04, 0x04, 0x00, 0x00, 0x00,  NULL},  //  Read Input Register
-    {0x05, 0x04, 0x00, 0x00, 0x00,  ModbusSlave_05_Reply},  //  Write Single Coil
-    {0x06, 0x04, 0x00, 0x00, 0x00,  ModbusSlave_06_Reply},  //  Write Single Register
-    {0x07, 0x00, 0x00, 0x00, 0x00,  NULL},  //  Read Exception status
-    {0x08, 0x02, 0x00, 0x02, 0x02,  NULL},  //  Diagnostic
-    {0x0B, 0x00, 0x00, 0x00, 0x00,  NULL},  //  Get Com event counter
-    {0x0C, 0x00, 0x00, 0x00, 0x00,  NULL},  //  Get Com Event Log
-    {0x0F, 0x05, 0x04, 0x01, 0x01,  ModbusSlave_0F_Reply},  //  Write Multiple Coils
-    {0x10, 0x05, 0x04, 0x01, 0x01,  ModbusSlave_10_Reply},  //  Write Multiple Registers
-    {0x11, 0x00, 0x00, 0x00, 0x00,  NULL},  //  Report Server ID
-    {0x14, 0x01, 0x00, 0x01, 0x01,  NULL},  //  Read File record
-    {0x15, 0x01, 0x00, 0x01, 0x01,  ModbusSlave_15_Reply},  //  Write File record
-    {0x16, 0x06, 0x00, 0x00, 0x00,  NULL},  //  Mask Write Register
-    {0x17, 0x09, 0x08, 0x01, 0x01,  NULL},  //  Read/Write Multiple Registers
-    {0x18, 0x02, 0x00, 0x00, 0x00,  NULL},  //  Read FIFO queue
-    {0x2B, 0x03, 0x00, 0x00, 0x00,  ModbusSlave_2B_Reply}   //  Read device Identification
+    {0x01, 0x04, 0x00, 0x00, 0x00,  0,  NULL,  ModbusSlave_01_Reply},  //  Read Coils
+    {0x02, 0x04, 0x00, 0x00, 0x00,  0,  NULL,  ModbusSlave_02_Reply},  //  Read Discrete Inputs
+    {0x03, 0x04, 0x00, 0x00, 0x00,  0,  NULL,  ModbusSlave_03_Reply},  //  Read Holding Registers
+    {0x04, 0x04, 0x00, 0x00, 0x00,  0,  NULL,  NULL},  //  Read Input Register
+    {0x05, 0x04, 0x00, 0x00, 0x00,  0,  NULL,  ModbusSlave_05_Reply},  //  Write Single Coil
+    {0x06, 0x04, 0x00, 0x00, 0x00,  0,  NULL,  ModbusSlave_06_Reply},  //  Write Single Register
+    {0x07, 0x00, 0x00, 0x00, 0x00,  0,  NULL,  NULL},  //  Read Exception status
+    {0x08, 0x02, 0x00, 0x02, 0x02,  0,  NULL,  NULL},  //  Diagnostic
+    {0x0B, 0x00, 0x00, 0x00, 0x00,  0,  NULL,  NULL},  //  Get Com event counter
+    {0x0C, 0x00, 0x00, 0x00, 0x00,  0,  NULL,  NULL},  //  Get Com Event Log
+    {0x0F, 0x05, 0x04, 0x01, 0x01,  0,  NULL,  ModbusSlave_0F_Reply},  //  Write Multiple Coils
+    {0x10, 0x05, 0x04, 0x01, 0x01,  0,  NULL,  ModbusSlave_10_Reply},  //  Write Multiple Registers
+    {0x11, 0x00, 0x00, 0x00, 0x00,  0,  NULL,  NULL},  //  Report Server ID
+    {0x14, 0x01, 0x00, 0x01, 0x01,  0,  NULL,  NULL},  //  Read File record
+    {0x15, 0x01, 0x00, 0x01, 0x01,  0,  NULL,  ModbusSlave_15_Reply},  //  Write File record
+    {0x16, 0x06, 0x00, 0x00, 0x00,  0,  NULL,  NULL},  //  Mask Write Register
+    {0x17, 0x09, 0x08, 0x01, 0x01,  0,  NULL,  NULL},  //  Read/Write Multiple Registers
+    {0x18, 0x02, 0x00, 0x00, 0x00,  0,  NULL,  NULL},  //  Read FIFO queue
+    {0x2B, 0x03, 0x00, 0x00, 0x00,  0,  NULL,  ModbusSlave_2B_Reply}   //  Read device Identification
 };
 
 
@@ -776,7 +864,7 @@ static int8_t MatchModbusCode(uint8_t code)
 
     if (support_code[0].code == code)  // 确保第0个不是要找的code
     {
-        if (support_code[0].code_func == NULL)
+        if (support_code[0].response_func == NULL)
         {
             return -1;//不支持些功能码
         }
@@ -799,7 +887,7 @@ static int8_t MatchModbusCode(uint8_t code)
         }
         else
         {
-            if (support_code[i].code_func == NULL)
+            if (support_code[i].response_func == NULL)
             {
                 return -1;//不支持些功能码
             }
@@ -926,7 +1014,7 @@ void ModbusSlaveReceive(uint8_t *dat)
 	        {
 	            //modbus_state = MODBUS_ST_ERRCODE;
 	        }
-	        else if (support_code[code_index].length_align == 0)
+	        else if (support_code[code_index].data_align == 0)
 	        {
 	            modbus_state = MODBUS_ST_CRC_H;
 	        }
@@ -954,7 +1042,7 @@ void ModbusSlaveReceive(uint8_t *dat)
 	                data_length += modbus_rec_buffer[support_code[code_index].length_index + 4] << 8;
 	                data_length += modbus_rec_buffer[support_code[code_index].length_index + 5];
 	            }
-	            data_length *= support_code[code_index].length_align;
+	            data_length *= support_code[code_index].data_align;
 	            if ((data_length + support_code[code_index].length + 4) >= 256)
 	            {
 	                //  所有数据总长度必须小于256byte
@@ -1019,7 +1107,7 @@ void TaskModbus(void)
         code_index = MatchModbusCode(rec_dat[3]);
 		reg_number = REGISTER_NUM;
         coils_num = COILS_NUM;
-        res_data = (void *)support_code[code_index].code_func(code_index, &rec_dat[2]);
+        res_data = (void *)support_code[code_index].response_func(code_index, &rec_dat[2]);
 		if (rec_dat[2] == 0)
         {
             //  如果是广播信息，不回复

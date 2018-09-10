@@ -66,7 +66,9 @@ void SysTick_Handler(void)
 //		GPIO_ResetBits(GPIOC, GPIO_PIN_0);
 //	}
     extern uint8_t modbus_datatimeout;
+    extern uint32_t modbus_master_timer;
     if (modbus_datatimeout)   modbus_datatimeout--;
+    if (modbus_master_timer)  modbus_master_timer--;
     if (rtc_ms < 999)    rtc_ms++;
  	if(OSRunning==1)					//OS开始跑了,才执行正常的调度处理
 	{
