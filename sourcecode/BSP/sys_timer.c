@@ -75,7 +75,7 @@ void SysTick_Handler(void)
 		OSIntEnter();						//进入中断
 		OSTimeTick();       				//调用ucos的时钟服务程序               
 		OSIntExit();       	 				//触发任务切换软中断
-		OSFlagPost(bsp_os_flag, OS_FLAG_TIMER_5MS, OS_FLAG_SET, &error);
+		OSFlagPost(bsp_os_flag, OS_FLAG_TIMER_1MS, OS_FLAG_SET, &error);
 	}
 }
 

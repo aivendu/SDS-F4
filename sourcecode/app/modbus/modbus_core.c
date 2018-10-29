@@ -1,4 +1,4 @@
-﻿#include  "modbus_core.h"
+#include  "modbus_core.h"
 #include  "stdint.h"
 
 
@@ -42,7 +42,7 @@ void CopyCoilFromBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *da
         data[j] = temp & 0xFF;
     }
     if (j) {
-        data[(j-1)] &= bit_mask[size&0x03];    
+        data[(j-1)] &= bit_mask[size&0x07];    
     }
 }
 void CopyCoilToBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data)
@@ -64,7 +64,7 @@ void CopyCoilToBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data
         data[j] = temp & 0xFF;
     }
     if (j) {
-        data[j] &= bit_mask[size&0x03];     
+        data[j] &= bit_mask[size&0x07];     
     }
 }*/
 

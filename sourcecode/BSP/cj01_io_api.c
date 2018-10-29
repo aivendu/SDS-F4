@@ -1,4 +1,4 @@
-#include "cj01_io_api.h"
+﻿#include "cj01_io_api.h"
 #include "bsp_includes.h"
 #include "spi.h"
 
@@ -35,7 +35,7 @@ const s_IoOpreations_t io_opreations[PORT_END] =
     { WDT,          READ_ONLY,    	&ioGroup[gWDT],             IOFunc(Wdt_)		},
     { PS2,          READ_ONLY,    	&ioGroup[gPS2],             IOFunc(Ps2key_)	    },
     { INT_FLASH,    READ_ONLY,    	&ioGroup[gINT_FLASH],       IOFunc(Flash_)	    },
-
+    { MINI_PCIE,    READ_WRITE,     &ioGroup[gCOM3],            IOFunc(MiniPcie)    },
 };
 
 
@@ -458,11 +458,12 @@ void TaskBsp(void *pdata)
         OSFlagPend(bsp_os_flag, 0xFFFF, OS_FLAG_CONSUME + OS_FLAG_WAIT_SET_ANY, 0, &err);
 
 
-        if (bsp_flag.bsp_os_flag.timer_5ms)
+        if (bsp_flag.bsp_os_flag.timer_1ms)
         {
             GPIODebounce();
             TaskModbus();
             CUR_DataToVoltage();
+            CheckWWANState();
         }
     }
 }

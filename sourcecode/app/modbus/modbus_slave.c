@@ -1,4 +1,4 @@
-﻿
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -111,12 +111,12 @@ static int8_t MatchModbusRegister(uint8_t func_code, uint16_t addr, uint16_t len
                 }
                 else
                 {
-                    //return -2;
+                    return -2;
                 }
             }
             else
             {
-                //return -1;
+                return -1;
             }
         }
     }
@@ -214,14 +214,19 @@ void CopyCoilFromBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *da
     uint8_t offset = start & 0x07;
     uint16_t start_byte = start>>3;  //  16bit 对齐
     uint16_t temp;
+    if (size == 0)
+    {
+        *data = 0;
+        return ;
+    }
     for (j=0; j<((size+7)>>3); j++)
     {
         temp = ((modbus_coil[reg].coils[start_byte+j] >> offset) & bit_mask[8-offset])
                    |(((modbus_coil[reg].coils[start_byte+j+1]) & bit_mask[offset]) << (8-offset));
         data[j] = temp & 0xFF;
     }
-    if (j) {
-        data[(j-1)] &= bit_mask[size&0x03];    
+    if (size & 0x07) {
+        data[(j-1)] &= bit_mask[size&0x07];    
     }
 }
 void CopyCoilToBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data)

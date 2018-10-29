@@ -1,12 +1,12 @@
-﻿#ifndef _MODBUS_REGISTER_H
+#ifndef _MODBUS_REGISTER_H
 #define _MODBUS_REGISTER_H
 
 //#include "stm32f10x.h"
 #include "stdint.h"
 #include "modbus_slave.h"
 
-#define REGISTER_NUM      7//MODBUS功能命令条数    
-#define COILS_NUM         3
+#define REGISTER_NUM      8//MODBUS功能命令条数    
+#define COILS_NUM         4
 
 //  线圈定义结构
 typedef union u_coil_rw
@@ -19,27 +19,36 @@ typedef union u_coil_rw
         uint16_t  save   :1;
         uint16_t  calib  :1;
         uint16_t  manual :1;
-        uint16_t  unused0:10; 
+        uint16_t  init   :1;
+        uint16_t  reboot :1;
+        uint16_t  unused0:8; 
         uint16_t  unused00:16; 
         
-        uint16_t  alarm_sw_pump_lift:1;  //  提升泵
-        uint16_t  alarm_sw_pump_subm:1;  //  潜污泵
-        uint16_t  alarm_sw_pump_rflx:1;  //  回流泵
-        uint16_t  alarm_sw_pump_watr:1;  //  出水泵
-        uint16_t  alarm_sw_pump_dosg:1;  //  加药泵
-        uint16_t  alarm_sw_pump_aera:1;  //  曝气泵
-        uint16_t  alarm_sw_pump_wash:1;  //  洗膜泵
-        uint16_t  unused2:9;
+        uint16_t  alarm_pump_1:1;  
+        uint16_t  alarm_pump_2:1;  
+        uint16_t  alarm_pump_3:1;  
+        uint16_t  alarm_pump_4:1;  
+        uint16_t  alarm_pump_5:1;  
+        uint16_t  alarm_pump_6:1;  
+        uint16_t  alarm_pump_7:1;  
+        uint16_t  alarm_pump_8:1;  
+        uint16_t  alarm_pump_9:1;  
+        uint16_t  alarm_pump_10:1; 
+        uint16_t  alarm_pump_11:1; 
+        uint16_t  alarm_pump_12:1; 
+        uint16_t  alarm_pump_13:1; 
+        uint16_t  alarm_pump_14:1; 
+        uint16_t  unused2:2;
         
-        uint16_t  install_T:1;
-        uint16_t  install_PH:1;
-        uint16_t  install_COD:1;
-        uint16_t  install_ORP:1;
-        uint16_t  install_NH3:1;
+        uint16_t  install_t:1;
+        uint16_t  install_ph:1;
+        uint16_t  install_cod:1;
+        uint16_t  install_orp:1;
+        uint16_t  install_nh3:1;
         uint16_t  install_DO:1;
-        uint16_t  install_SS:1;
-        uint16_t  install_P:1;
-        uint16_t  install_FR:1;
+        uint16_t  install_ss:1;
+        uint16_t  install_p:1;
+        uint16_t  install_flux:1;
         uint16_t  unused3:7;
         
     } ctrl;
@@ -47,6 +56,15 @@ typedef union u_coil_rw
 }  u_coil_group_1_t;
 
 
+
+
+typedef struct s_reg_group_1
+{
+    uint16_t technology_type;
+    uint16_t server_port;
+    uint32_t server_ip;
+    uint16_t pump_open_time_min;  //  泵的最小开启时间, 单位S
+} s_reg_group_1_t;
 
 enum e_pump_st
 {
@@ -81,7 +99,7 @@ typedef struct s_A2O_technology_argv
     uint16_t pump_aera3_port;
     uint16_t pump_subm1_port;
     uint16_t pump_subm2_port;
-    uint16_t pump_subm3_port;
+    uint16_t pump_standby_port;
     uint16_t pump_rflx1_port;
     uint16_t pump_rflx2_port;
     uint16_t pump_watr1_port;
@@ -253,7 +271,8 @@ typedef struct s_sensors
     float ss_value;
     float p_value;
     float flux_value;
-    float unused1[23]; //  占位
+    float flux_total;
+    float unused1[22]; //  占位
      
     
     s_sensor_ctrl_t t;
@@ -288,7 +307,7 @@ extern uint16_t senser_ad[4];
 extern uint16_t relay_state[14];
 extern u_pump_st_t  pump_state;
 
-
+#define GetLiquidLevel(channel)    (yw_input & (1<<((channel>0?(channel-1):0))))
 
 #endif
 

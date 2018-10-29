@@ -1,4 +1,4 @@
-#ifndef _SPI_UART_H_
+﻿#ifndef _SPI_UART_H_
 #define _SPI_UART_H_
 #include "stdint.h"
 
@@ -26,5 +26,9 @@ extern int32_t SpiUart2Read(int32_t port, void *buf, uint32_t buf_len);
 extern int32_t SpiUart3Write(int32_t port, void *buf, uint32_t buf_len);
 extern int32_t SpiUart3Read(int32_t port, void *buf, uint32_t buf_len);
 
+
+extern void SpiUart1Flush(void);
+extern void SpiUart2Flush(void);
+extern void SpiUart3Flush(void);
 
 #endif

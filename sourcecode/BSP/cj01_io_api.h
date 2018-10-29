@@ -63,6 +63,7 @@ typedef enum
     WDT,
     PS2,
     INT_FLASH,
+    MINI_PCIE,
     PORT_END
 } e_IO_PORT_t;
 

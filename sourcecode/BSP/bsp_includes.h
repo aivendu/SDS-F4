@@ -25,5 +25,6 @@
 #include "sys_timer.h"
 #include "dma.h"
 #include "adc.h"
+#include "mini_pcie.h"
 
 #endif

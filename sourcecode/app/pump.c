@@ -1,4 +1,4 @@
-﻿#include "pump.h"
+#include "pump.h"
 #include "stdlib.h"
 #include "string.h"
 #include "chip_communication.h"
@@ -26,17 +26,20 @@ s_pump_ctl_t  pump[16];
 
 int8_t SinglePumpCtrl(uint8_t channel, uint8_t open)
 {
-    uint8_t  relay_ctl_data[MAX_PUMP_CHANNEL];
+//    uint8_t  relay_ctl_data[MAX_PUMP_CHANNEL];
     if ((sys_config_ram.coil_g1.ctrl.manual) || 
         (channel == 0) || (channel > MAX_PUMP_CHANNEL))
     {
         return -1;
     }
-    memset(relay_ctl_data, 0, sizeof(relay_ctl_data));
-    if (open)    open = 1;    //  开启
-    else         open = 2;    //  关闭
-    relay_ctl_data[channel-1] = open;
-    return ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data);
+    channel -= 1;
+    if (sys_config_ram.coil_g1.ctrl.manual == 0)  //  是否进入手动控制
+    {
+        if (open)    relay_out |= (1 << channel);    //  开启
+        else         relay_out &= ~(1 << channel);   //  关闭
+    }
+    //return ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data);
+    return 0;
 }
 
 //  可以同时控制多个通道

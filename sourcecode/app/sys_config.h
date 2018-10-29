@@ -1,20 +1,39 @@
-﻿#ifndef _SYS_CONFIG_H_
+#ifndef _SYS_CONFIG_H_
 #define _SYS_CONFIG_H_
 
 #include "stdint.h"
 #include "modbus_register.h"
+
+enum
+{
+    CM_GPRS,
+    CM_4G,
+};
+
 
 typedef struct 
 {
     uint32_t device_type;
     uint16_t version;
     uint16_t crc;
-    uint16_t tech_type;
+    //uint16_t tech_type;
+    s_reg_group_1_t reg_group_1;
     u_A2O_technology_argv_t tech_argv;
     u_MBR_technology_argv_t mbr_argv;
     u_SBR_technology_argv_t sbr_argv;
     u_sensor_reg_t  sensor;
     u_coil_group_1_t  coil_g1;
+    char username[64];
+    char password[64];
+    uint8_t com_mode;
+    char gprs_apn[64];
+    char gprs_apn_username[64];
+    char gprs_apn_passwd[64];
+    uint32_t local_ip;
+    uint32_t local_submask;
+    uint32_t local_gateway;
+    uint32_t local_dns1;
+    uint32_t local_dns2;
 } s_sys_config_t;
 
 //  端口定义: 0:  未使用                                				
@@ -42,8 +61,9 @@ extern int8_t CheckSenorPort (e_sensor_port_t type, uint8_t port);
 #define SensorPortCOM2(a)      (SENSOR_PORT_COM2+(a)-1)
 
 extern s_sys_config_t  sys_config_ram;
+extern const s_sys_config_t sys_config_rom;
 
-#define process_technology_type     sys_config_ram.tech_type
+#define process_technology_type     sys_config_ram.reg_group_1.technology_type
 #define a2o_technology_argv         sys_config_ram.tech_argv
 #define mbr_technology_argv         sys_config_ram.mbr_argv
 #define sbr_technology_argv         sys_config_ram.sbr_argv

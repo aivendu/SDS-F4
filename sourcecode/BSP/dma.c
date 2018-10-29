@@ -1,4 +1,4 @@
-﻿/*****************************************************************
+/*****************************************************************
 ** Copyright (c) 2017, 	 XXXXXXXXXXXX有限公司 
 ** All rights reserved.
 ** 文件名称： dma.c
@@ -163,6 +163,7 @@ void DMA2_Stream0_IRQHandler(void)
 ******************************************************************/
 #define        ADC_FILT1           1//滤波系数
 #define        ADC_NUM             10//滤波系数
+#define        SAMPLING_RESISTANCE 150
 
 void CUR_DataToVoltage(void)
 {
@@ -194,7 +195,7 @@ void CUR_DataToVoltage(void)
     adc_temp[7] = dis_adc_data[7];
     for(j = 0; j < 8; j++)
     {
-        cur_filt_voltage_value[j] = ADC_DataToVoltage(adc_temp[j]);
+        cur_filt_voltage_value[j] = ADC_DataToVoltage(adc_temp[j]) / SAMPLING_RESISTANCE;
     }
 }
 /*********************************************************************************************************

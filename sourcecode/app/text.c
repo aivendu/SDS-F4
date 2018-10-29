@@ -13,7 +13,9 @@
 #include "spi_uart.h"
 #include "sys_task_config.h"
 #include "modbus_master.h"
-
+#include "app_sensor.h"
+#include "sys_timer.h"
+//#include "gprs.h"
 
 
 
@@ -83,85 +85,6 @@ void UpdataYWInput(void)
 }
 
 
-extern float cur_filt_voltage_value[8];
-//  传感器数据映射
-//  端口定义: 0:  未使用
-//            1-0x3F: MODBUS#1-#63  MODBUS接口的地址1到地址63
-//            0x40-0x5F: ADC#1-#32   ADC1-ADC32口
-//            0x60:   COM1: 接COM1口
-//            0x70:   COM2: 接COM2口
-//            0x80-0x8F:   RS485-1#1-#16: RS485-1的其他协议地址1到地址16
-//            0x90-0x9F:   RS485-2#1-#16: RS485-2的其他协议地址1到地址16
-
-int8_t SensorMapping(uint8_t channel, float *r_value)
-{
-    uint16_t ret_buffer[10];
-//    float value;
-    int8_t ret;
-    if (channel == 0)
-    {
-        return -1;
-    }
-    if (channel <= 0x3F)
-    {
-        while ((ret = ModbusReadR(channel, 0x02, 0x09, ret_buffer)) == -1)
-        {
-            OSTimeDly(OS_TICKS_PER_SEC/100);
-        }
-        if (ret == 0)
-        {
-            memcpy(r_value, ret_buffer, 4);
-            return 1;
-        }
-        return -1;
-    }
-    else if ((0x40 < channel) && (channel <= 0x5F))
-    {
-        if (channel < 0x48)
-        {
-            *r_value = cur_filt_voltage_value[channel-0x40];
-            return 1;
-        }
-    }
-    else if (channel == 0x60)
-    {
-        
-    }
-    else if (channel == 0x70)
-    {
-        
-    }
-    else if ((0x80 <= channel) && (channel <= 0x8F))
-    {
-        
-    }
-    else if ((0x80 <= channel) && (channel <= 0x8F))
-    {
-        
-    }
-    return -1;
-}
-
-#define UpdateSensor(name, value)  \
-    if (SensorMapping(sys_config_ram.sensor.ctrl.##name##.port, &##value##) > 0)\
-    {\
-        sys_config_ram.sensor.ctrl.##name##_value = ##value##;\
-    }
-
-void UpdateSensors(void)
-{
-    float value;
-    UpdateSensor(t, value);
-    UpdateSensor(ph, value);
-    UpdateSensor(cod, value);
-    UpdateSensor(orp, value);
-    UpdateSensor(nh3, value);
-    UpdateSensor(DO, value);
-    UpdateSensor(ss, value);
-    UpdateSensor(p, value);
-    UpdateSensor(flux, value);
-}
-
 int8_t channel_modbus_test;
 uint8_t  open[14];
 void TaskInit(void *pdata)
@@ -173,6 +96,7 @@ void TaskInit(void *pdata)
     //IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
     IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
     IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
+    PumpCtrl(0xFFFF, 0);
     while (1)
     {
         //Printf_D("", "-------- system start ----------\r\n");
@@ -195,14 +119,13 @@ void TaskInit(void *pdata)
         //    SpiUart2Write(0, open, len);
         //}
         
-        if (sys_config_ram.coil_g1.ctrl.manual)  //  是否进入手动控制
-        {
-            UpdateRelayCtl();
-        }
+        UpdateRelayCtl();
         UpdataYWInput();
-        if (process_technology_type == 0)
+        switch (process_technology_type)
         {
-            FlowA2O();
+            case 1:
+                FlowA2O();
+                break;
         }
         OSTimeDly(10);
         
@@ -216,20 +139,34 @@ void TaskInit(void *pdata)
             coil_group_1.ctrl.calib = 0;
             SaveSensorCfg();
         }
-        UpdateSensors();
-        //{
-        //    float value;
-        //    SensorMapping(channel_modbus_test, &value);
-        //}
+        if (coil_group_1.ctrl.init)
+        {
+            coil_group_1.ctrl.init = 0;
+            sys_config_ram = sys_config_rom;
+            SaveSysConfig(sys_config_ram);
+        }
+        if (coil_group_1.ctrl.reboot)
+        {
+            sys_config_ram.reg_group_1.technology_type = 0;
+            SaveSensorCfg();
+            OSTimeDly(OS_TICKS_PER_SEC/2);
+            Reset();
+        }
     }
 }
 
 #include "sys_task_config.h"
 #define TaskInitSize        1024
 OS_STK TaskInitStk[TaskInitSize]; 
+#define TaskSensorSize        1024
+OS_STK TaskSensorStk[TaskSensorSize]; 
+#define TaskSimSize        1024
+OS_STK TaskSimStk[TaskSimSize]; 
 void AppInit(void)
 {
     memset(TaskInitStk, 0x55, sizeof(TaskInitStk));
     OSTaskCreate(TaskInit, (void *)0, &TaskInitStk[TaskInitSize - 1], TaskInitPrio);
+    OSTaskCreate(TaskSensor, (void *)0, &TaskSensorStk[TaskSensorSize - 1], TaskSensorPrio);
+    //OSTaskCreate(TaskSim, (void *)0, &TaskSimStk[TaskSimSize - 1], TaskSimPrio);
 }
 

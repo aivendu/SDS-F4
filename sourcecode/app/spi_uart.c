@@ -1,4 +1,4 @@
-#include "spi_uart.h"
+﻿#include "spi_uart.h"
 #include "queue.h"
 #include "ucos_ii.h"
 #include "chip_communication.h"
@@ -244,6 +244,11 @@ int32_t SpiUart1Read(int32_t port, void *buf, uint32_t buf_len)
     }
     return i;
 }
+void SpiUart1Flush(void)
+{
+    QueueFlush(spi_uart_1_send_buffer);
+    QueueFlush(spi_uart_1_recv_buffer);
+}
 
 
 int32_t SpiUart2Write(int32_t port, void *buf, uint32_t buf_len)
@@ -275,6 +280,12 @@ int32_t SpiUart2Read(int32_t port, void *buf, uint32_t buf_len)
     return i;
 }
 
+void SpiUart2Flush(void)
+{
+    QueueFlush(spi_uart_2_send_buffer);
+    QueueFlush(spi_uart_2_recv_buffer);
+}
+
 
 int32_t SpiUart3Write(int32_t port, void *buf, uint32_t buf_len)
 {
@@ -304,6 +315,15 @@ int32_t SpiUart3Read(int32_t port, void *buf, uint32_t buf_len)
     }
     return i;
 }
+
+
+void SpiUart3Flush(void)
+{
+    QueueFlush(spi_uart_3_send_buffer);
+    QueueFlush(spi_uart_3_recv_buffer);
+}
+
+
 #define TaskSpiUartSize     128
 OS_STK TaskSpiUartStk[TaskSpiUartSize];
 void InitSpiUart(uint32_t prio)

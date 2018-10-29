@@ -1,19 +1,20 @@
-﻿
+
 #include "sys_config.h"
 #define  DEVICE_TYPE     0x58465344  //"XFSD"
 s_sys_config_t  sys_config_ram;
-
+#define  IP_ADDR_GET(a,b,c,d)   ((((a)&0xFF)<<24) + (((b)&0xFF)<<16) + \
+                                 (((c)&0xFF)<<8) + (((d)&0xFF)))
 #define DEFAULT_SYSTEM_CONFIG  \
 {\
 /*设备类型*/    DEVICE_TYPE,\
 /*配置版本*/    1,\
 /*数据校验*/    0,\
-/*工艺类型*/    0,\
-/*端口设置*/    {3,4,5,6,7,8,9,10,11,12,13,14,1,2,\
+/*工艺类型/ip*/ {0,8992,IP_ADDR_GET(61,147,198,178),60},\
+/*A2O端口设置*/ {3,4,5,6,7,8,9,10,11,12,13,14,1,2,\
 /*未使用*/       {0},\
-                  0,0,0,\
+/*曝气泵*/       0xFFF,0xFFF,0xFFF,\
 /*未使用*/       {0},\
-                 30,30,1440,\
+/*潜污泵*/       30,30,1440,\
 /*未使用*/       {0},\
                  30,30,1440,\
 /*未使用*/     {0},\
@@ -24,10 +25,10 @@ s_sys_config_t  sys_config_ram;
 /*提升泵切换时间*/1440,\
 /*未使用*/     {0},\
                },\
-               {0},\
-               {0},\
-               {0,0,0,0,0,0,0,0,0,\
-               {0},\
+/*MBR端口设置*/ {0},\
+/*SBR端口设置*/ {0},\
+/*sensor值*/   {0,0,0,0,0,0,0,0,0,0,\
+/*未使用*/     {0},\
                /*最大   最小    精度  端口  标定*/\
  /*t*/         {200,   -30,    1,    SensorPortADC(1)   , 0, 0, 0, 0, 0},\
  /*ph*/        {200,   -30,    1,    SensorPortADC(2)   , 0, 0, 0, 0, 0},\
@@ -37,21 +38,19 @@ s_sys_config_t  sys_config_ram;
  /*DO*/        {200,   -30,    1,    SensorPortADC(4)   , 0, 0, 0, 0, 0},\
  /*ss*/        {200,   -30,    1,    SensorPortMODBUS(1), 0, 0, 0, 0, 0},\
  /*p*/         {200,   -30,    1,    SensorPortMODBUS(2), 0, 0, 0, 0, 0},\
- /*flux*/      {200,   -30,    1,    SensorPortMODBUS(5), 0, 0, 0, 0, 0},\
+ /*flux*/      {200,   -30,    1,    SensorPortCOM2(1), 0, 0, 0, 0, 0},\
                },\
 /*net  */    {0,\
 /*sd   */    0,\
 /*usb  */    0,\
 /*save */    0,\
 /*calib*/    0,\
-/*     */    0,\
-/*报警lift*/       1,\
-/*    subm*/      1,\
-/*    rflx*/      1,\
-/*    watr*/      1,\
-/*    dosg*/      1,\
-/*    aera*/      1,\
-/*    wash*/      1,\
+/*manual*/   0,\
+/*init*/     0,\
+/*reboot*/   0,\
+/*unused0*/  0,\
+/*unused00*/ 0,\
+/*报警lift*/   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
 /*    */      0,\
 /*传感器安装*/\
 /*t*/             1,\
@@ -65,6 +64,8 @@ s_sys_config_t  sys_config_ram;
 /*flux*/          1,\
 /**/               0,\
 /**/               },\
+/*用户名*/"001",\
+/*密码*/  "123456",\
 }
 
 const s_sys_config_t sys_config_rom = DEFAULT_SYSTEM_CONFIG;
@@ -167,7 +168,7 @@ static FRESULT InitFileSystemT(void)
         cfgDebug("fs_init","read \"%s\" - %u\r\n", SYS_CFG_F_PATH, fres);
     }
     f_close(&cfg_f);
-    
+    //sys_config_ram = sys_config_rom;
     return FR_OK;
     
 }

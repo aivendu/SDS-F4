@@ -132,7 +132,7 @@ void GPIOInit(void)
   GPIO_Init(GPIOF, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.GPIO_Pin = F1_PC12_Pin | SIM_PWRKEY_Pin;
+  GPIO_InitStruct.GPIO_Pin = F1_PC12_Pin;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUT;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;

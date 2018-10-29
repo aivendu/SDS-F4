@@ -1,4 +1,4 @@
-﻿#ifndef _SYS_TASK_CONFIG_H
+#ifndef _SYS_TASK_CONFIG_H
 #define _SYS_TASK_CONFIG_H
 
 
@@ -9,8 +9,10 @@ typedef enum
     TaskBspPrio,  // 4
     TaskTCPIPThreadPrio,//定义内核任务的优先级
     TaskDHCPPrio,       //定义DHCP任务的优先级
-    TaskInitPrio,
     TaskSpiUartPrio,
+    TaskInitPrio,
+    TaskSimPrio,
+    TaskSensorPrio,
     PRIOEND
 } _task_prio_e;
 
