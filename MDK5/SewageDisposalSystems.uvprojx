@@ -533,9 +533,14 @@
               <FilePath>..\sourcecode\app\modbus\modbus_core.c</FilePath>
             </File>
             <File>
-              <FileName>mini_pcie.c</FileName>
+              <FileName>gprs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sourcecode\BSP\mini_pcie.c</FilePath>
+              <FilePath>..\sourcecode\module\mod_simcomm\gprs.c</FilePath>
+            </File>
+            <File>
+              <FileName>gprs_socket.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\module\mod_simcomm\gprs_socket.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -626,6 +631,11 @@
               <FileName>dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sourcecode\BSP\dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>mini_pcie.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\BSP\mini_pcie.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1966,9 +1976,14 @@
               <FilePath>..\sourcecode\app\modbus\modbus_core.c</FilePath>
             </File>
             <File>
-              <FileName>mini_pcie.c</FileName>
+              <FileName>gprs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sourcecode\BSP\mini_pcie.c</FilePath>
+              <FilePath>..\sourcecode\module\mod_simcomm\gprs.c</FilePath>
+            </File>
+            <File>
+              <FileName>gprs_socket.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\module\mod_simcomm\gprs_socket.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2059,6 +2074,11 @@
               <FileName>dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sourcecode\BSP\dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>mini_pcie.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\BSP\mini_pcie.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3399,9 +3419,14 @@
               <FilePath>..\sourcecode\app\modbus\modbus_core.c</FilePath>
             </File>
             <File>
-              <FileName>mini_pcie.c</FileName>
+              <FileName>gprs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sourcecode\BSP\mini_pcie.c</FilePath>
+              <FilePath>..\sourcecode\module\mod_simcomm\gprs.c</FilePath>
+            </File>
+            <File>
+              <FileName>gprs_socket.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\module\mod_simcomm\gprs_socket.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3492,6 +3517,11 @@
               <FileName>dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sourcecode\BSP\dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>mini_pcie.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\BSP\mini_pcie.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -4832,9 +4862,14 @@
               <FilePath>..\sourcecode\app\modbus\modbus_core.c</FilePath>
             </File>
             <File>
-              <FileName>mini_pcie.c</FileName>
+              <FileName>gprs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sourcecode\BSP\mini_pcie.c</FilePath>
+              <FilePath>..\sourcecode\module\mod_simcomm\gprs.c</FilePath>
+            </File>
+            <File>
+              <FileName>gprs_socket.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\module\mod_simcomm\gprs_socket.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -4925,6 +4960,11 @@
               <FileName>dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sourcecode\BSP\dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>mini_pcie.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\BSP\mini_pcie.c</FilePath>
             </File>
           </Files>
         </Group>

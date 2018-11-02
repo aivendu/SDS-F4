@@ -1,4 +1,4 @@
-﻿#include "string.h"
+#include "string.h"
 #include "stdint.h"
 #include "stdlib.h"
 //#include "sim_at.h"
@@ -1591,7 +1591,7 @@ void SimHandler(void)
 }
 
 
-const s_UartStr_t sim_uart = {38400, 8,0,1};
+const s_UartStr_t sim_uart = {115200, 8,0,1};
 void TaskSim(void *pdata)
 {
     pdata = pdata;

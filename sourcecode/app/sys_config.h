@@ -26,6 +26,7 @@ typedef struct
     char username[64];
     char password[64];
     uint8_t com_mode;
+    uint8_t dhcp;
     char gprs_apn[64];
     char gprs_apn_username[64];
     char gprs_apn_passwd[64];

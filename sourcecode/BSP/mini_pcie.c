@@ -80,7 +80,7 @@ uint32_t sim_wwan_high_time, sim_wwan_low_time;
 void CheckWWANState(void)
 {
     uint32_t time_interval;
-    if (GetSIM_WWAN())
+    if (GetSIM_WWAN() == 0)
     {
         if (sim_wwan_high_time == 0)  sim_wwan_high_time = clock();
         time_interval = ComputeTickTime(sim_wwan_high_time);

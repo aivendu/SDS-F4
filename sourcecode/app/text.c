@@ -15,7 +15,7 @@
 #include "modbus_master.h"
 #include "app_sensor.h"
 #include "sys_timer.h"
-//#include "gprs.h"
+#include "gprs.h"
 
 
 
@@ -89,16 +89,19 @@ int8_t channel_modbus_test;
 uint8_t  open[14];
 void TaskInit(void *pdata)
 {
-    s_UartStr_t com_arg = {9600, 8,0,1};
+    //s_UartStr_t com_arg = {9600, 8,0,1};
     OSTimeDly(1000);
     InitFileSystem();
     InitSpiUart(TaskSpiUartPrio);
     //IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
-    IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
-    IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
+    //IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
+    //IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
     PumpCtrl(0xFFFF, 0);
     while (1)
     {
+        //uint8_t temp = 0x55;
+        //IoWrite(COM3, "AT\r\n",4);
+        //OSTimeDly(1000);
         //Printf_D("", "-------- system start ----------\r\n");
         //OSTimeDly(5000);
         //IoWrite(COM1, "-------- COM1 ----------\r\n", 27);
@@ -118,6 +121,7 @@ void TaskInit(void *pdata)
         //    uint8_t len = SpiUart2Read(0, open, 14);
         //    SpiUart2Write(0, open, len);
         //}
+        //continue;
         
         UpdateRelayCtl();
         UpdataYWInput();
@@ -167,6 +171,6 @@ void AppInit(void)
     memset(TaskInitStk, 0x55, sizeof(TaskInitStk));
     OSTaskCreate(TaskInit, (void *)0, &TaskInitStk[TaskInitSize - 1], TaskInitPrio);
     OSTaskCreate(TaskSensor, (void *)0, &TaskSensorStk[TaskSensorSize - 1], TaskSensorPrio);
-    //OSTaskCreate(TaskSim, (void *)0, &TaskSimStk[TaskSimSize - 1], TaskSimPrio);
+    OSTaskCreate(TaskSim, (void *)0, &TaskSimStk[TaskSimSize - 1], TaskSimPrio);
 }
 
