@@ -89,13 +89,13 @@ int8_t channel_modbus_test;
 uint8_t  open[14];
 void TaskInit(void *pdata)
 {
-    //s_UartStr_t com_arg = {9600, 8,0,1};
+    s_UartStr_t com_arg = {9600, 8,0,1};
     OSTimeDly(1000);
     InitFileSystem();
     InitSpiUart(TaskSpiUartPrio);
     //IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
     //IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
-    //IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
+    IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
     PumpCtrl(0xFFFF, 0);
     while (1)
     {
