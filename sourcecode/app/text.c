@@ -97,6 +97,7 @@ void TaskInit(void *pdata)
     //IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
     IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
     PumpCtrl(0xFFFF, 0);
+    IoOpen(WDT, (void *)10000, 0);
     while (1)
     {
         //uint8_t temp = 0x55;
@@ -156,6 +157,7 @@ void TaskInit(void *pdata)
             OSTimeDly(OS_TICKS_PER_SEC/2);
             Reset();
         }
+        IoWrite(WDT, 0, 0);
     }
 }
 

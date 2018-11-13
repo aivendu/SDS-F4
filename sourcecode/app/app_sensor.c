@@ -102,19 +102,21 @@ void TaskSensor(void *pdata)
     float value;
     while (1)
     {
-        UpdateSensor(t, value);
-        UpdateSensor(ph, value);
-        UpdateSensor(cod, value);
-        UpdateSensor(orp, value);
-        UpdateSensor(nh3, value);
-        UpdateSensor(DO, value);
-        UpdateSensor(ss, value);
-        UpdateSensor(p, value);
+        //UpdateSensor(t, value);
+        //UpdateSensor(ph, value);
+        //UpdateSensor(cod, value);
+        //UpdateSensor(orp, value);
+        //UpdateSensor(nh3, value);
+        //UpdateSensor(DO, value);
+        //UpdateSensor(ss, value);
+        //UpdateSensor(p, value);
+        
         if (sys_config_ram.sensor.ctrl.flux.port == 0x70)
         {
             if (sys_config_ram.coil_g1.ctrl.install_flux)
             {
                 MBmagCPReadFlux(&sys_config_ram.sensor.ctrl.flux_value);
+                OSTimeDly(OS_TICKS_PER_SEC/10);
                 MBmagCPReadTotalFlux(&sys_config_ram.sensor.ctrl.flux_total);
             }
             else

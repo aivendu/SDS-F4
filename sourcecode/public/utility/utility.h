@@ -1,4 +1,4 @@
-﻿#ifndef _UTILITY_H
+#ifndef _UTILITY_H
 #define _UTILITY_H
 
 #include "stdint.h"
@@ -84,7 +84,7 @@ extern int8_t CharToIP(const char *ip, s_ipv4_t *const ip_return);
 ************************************************************************/
 extern int8_t strtoint(uint8_t scale, uint8_t s_len, const char *str, uint8_t *ret);
 
-#define HEX2BCD(a)    (((a&0xF0)>>4) *10 + (a&0x0F))
-#define BCD2HEX(a)    ((((a%100) / 10) << 4) + (a % 10))
+#define HEX2BCD(a)    ((((a%100) / 10) << 4) + (a % 10))
+#define BCD2HEX(a)    (((a&0xF0)>>4) *10 + (a&0x0F))
 #endif
 

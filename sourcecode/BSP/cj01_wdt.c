@@ -18,13 +18,14 @@ int8_t Wdt_Open(int32_t port, const void *config, uint8_t len)
 #if OS_CRITICAL_METHOD == 3u
     uint32_t cpu_sr;
 #endif
+    uint32_t tick = ((uint32_t)config) >> 3;
     if (WDT_ENABLE)
     {
         OS_ENTER_CRITICAL();
 
         IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable); //使能对IWDG->PR IWDG->RLR的写  
-        IWDG_SetPrescaler(4); //设置IWDG分频系数
-        IWDG_SetReload(1000);   //设置IWDG装载值 ，大概两秒
+        IWDG_SetPrescaler(6); //设置IWDG分频系数     8ms
+        IWDG_SetReload((tick>0xFFF)?0xFFF:tick);   //设置IWDG装载值 ，大概两秒
         IWDG_ReloadCounter(); //reload       
         IWDG_Enable();       //使能看门狗
 

@@ -3,6 +3,10 @@
 #include "math.h"
 #include "utility.h"
 #include "mod_time.h"
+#include "ucos_ii.h"
+
+#define mbmagcpRead()
+#define mbmagcpWrite()
 
 /*
 正向总量定义
@@ -45,26 +49,26 @@ uint8_t * MBmagCPFraming(uint8_t addr, uint8_t code)
 {
     int8_t len = 0; 
     uint8_t eor = 0;
-    uint32_t time;
-    uint8_t buffer[12];
+    uint32_t time = clock();
+    uint8_t buffer[16];
     uint8_t * ret_ptr;
     buffer[0] = 0x2A;
     buffer[1] = addr;
     buffer[2] = code;
     buffer[3] = 0x2E;
     
-    SpiUart1Flush();
-    SpiUart1Read(0, buffer, 4);
+    SpiUart2Flush();
+    SpiUart2Write(0, buffer, 4);
     while (1)
     {
-        len += SpiUart1Read(0, buffer, 9);
-        if (len == 9)
+        len += SpiUart2Read(0, buffer+len, 10-len);
+        if (len >= 10)
         {
             if ((buffer[0] != addr) || buffer[1] != code)
             {
                 return 0;
             }
-            for (len = 0; len < 5; len++)
+            for (len = 0; len < 6; len++)
             {
                 eor ^= buffer[2+len];
             }
@@ -79,9 +83,8 @@ uint8_t * MBmagCPFraming(uint8_t addr, uint8_t code)
         {
             return 0;
         }
+        OSTimeDly(10);
     }
-    
-    
 }
 
 int8_t MBmagCPReadFlux(float * ret_value)
@@ -106,7 +109,7 @@ int8_t MBmagCPReadFlux(float * ret_value)
 
 int8_t MBmagCPReadTotalFlux(float * ret_value)
 {
-    uint8_t *buffer = MBmagCPFraming(1, 0);
+    uint8_t *buffer = MBmagCPFraming(1, 4);
     uint8_t units;
     if (buffer)
     {
@@ -119,10 +122,10 @@ int8_t MBmagCPReadTotalFlux(float * ret_value)
         case 1: *ret_value /= 100; break;
         case 2: *ret_value /= 10; break;
         case 3: *ret_value /= 1; break;
-        case 4: *ret_value /= 1; break;
-        case 5: *ret_value /= 10; break;
-        case 6: *ret_value /= 100; break;
-        case 7: *ret_value /= 1000; break;
+        case 4: *ret_value /= 10; break;
+        case 5: *ret_value /= 100; break;
+        case 6: *ret_value /= 1000; break;
+        case 7: *ret_value /= 10000; break;
         default: return -2;
         }
         return 1;
