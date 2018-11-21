@@ -11,10 +11,10 @@
 #define GetSIM_WWAN()     GPIO_ReadInputDataBit(SIM_WWAN_GPIO_Port, SIM_WWAN_Pin)
 
 static uint32_t powerkey_high_time, powerkey_low_time;
-static uint8_t sim_status;
+static uint8_t minipci_sim_status;
 static uint16_t SimcommPowerOn(char *data)
 {
-    if (sim_status >= 1)
+    if (minipci_sim_status >= 1)
     {
         powerkey_low_time = clock();
         //ReSetSIM_PWRKEY();
@@ -46,7 +46,7 @@ static uint16_t SimcommPowerOn(char *data)
 
 static uint16_t SimcommPowerOff(char *data)
 {
-    if (sim_status == 0)
+    if (minipci_sim_status == 0)
     {
         powerkey_low_time = clock();
         ReSetSIM_PWRKEY();
@@ -86,18 +86,18 @@ void CheckWWANState(void)
         time_interval = ComputeTickTime(sim_wwan_high_time);
         if (time_interval >= 900)
         {
-            sim_status = 3;
+            minipci_sim_status = 3;
         }
         else
         {
             time_interval = ComputeTickTime(sim_wwan_low_time);
             if (time_interval >= 700)
             {
-                sim_status = 1;
+                minipci_sim_status = 1;
             }
             else if (time_interval >= 180)
             {
-                sim_status = 2;
+                minipci_sim_status = 2;
             }
         }
         sim_wwan_low_time = 0;
@@ -108,18 +108,18 @@ void CheckWWANState(void)
         time_interval = ComputeTickTime(sim_wwan_low_time);
         if (time_interval >= 900)
         {
-            sim_status = 0;
+            minipci_sim_status = 0;
         }
         else
         {
             time_interval = ComputeTickTime(sim_wwan_high_time);
             if (time_interval >= 750)
             {
-                sim_status = 1;
+                minipci_sim_status = 1;
             }
             else if (time_interval >= 180)
             {
-                sim_status = 2;
+                minipci_sim_status = 2;
             }
         }
         sim_wwan_high_time = 0;
@@ -161,7 +161,7 @@ int8_t  MiniPcieIoctl(int32_t port, uint32_t cmd, va_list args)
             return SimcommPowerOff(0);
             //break;
         case MINIPCIE_WWAN_STATE:
-            return sim_status;
+            return minipci_sim_status;
             //break;
         case MINIPCIE_SENDDATA_REALTIME:
             for (i=0; i<len; i++)

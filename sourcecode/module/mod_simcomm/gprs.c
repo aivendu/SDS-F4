@@ -864,6 +864,11 @@ int8_t GPRSActivePDPContext(void)
                     pdp_state = GPRSPDP_CIPMODE_TEST;
                     sim_state = SIM_ATCOMMAND;
                 }
+                else if (rec_buf == SIMRetTIMEOUT)
+                {
+                    pdp_state = GPRSPDP_CIPMODE_TEST;
+                    sim_state = SIM_ATCOMMAND;
+                }
             }
 			break;
         case GPRSPDP_CIPMUX:

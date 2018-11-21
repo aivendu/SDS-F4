@@ -1,4 +1,4 @@
-#ifndef _SYS_TASK_CONFIG_H
+﻿#ifndef _SYS_TASK_CONFIG_H
 #define _SYS_TASK_CONFIG_H
 
 
@@ -11,6 +11,7 @@ typedef enum
     TaskDHCPPrio,       //定义DHCP任务的优先级
     TaskSpiUartPrio,
     TaskInitPrio,
+    TaskServerCommPrio,
     TaskSimPrio,
     TaskSensorPrio,
     PRIOEND

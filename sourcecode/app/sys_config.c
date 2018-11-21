@@ -9,10 +9,15 @@ s_sys_config_t  sys_config_ram;
 /*设备类型*/    DEVICE_TYPE,\
 /*配置版本*/    1,\
 /*数据校验*/    0,\
-/*工艺类型/ip*/ {0,8992,IP_ADDR_GET(61,147,198,178),60},\
+/*工艺类型*/   {0,\
+/*Port, IP*/    8992, IP_ADDR_GET(61,147,198,178),\
+/*pump min open*/    60,\
+/*server interval*/  600,\
+/*device id*/        0x0001,\
+/*unused*/      0},\
 /*A2O端口设置*/ {3,4,5,6,7,8,9,10,11,12,13,14,1,2,\
 /*未使用*/       {0},\
-/*曝气泵*/       0xFFF,0xFFF,0xFFF,\
+/*曝气泵*/       0xFFFFFF,0xFFFFFF,0xFFFFFF,\
 /*未使用*/       {0},\
 /*潜污泵*/       30,30,1440,\
 /*未使用*/       {0},\
@@ -27,18 +32,18 @@ s_sys_config_t  sys_config_ram;
                },\
 /*MBR端口设置*/ {0},\
 /*SBR端口设置*/ {0},\
-/*sensor值*/   {0,0,0,0,0,0,0,0,0,0,\
+/*sensor值*/   {20,7.5f,49,-300,6,3.5f,12,1,0,0,\
 /*未使用*/     {0},\
-               /*最大   最小    精度  端口  标定*/\
- /*t*/         {200,   -30,    1,    SensorPortADC(1)   , 0, 0, 0, 0, 0},\
- /*ph*/        {200,   -30,    1,    SensorPortADC(2)   , 0, 0, 0, 0, 0},\
- /*cod*/       {200,   -30,    1,    SensorPortMODBUS(4), 0, 0, 0, 0, 0},\
- /*orp*/       {200,   -30,    1,    SensorPortADC(3)   , 0, 0, 0, 0, 0},\
- /*nh3*/       {200,   -30,    1,    SensorPortMODBUS(3), 0, 0, 0, 0, 0},\
- /*DO*/        {200,   -30,    1,    SensorPortADC(4)   , 0, 0, 0, 0, 0},\
- /*ss*/        {200,   -30,    1,    SensorPortMODBUS(1), 0, 0, 0, 0, 0},\
- /*p*/         {200,   -30,    1,    SensorPortMODBUS(2), 0, 0, 0, 0, 0},\
- /*flux*/      {200,   -30,    1,    SensorPortCOM2(1), 0, 0, 0, 0, 0},\
+               /*最大   最小    精度     端口                  标定*/\
+ /*t*/         {20,      10,    0.5f,    SensorPortADC(1)   , 0, 0, 0, 0, 0},\
+ /*ph*/        {8,        7,    0.2f,    SensorPortADC(2)   , 0, 0, 0, 0, 0},\
+ /*cod*/       {55,      40,       1,    SensorPortMODBUS(4), 0, 0, 0, 0, 0},\
+ /*orp*/       {-200,  -400,       5,    SensorPortADC(3)   , 0, 0, 0, 0, 0},\
+ /*nh3*/       {7,        5,    0.1f,    SensorPortMODBUS(3), 0, 0, 0, 0, 0},\
+ /*DO*/        {5,        2,    0.2f,    SensorPortADC(4)   , 0, 0, 0, 0, 0},\
+ /*ss*/        {15,      10,    0.2f,    SensorPortMODBUS(1), 0, 0, 0, 0, 0},\
+ /*p*/         {1,        1,    0.2f,    SensorPortMODBUS(2), 0, 0, 0, 0, 0},\
+ /*flux*/      {200,    -30,       1,    SensorPortCOM2(1)  , 0, 0, 0, 0, 0},\
                },\
 /*net  */    {0,\
 /*sd   */    0,\
@@ -48,6 +53,8 @@ s_sys_config_t  sys_config_ram;
 /*manual*/   0,\
 /*init*/     0,\
 /*reboot*/   0,\
+/*back*/     0,\
+/*logout*/   0,\
 /*unused0*/  0,\
 /*unused00*/ 0,\
 /*报警lift*/   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \

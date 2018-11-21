@@ -1,4 +1,4 @@
-#include "MBmagCP.h"
+﻿#include "MBmagCP.h"
 #include "spi_uart.h"
 #include "math.h"
 #include "utility.h"
@@ -57,11 +57,11 @@ uint8_t * MBmagCPFraming(uint8_t addr, uint8_t code)
     buffer[2] = code;
     buffer[3] = 0x2E;
     
-    SpiUart2Flush();
-    SpiUart2Write(0, buffer, 4);
+    SpiUart3Flush();
+    SpiUart3Write(0, buffer, 4);
     while (1)
     {
-        len += SpiUart2Read(0, buffer+len, 10-len);
+        len += SpiUart3Read(0, buffer+len, 10-len);
         if (len >= 10)
         {
             if ((buffer[0] != addr) || buffer[1] != code)

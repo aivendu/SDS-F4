@@ -21,7 +21,9 @@ typedef union u_coil_rw
         uint16_t  manual :1;
         uint16_t  init   :1;
         uint16_t  reboot :1;
-        uint16_t  unused0:8; 
+        uint16_t  back   :1;
+        uint16_t  logout :1;
+        uint16_t  unused0:6; 
         uint16_t  unused00:16; 
         
         uint16_t  alarm_pump_1:1;  
@@ -57,13 +59,16 @@ typedef union u_coil_rw
 
 
 
-
+//  最多可以有10个寄存器(20byte)
 typedef struct s_reg_group_1
 {
     uint16_t technology_type;
     uint16_t server_port;
     uint32_t server_ip;
     uint16_t pump_open_time_min;  //  泵的最小开启时间, 单位S
+    uint16_t linkup_tmo;
+    uint32_t device_id;
+    uint32_t unused;
 } s_reg_group_1_t;
 
 enum e_pump_st
@@ -300,7 +305,7 @@ void Updata_Device_info(void);
 void Updata_Realtime_info(void);
 void UpdataControlRegister(void);
 
-
+extern uint16_t permission[256/16];
 extern uint16_t relay_out;
 extern uint16_t yw_input;
 extern uint16_t senser_ad[4];

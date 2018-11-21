@@ -16,6 +16,7 @@
 #include "app_sensor.h"
 #include "sys_timer.h"
 #include "gprs.h"
+#include "server_comm.h"
 
 
 
@@ -139,6 +140,16 @@ void TaskInit(void *pdata)
             coil_group_1.ctrl.save = 0;
             SaveSysConfig(sys_config_ram);
         }
+        if (coil_group_1.ctrl.back)
+        {
+            InitFileSystem();
+            coil_group_1.ctrl.back = 0;
+        }
+        if (coil_group_1.ctrl.logout)
+        {
+            memset(permission, 0, sizeof(permission));
+            coil_group_1.ctrl.logout = 0;
+        }
         if (coil_group_1.ctrl.calib)
         {
             coil_group_1.ctrl.calib = 0;
@@ -152,8 +163,10 @@ void TaskInit(void *pdata)
         }
         if (coil_group_1.ctrl.reboot)
         {
+            coil_group_1.ctrl.reboot = 0;
             sys_config_ram.reg_group_1.technology_type = 0;
-            SaveSensorCfg();
+            //SaveSensorCfg();
+            SaveSystemCfg(0, (uint8_t *)&sys_config_ram, sizeof(sys_config_ram));
             OSTimeDly(OS_TICKS_PER_SEC/2);
             Reset();
         }
@@ -161,18 +174,24 @@ void TaskInit(void *pdata)
     }
 }
 
+
+#define  DefineTaskStk(name, size)    \
+      OS_STK Task##name##Stk[size];\
+      OS_STK *const Task##name##StkTop=&Task##name##Stk[##size## - 1];
+
+
 #include "sys_task_config.h"
-#define TaskInitSize        1024
-OS_STK TaskInitStk[TaskInitSize]; 
-#define TaskSensorSize        1024
-OS_STK TaskSensorStk[TaskSensorSize]; 
-#define TaskSimSize        1024
-OS_STK TaskSimStk[TaskSimSize]; 
+
+DefineTaskStk(Init, 1024);
+DefineTaskStk(Sensor, 1024);
+DefineTaskStk(Sim, 1024);
+DefineTaskStk(ServerComm, 1024);
+
 void AppInit(void)
 {
-    memset(TaskInitStk, 0x55, sizeof(TaskInitStk));
-    OSTaskCreate(TaskInit, (void *)0, &TaskInitStk[TaskInitSize - 1], TaskInitPrio);
-    OSTaskCreate(TaskSensor, (void *)0, &TaskSensorStk[TaskSensorSize - 1], TaskSensorPrio);
-    OSTaskCreate(TaskSim, (void *)0, &TaskSimStk[TaskSimSize - 1], TaskSimPrio);
+    OSTaskCreate(TaskInit, (void *)0, TaskInitStkTop, TaskInitPrio);
+    OSTaskCreate(TaskSensor, (void *)0, TaskSensorStkTop, TaskSensorPrio);
+    OSTaskCreate(TaskSim, (void *)0, TaskSimStkTop, TaskSimPrio);
+    OSTaskCreate(TaskServerComm, (void *)0, TaskServerCommStkTop, TaskServerCommPrio);
 }
 
