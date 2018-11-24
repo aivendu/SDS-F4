@@ -118,8 +118,7 @@ int8_t SensorMapping(float *r_value, s_sensor_ctrl_t *ctrl)
 #define UpdateSensor(name, value)  \
     if (sys_config_ram.coil_g1.ctrl.install_##name##)\
     {\
-        if (SensorMapping(sys_config_ram.sensor.ctrl.##name##.port, &##value##, \
-                          &sys_config_ram.sensor.ctrl.##name##) > 0)\
+        if (SensorMapping(&##value##, &sys_config_ram.sensor.ctrl.##name##) > 0)\
         {\
             sys_config_ram.sensor.ctrl.##name##_value = ##value##;\
         }\

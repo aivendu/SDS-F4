@@ -92,10 +92,59 @@ void ServerCommFramingData(void)
     memcpy(&comm_data[index], &temp, 4);
     index+=4;
     //  泵控制状态
-    temp = relay_out;
+    temp = 0;
+    if (pump_state.pump_st.pump_lift != 0)
+    {
+        temp = 100000;
+    }
+    if (pump_state.pump_st.pump_subm != 0)
+    {
+        temp += 10000;
+    }
+    if (pump_state.pump_st.pump_rflx != 0)
+    {
+        temp += 1000;
+    }
+    if (pump_state.pump_st.pump_watr != 0)
+    {
+        temp += 100;
+    }
+    if (pump_state.pump_st.pump_dosg != 0)
+    {
+        temp += 10;
+    }
+    if (pump_state.pump_st.pump_aera != 0)
+    {
+        temp += 1;
+    }
     memcpy(&comm_data[index], &temp, 4);
     index+=4;
     //  泵实际状态
+    temp = 0;
+    if (pump_state.pump_st.pump_lift == 1)
+    {
+        temp = 100000;
+    }
+    if (pump_state.pump_st.pump_subm == 1)
+    {
+        temp += 10000;
+    }
+    if (pump_state.pump_st.pump_rflx == 1)
+    {
+        temp += 1000;
+    }
+    if (pump_state.pump_st.pump_watr == 1)
+    {
+        temp += 100;
+    }
+    if (pump_state.pump_st.pump_dosg == 1)
+    {
+        temp += 10;
+    }
+    if (pump_state.pump_st.pump_aera == 1)
+    {
+        temp += 1;
+    }
     memcpy(&comm_data[index], &temp, 4);
     index+=4;
     //  瞬时流量
@@ -119,9 +168,9 @@ void ServerCommFramingData(void)
     memcpy(&temp, &sys_config_ram.sensor.ctrl.ss_value, 4);
     memcpy(&comm_data[index], &temp, 4);
     index+=4;
-    if (yw_input & 0x4)    temp = 1;
-    if (yw_input & 0x1)    temp |= 2;
-    if (yw_input & 0x10)   temp |= 4;
+    if (yw_input & 0x4)    temp = 1*100;
+    if (yw_input & 0x1)    temp = temp + 1*10;
+    if (yw_input & 0x10)   temp = temp + 1;
     memcpy(&comm_data[index], &temp, 2);
     index+=2;
     //  CRC
@@ -138,7 +187,7 @@ int8_t ServerConnect(void)
 {
     char ip_c[16];
     uint8_t * ip_p = (uint8_t *)&sys_config_ram.reg_group_1.server_ip;
-    sprintf(ip_c, "%u.%u.%u.%u", ip_p[0], ip_p[1], ip_p[2], ip_p[3]);
+    sprintf(ip_c, "%u.%u.%u.%u", ip_p[3], ip_p[2], ip_p[1], ip_p[0]);
     return GprsSocketConnect(ip_c, sys_config_ram.reg_group_1.server_port);
 }
 

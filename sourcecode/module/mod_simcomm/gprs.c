@@ -1,4 +1,4 @@
-#include "string.h"
+﻿#include "string.h"
 #include "stdint.h"
 #include "stdlib.h"
 //#include "sim_at.h"
@@ -9,6 +9,7 @@
 #include "sys_config.h"
 #include "cj01_io_api.h"
 #include "bsp_includes.h"
+#include "mod_malloc.h"
 
 #define gprsDebug(format, ...)    {}
 #define SIMIOSend(data, len)   IoWrite(MINI_PCIE, data, len)
@@ -155,7 +156,10 @@ int8_t SendExitPassthroughCommand(void)
     }
     return 0;
 }
-    
+
+static OS_EVENT *tcp_q;
+static uint32_t *tcp_q_buffer[20];
+
   
 /****  向SOCKET发送透传数据  ***********************************
 ** 函数名称:   SendTcpData
@@ -171,11 +175,36 @@ int8_t SendExitPassthroughCommand(void)
 ******************************************************************/
 int32_t SendTcpData(uint8_t *data, uint32_t len)
 {
-    SetSimDataEmptyTime(len);
-	SIMIOSend(data, len);
-	return len;
+    uint8_t err;
+    uint8_t *data_p = mymalloc(SRAMIN, len+4);
+    if (data_p)
+    {
+        memcpy(data_p+4, data, len);
+        *(uint32_t *)data_p = len;
+        err = OSQPost(tcp_q, data_p);
+        if (err != OS_NO_ERR)
+        {
+            myfree(SRAMIN, data_p);
+            return -1;
+        }
+        return len;
+    }
+    return -1;
 }
-  
+
+void TCPDataForward(void)
+{
+    uint8_t err;
+    uint8_t *message = OSQPend(tcp_q, 1, &err);
+    uint32_t len;
+    if ((err == OS_NO_ERR) && (message))
+    {
+        len = *(uint32_t *)message;
+        SetSimDataEmptyTime(len);
+    	SIMIOSend(message + 4, len);
+        myfree(SRAMIN, message);
+    }
+}
     
 /****  发送AT命令, 不等待回复  ***********************************
 ** 函数名称:   SendATCommand
@@ -653,7 +682,7 @@ int8_t GPRSAttachProccess(void)
         case GPRSAT_CSMINS:
             if (sys_config_ram.com_mode == CM_4G)
             {
-                attach_state = GPRSATTACH_CGDCONT;
+                attach_state = GPRSAT_CREG;
                 break;
 //                rec_buf = ATCommandProccess(SIM_C_T_SET, 2000, "+CSIM", "1,242"); 
 //                if (rec_buf != 0)
@@ -712,7 +741,8 @@ int8_t GPRSAttachProccess(void)
                     sim_state = SIM_ATCOMMAND;
                     if (sys_config_ram.com_mode == CM_4G)
                     {
-                        attach_state = GPRSAT_CREG;
+                        attach_state = GPRSATTACH_E0;
+                        return 1;
                     }
                     else
                     {
@@ -762,8 +792,7 @@ int8_t GPRSAttachProccess(void)
                     {
                         if (sys_config_ram.com_mode == CM_4G)
                         {
-                            attach_state = GPRSATTACH_E0;
-                            return 1;
+                            attach_state = GPRSATTACH_CGDCONT;
                         }
                         else
                         {
@@ -843,7 +872,7 @@ int8_t GPRSActivePDPContext(void)
         case GPRSPDP_SHUT:
             if (sys_config_ram.com_mode == CM_4G)
             {
-                pdp_state = GPRSPDP_CSOCKSETPN;
+                pdp_state = GPRSPDP_CIPMODE_TEST;
                 sim_state = SIM_ATCOMMAND;
                 break;
             }
@@ -1101,6 +1130,7 @@ int8_t GPRSTcpProccess(void)
                 for (i=0; i<strlen(sim_buffer); i++)
                     QueueWrite((uint8_t *)tcp_buffer, sim_buffer[i]);
             }
+            TCPDataForward();
             //sim_state = SIM_CONNECT;
             break;
         case GPRSTCP_EXIT_PASSTHROUGH:
@@ -1111,7 +1141,7 @@ int8_t GPRSTcpProccess(void)
             }
             break;
 		 case GPRSTCP_NETOPEN://启动Net网络
-			 if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 2000, "+NETOPEN", 0)) != 0)
+			 if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 4000, "+NETOPEN", 0)) != 0)
             {
                 if (rec_buf == SIMRetCommand)
                 {
@@ -1124,7 +1154,7 @@ int8_t GPRSTcpProccess(void)
                 }
                 else if (rec_buf == SIMRetError)
                 {
-					tcp_state = GPRSTCP_CLOSE;
+					tcp_state = GPRSTCP_GETIP;
                     sim_state = SIM_ATCOMMAND;
                 }
                 else if (rec_buf == SIMRetOK)
@@ -1137,11 +1167,12 @@ int8_t GPRSTcpProccess(void)
             break;
              
 		case GPRSTCP_GETIP://获取IP地址
-			 if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 2000, "+IPADDR", 0)) != 0)
+			 if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 8000, "+IPADDR", 0)) != 0)
             {
                 if (rec_buf == SIMRetCommand)
                 {
-
+                    tcp_state = GPRSTCP_OPEN;
+                    sim_state = SIM_ATCOMMAND;
                 }
                 else if (rec_buf == SIMRetTIMEOUT)
                 {
@@ -1600,6 +1631,7 @@ const s_UartStr_t sim_uart = {115200, 8,0,1};
 void TaskSim(void *pdata)
 {
     pdata = pdata;
+    tcp_q = OSQCreate((void **)tcp_q_buffer, sizeof(tcp_q_buffer)/4);
     IoOpen(MINI_PCIE, &sim_uart, sizeof(s_UartStr_t));
     while (1)
     {
