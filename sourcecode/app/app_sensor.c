@@ -68,13 +68,17 @@ int8_t SensorMapping(float *r_value, s_sensor_ctrl_t *ctrl)
     }
     if (channel <= 0x3F)
     {
+        //  第0-3位：吸光度，浮点数4个字节内存地址的内容
+        //  第4-7位：当前值，浮点数4个字节内存地址的内容
+        //  第8-17位：采样时间
+
         while ((ret = ModbusReadR(channel, 0x02, 0x09, ret_buffer)) == -1)
         {
             OSTimeDly(OS_TICKS_PER_SEC/100);
         }
         if (ret == 0)
         {
-            memcpy(r_value, ret_buffer, 4);
+            memcpy(r_value, ret_buffer+2, 4);  
             if ((*r_value >= ctrl->min) && (*r_value <= ctrl->max))  //  采样值不在范围则认为采样失败
             {
                 return 1;

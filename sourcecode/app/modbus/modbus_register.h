@@ -1,4 +1,4 @@
-#ifndef _MODBUS_REGISTER_H
+﻿#ifndef _MODBUS_REGISTER_H
 #define _MODBUS_REGISTER_H
 
 //#include "stm32f10x.h"
@@ -23,7 +23,8 @@ typedef union u_coil_rw
         uint16_t  reboot :1;
         uint16_t  back   :1;
         uint16_t  logout :1;
-        uint16_t  unused0:6; 
+        uint16_t  communication :1;
+        uint16_t  unused0:5; 
         uint16_t  unused00:16; 
         
         uint16_t  alarm_pump_1:1;  

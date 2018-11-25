@@ -159,7 +159,7 @@ void GPIOInit(void)
   GPIO_InitStruct.GPIO_Pin = SIM_WWAN_Pin;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_Init(SIM_WWAN_GPIO_Port, &GPIO_InitStruct);
 

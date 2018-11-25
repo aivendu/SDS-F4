@@ -1,4 +1,4 @@
-﻿#include "MBmagCP.h"
+#include "MBmagCP.h"
 #include "spi_uart.h"
 #include "math.h"
 #include "utility.h"
@@ -118,14 +118,14 @@ int8_t MBmagCPReadTotalFlux(float * ret_value)
                      BCD2HEX(buffer[3]) * 1000000 + BCD2HEX(buffer[4]) * 100000000;
         switch (units)
         {
-        case 0: *ret_value /= 1000; break;
-        case 1: *ret_value /= 100; break;
-        case 2: *ret_value /= 10; break;
-        case 3: *ret_value /= 1; break;
-        case 4: *ret_value /= 10; break;
+        case 0: *ret_value /= 1000000; break;
+        case 1: *ret_value /= 100000; break;
+        case 2: *ret_value /= 10000; break;
+        case 3: *ret_value /= 1000; break;
+        case 4: *ret_value /= 1000; break;
         case 5: *ret_value /= 100; break;
-        case 6: *ret_value /= 1000; break;
-        case 7: *ret_value /= 10000; break;
+        case 6: *ret_value /= 10; break;
+        case 7: *ret_value /= 1; break;
         default: return -2;
         }
         return 1;

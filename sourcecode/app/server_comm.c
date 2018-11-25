@@ -209,8 +209,10 @@ void TaskServerComm(void *pdata)
                 }
                 break;
             case 1:
-                if (ComputeTickTime(intevel) > sys_config_ram.reg_group_1.linkup_tmo*OS_TICKS_PER_SEC)
+                if ((ComputeTickTime(intevel) > sys_config_ram.reg_group_1.linkup_tmo*OS_TICKS_PER_SEC) || 
+                    (sys_config_ram.coil_g1.ctrl.communication))
                 {
+                    sys_config_ram.coil_g1.ctrl.communication = 0;
                     ServerCommFramingData();
                     if (GprsSocketSend(comm_data, 88) <= 0)
                     {
