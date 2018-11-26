@@ -1,4 +1,4 @@
-/*  A2O.c
+﻿/*  A2O.c
  *  实现A2O(商达)工艺的处理
  *  设备1、曝气泵
         3台（端口3-5），三台泵分别单独时间控制，默认0：00~23:00开启，23:01~23:59停止，时间可调。
@@ -662,7 +662,7 @@ void A2ODosingPumpCtrl(void)
     {
         pump_state.pump_st.pump_dosg = 1;
     }
-    else if (pump_st == 2)
+    else
     {
         pump_state.pump_st.pump_dosg = 0;
     }
@@ -746,7 +746,7 @@ void A2OLiftingPumpCtrl(void)
     {
         pump_state.pump_st.pump_lift = 1;
     }
-    else if (pump_st == 2)
+    else
     {
         pump_state.pump_st.pump_lift = 0;
     }

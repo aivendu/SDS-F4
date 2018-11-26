@@ -657,7 +657,7 @@ uint32_t ModbusSlave_10_Reply(uint8_t code, uint8_t *dat)
             return (uint32_t)buff;
         }
     }
-    if (modbus_register[i].buffer)
+    else if (modbus_register[i].buffer)
     {
         //memset(modbus_register[i].buffer, 0, modbus_register[i].length*2);
         buff = (uint8_t *)&modbus_register[i].buffer[(dat[2] << 8) + dat[3] - modbus_register[i].start_addr];

@@ -203,8 +203,10 @@ void TaskServerComm(void *pdata)
         switch (state)
         {
             case 0:
+                sys_config_ram.coil_g1.ctrl.net = 0;
                 if (ServerConnect() == 1)
                 {
+                    sys_config_ram.coil_g1.ctrl.net = 1;
                     state = 1;
                 }
                 break;

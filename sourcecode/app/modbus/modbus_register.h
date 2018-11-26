@@ -1,11 +1,11 @@
-﻿#ifndef _MODBUS_REGISTER_H
+#ifndef _MODBUS_REGISTER_H
 #define _MODBUS_REGISTER_H
 
 //#include "stm32f10x.h"
 #include "stdint.h"
 #include "modbus_slave.h"
 
-#define REGISTER_NUM      8//MODBUS功能命令条数    
+#define REGISTER_NUM      9//MODBUS功能命令条数    
 #define COILS_NUM         4
 
 //  线圈定义结构

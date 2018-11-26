@@ -4,20 +4,34 @@
 #include "sys_config.h"
 #include "modbus_core.h"
 #include "mod_time.h"
+#include "version.h"
+#include "stdlib.h"
+#include "stdio.h"
 
 extern void UpdataStatusInfo(void);
 extern uint8_t device_addr;
 
+typedef struct 
+{
+    char fw_version[44];
+    char fw_compile_time[20];
+    char hw_version[32];
+    char factory[64];
+} s_device_info_t;
 
-
-const uint8_t  Device_info[32] = {""}; 
+const s_device_info_t  Device_info = {
+    PRIMARY_V,
+    __DATE__  " " __TIME__,
+    HW_V,
+    ""
+}; 
 
 uint16_t relay_out;
 uint16_t yw_input;
 uint16_t senser_ad[4];
 uint16_t relay_state[14];
 char     userpassword[100];
-uint16_t permission[256/16] = {1};
+uint16_t permission[256/16] = {0};
 
 u_pump_st_t  pump_state;
 
@@ -44,6 +58,35 @@ uint32_t RTCSet(struct s_modbus_register *reg, const uint8_t *data)
     return 0;
 }
 
+uint32_t mcgstrOpration(struct s_modbus_register *reg, const uint8_t *data)
+{
+    uint8_t code = data[0];
+    uint16_t start = (data[1]<<8) + data[2] - reg->start_addr;
+    uint16_t size  = (data[3]<<8) + data[4];
+    uint8_t *buffer = malloc(size * 2 + 8);
+    if (buffer == 0)
+    {
+        return 6;
+    }
+    if (code == 0x03)
+    {
+        snprintf((char *)buffer, size * 2 + 8, "mcgsstr:%s", (char *)&reg->buffer[start]);
+        return (uint32_t)buffer;
+    }
+    else if (code == 0x10)
+    {
+        if (strncmp((char *)&data[6], "mcgsstr:", 8) == 0)
+        {
+            strncpy((char *)&(reg->buffer[start]), (char *)&data[6+8], reg->length*2-start);
+        }
+        else
+        {
+            strncpy((char *)&(reg->buffer[start]), (char *)&data[6], reg->length*2-start);
+        }
+        return 0;
+    }
+    return 1;
+}
 
 uint32_t PermissionVerify(struct s_modbus_register *reg, const uint8_t *data)
 {
@@ -130,7 +173,7 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
 s_modbus_register_t parkinglock_register[REGISTER_NUM] =
 {
     {
-        // 1  设备标识
+        // 1  时间设置标识
         0x0000,
         0x0006,
         (1 << MODBUS_FUNC_CODE_03) + 
@@ -139,7 +182,7 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
         RTCSet
     },
     {
-        // 1  设备标识
+        // 1  常规设置
         0x0006,
         GetRegisterLen(s_reg_group_1_t),
         (1 << MODBUS_FUNC_CODE_03) + 
@@ -167,7 +210,7 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
         0
     },
     {
-        // 工艺参数
+        // A2O工艺参数
         0x0400,
         GetRegisterLen(a2o_technology_argv.member),
         (1 << MODBUS_FUNC_CODE_03) + 
@@ -177,7 +220,7 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
         0
     },
     {
-        // 工艺参数
+        // MBR工艺参数
         0x0500,
         GetRegisterLen(mbr_technology_argv.member),
         (1 << MODBUS_FUNC_CODE_03) + 
@@ -187,7 +230,7 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
         0
     },
     {
-        // 工艺参数
+        // SBR工艺参数
         0x0600,
         GetRegisterLen(sbr_technology_argv.member),
         (1 << MODBUS_FUNC_CODE_03) + 
@@ -197,7 +240,15 @@ s_modbus_register_t parkinglock_register[REGISTER_NUM] =
         0
     },
     {
-        // 工艺参数
+        // 权限设置
+        0xFC00,
+        GetRegisterLen(Device_info),
+        (1 << MODBUS_FUNC_CODE_03) ,
+        (uint16_t *)&Device_info,
+        mcgstrOpration
+    },
+    {
+        // 权限设置
         0xFE00,
         GetRegisterLen(userpassword),
         (1 << MODBUS_FUNC_CODE_10) ,
