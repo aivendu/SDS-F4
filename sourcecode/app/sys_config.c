@@ -14,6 +14,7 @@ s_sys_config_t  sys_config_ram;
 /*pump min open*/    60,\
 /*server interval*/  600,\
 /*device id*/        0x0001,\
+/*密码有效时间*/     20,\
 /*unused*/      0},\
 /*A2O端口设置*/ {3,4,5,6,7,8,9,10,11,12,13,14,1,2,\
 /*未使用*/       {0},\

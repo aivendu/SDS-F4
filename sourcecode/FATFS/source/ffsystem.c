@@ -8,6 +8,7 @@
 #include "stdint.h"
 #include "my_malloc.h"
 #include "ff.h"
+#include "sys_task_config.h"
 
 
 
@@ -91,7 +92,7 @@ int ff_cre_syncobj(  /* 1:Function succeeded, 0:Could not create the sync object
 
     /* uC/OS-II */
       OS_ERR err;
-      *sobj = OSMutexCreate(0, &err);
+      *sobj = OSMutexCreate(FS_MUTEX_PRIO, &err);
       return (int)(err == OS_NO_ERR);
 
     /* FreeRTOS */

@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>Release</TargetName>
+      <TargetName>Debug</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
@@ -48,14 +48,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\Release\Output\</OutputDirectory>
+          <OutputDirectory>.\Debug\Output\</OutputDirectory>
           <OutputName>SDS_V1</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>.\Release\Listings\</ListingPath>
+          <ListingPath>.\Debug\Listings\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -311,7 +311,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>3</Optim>
+            <Optim>1</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -337,7 +337,7 @@
               <MiscControls>--c99 --diag_suppress=161</MiscControls>
               <Define>CHINA_STD=1,USE_STDPERIPH_DRIVER,STM32F40_41xxx,STM32F4XX,__DEBUG_FLASH=0,_TEST_FLASH=0,_TEST_FLASH_2=0,__CC_ARM</Define>
               <Undefine></Undefine>
-              <IncludePath>..\sourcecode\app\;..\sourcecode\module\;..\sourcecode\module\mod_time;..\sourcecode\module\utility;..\sourcecode\module\FATFS\exfuns;..\sourcecode\module\mod_malloc;..\sourcecode\BSP\;..\sourcecode\BSP\fatfs;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver\inc;..\sourcecode\UCOSII\CONFIG;..\sourcecode\UCOSII\CORE;..\sourcecode\UCOSII\PORT;..\sourcecode;..\sourcecode\module\debug_log;..\sourcecode\LWIP\lwip-1.4.1\src\include\netif;..\sourcecode\LWIP\lwip-1.4.1\src\include\lwip;..\sourcecode\LWIP\lwip-1.4.1\src\include\ipv4;..\sourcecode\LWIP\lwip-1.4.1\src\include;..\sourcecode\LWIP\app\TCP_Client;..\sourcecode\LWIP\lwip_header;..\sourcecode\LWIP\arch;..\sourcecode\LWIP;..\sourcecode\public\queue;..\sourcecode\public\sys_config;..\sourcecode\public\utility;..\sourcecode\public\crc;..\sourcecode\public\sys_error_manage;..\sourcecode\FATFS\source;..\sourcecode\module\mod_log;..\sourcecode\app\modbus;..\sourcecode\module\mod_simcomm</IncludePath>
+              <IncludePath>..\sourcecode\app\;..\sourcecode\module\;..\sourcecode\module\mod_time;..\sourcecode\module\utility;..\sourcecode\module\FATFS\exfuns;..\sourcecode\module\mod_malloc;..\sourcecode\BSP\;..\sourcecode\BSP\fatfs;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver\inc;..\sourcecode\UCOSII\CONFIG;..\sourcecode\UCOSII\CORE;..\sourcecode\UCOSII\PORT;..\sourcecode;..\sourcecode\module\debug_log;..\sourcecode\LWIP\lwip-1.4.1\src\include\netif;..\sourcecode\LWIP\lwip-1.4.1\src\include\lwip;..\sourcecode\LWIP\lwip-1.4.1\src\include\ipv4;..\sourcecode\LWIP\lwip-1.4.1\src\include;..\sourcecode\LWIP\app\TCP_Client;..\sourcecode\LWIP\lwip_header;..\sourcecode\LWIP\arch;..\sourcecode\LWIP;..\sourcecode\public\queue;..\sourcecode\public\sys_config;..\sourcecode\public\utility;..\sourcecode\public\crc;..\sourcecode\public\sys_error_manage;..\sourcecode\FATFS\source;..\sourcecode\module\mod_log;..\sourcecode\app\modbus;..\sourcecode\module\mod_simcomm;..\sourcecode\public\crc_lib;..\sourcecode\public\debug;..\sourcecode\public\malloc;..\sourcecode\public\time</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -441,21 +441,6 @@
         <Group>
           <GroupName>Module</GroupName>
           <Files>
-            <File>
-              <FileName>mod_time.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sourcecode\module\mod_time\mod_time.c</FilePath>
-            </File>
-            <File>
-              <FileName>mod_malloc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sourcecode\module\mod_malloc\mod_malloc.c</FilePath>
-            </File>
-            <File>
-              <FileName>debug_log.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sourcecode\module\mod_log\debug_log.c</FilePath>
-            </File>
             <File>
               <FileName>modbus_register.c</FileName>
               <FileType>1</FileType>
@@ -673,14 +658,24 @@
               <FilePath>..\sourcecode\public\utility\utility.c</FilePath>
             </File>
             <File>
-              <FileName>system_error.c</FileName>
+              <FileName>crc_lib.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sourcecode\public\sys_error_manage\system_error.c</FilePath>
+              <FilePath>..\sourcecode\public\crc_lib\crc_lib.c</FilePath>
             </File>
             <File>
-              <FileName>crc.c</FileName>
+              <FileName>my_debug.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sourcecode\public\crc\crc.c</FilePath>
+              <FilePath>..\sourcecode\public\debug\my_debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>my_malloc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\public\malloc\my_malloc.c</FilePath>
+            </File>
+            <File>
+              <FileName>my_time.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\public\time\my_time.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1506,7 +1501,7 @@
       </Groups>
     </Target>
     <Target>
-      <TargetName>Debug</TargetName>
+      <TargetName>Release</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
@@ -1547,14 +1542,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\Debug\Output\</OutputDirectory>
+          <OutputDirectory>.\Release\Output\</OutputDirectory>
           <OutputName>SDS_V1</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>.\Debug\Listings\</ListingPath>
+          <ListingPath>.\Release\Listings\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -1810,7 +1805,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>3</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -1836,7 +1831,7 @@
               <MiscControls>--c99 --diag_suppress=161</MiscControls>
               <Define>CHINA_STD=1,USE_STDPERIPH_DRIVER,STM32F40_41xxx,STM32F4XX,__DEBUG_FLASH=0,_TEST_FLASH=0,_TEST_FLASH_2=0,__CC_ARM</Define>
               <Undefine></Undefine>
-              <IncludePath>..\sourcecode\app\;..\sourcecode\module\;..\sourcecode\module\mod_time;..\sourcecode\module\utility;..\sourcecode\module\FATFS\exfuns;..\sourcecode\module\mod_malloc;..\sourcecode\BSP\;..\sourcecode\BSP\fatfs;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver\inc;..\sourcecode\UCOSII\CONFIG;..\sourcecode\UCOSII\CORE;..\sourcecode\UCOSII\PORT;..\sourcecode;..\sourcecode\module\debug_log;..\sourcecode\LWIP\lwip-1.4.1\src\include\netif;..\sourcecode\LWIP\lwip-1.4.1\src\include\lwip;..\sourcecode\LWIP\lwip-1.4.1\src\include\ipv4;..\sourcecode\LWIP\lwip-1.4.1\src\include;..\sourcecode\LWIP\app\TCP_Client;..\sourcecode\LWIP\lwip_header;..\sourcecode\LWIP\arch;..\sourcecode\LWIP;..\sourcecode\public\queue;..\sourcecode\public\sys_config;..\sourcecode\public\utility;..\sourcecode\public\crc;..\sourcecode\public\sys_error_manage;..\sourcecode\FATFS\source;..\sourcecode\module\mod_log;..\sourcecode\app\modbus;..\sourcecode\module\mod_simcomm</IncludePath>
+              <IncludePath>..\sourcecode\app\;..\sourcecode\module\;..\sourcecode\module\mod_time;..\sourcecode\module\utility;..\sourcecode\module\FATFS\exfuns;..\sourcecode\module\mod_malloc;..\sourcecode\BSP\;..\sourcecode\BSP\fatfs;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver\inc;..\sourcecode\UCOSII\CONFIG;..\sourcecode\UCOSII\CORE;..\sourcecode\UCOSII\PORT;..\sourcecode;..\sourcecode\module\debug_log;..\sourcecode\LWIP\lwip-1.4.1\src\include\netif;..\sourcecode\LWIP\lwip-1.4.1\src\include\lwip;..\sourcecode\LWIP\lwip-1.4.1\src\include\ipv4;..\sourcecode\LWIP\lwip-1.4.1\src\include;..\sourcecode\LWIP\app\TCP_Client;..\sourcecode\LWIP\lwip_header;..\sourcecode\LWIP\arch;..\sourcecode\LWIP;..\sourcecode\public\queue;..\sourcecode\public\sys_config;..\sourcecode\public\utility;..\sourcecode\public\crc;..\sourcecode\public\sys_error_manage;..\sourcecode\FATFS\source;..\sourcecode\module\mod_log;..\sourcecode\app\modbus;..\sourcecode\module\mod_simcomm;..\sourcecode\public\crc_lib;..\sourcecode\public\debug;..\sourcecode\public\malloc;..\sourcecode\public\time</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1940,21 +1935,6 @@
         <Group>
           <GroupName>Module</GroupName>
           <Files>
-            <File>
-              <FileName>mod_time.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sourcecode\module\mod_time\mod_time.c</FilePath>
-            </File>
-            <File>
-              <FileName>mod_malloc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sourcecode\module\mod_malloc\mod_malloc.c</FilePath>
-            </File>
-            <File>
-              <FileName>debug_log.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sourcecode\module\mod_log\debug_log.c</FilePath>
-            </File>
             <File>
               <FileName>modbus_register.c</FileName>
               <FileType>1</FileType>
@@ -2172,14 +2152,24 @@
               <FilePath>..\sourcecode\public\utility\utility.c</FilePath>
             </File>
             <File>
-              <FileName>system_error.c</FileName>
+              <FileName>crc_lib.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sourcecode\public\sys_error_manage\system_error.c</FilePath>
+              <FilePath>..\sourcecode\public\crc_lib\crc_lib.c</FilePath>
             </File>
             <File>
-              <FileName>crc.c</FileName>
+              <FileName>my_debug.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sourcecode\public\crc\crc.c</FilePath>
+              <FilePath>..\sourcecode\public\debug\my_debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>my_malloc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\public\malloc\my_malloc.c</FilePath>
+            </File>
+            <File>
+              <FileName>my_time.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sourcecode\public\time\my_time.c</FilePath>
             </File>
           </Files>
         </Group>

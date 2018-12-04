@@ -1,4 +1,4 @@
-#include "server_comm.h"
+﻿#include "server_comm.h"
 #include "string.h"
 #include "stdio.h"
 #include "stm32f4xx.h"
@@ -175,8 +175,10 @@ void ServerCommFramingData(void)
     index+=2;
     //  CRC
     temp = CRC16(0xFFFF, comm_data, 84);
-    memcpy(&comm_data[index], &temp, 2);
-    index+=2;
+    //memcpy(&comm_data[index], &temp, 2);
+    comm_data[index++] = (uint8_t)(temp>>8);
+    comm_data[index++] = (uint8_t)(temp);
+    //index+=2;
     //  结束符
     memcpy(&comm_data[index], "\r\n", 2);
     index+=2;
@@ -218,9 +220,12 @@ void TaskServerComm(void *pdata)
                     ServerCommFramingData();
                     if (GprsSocketSend(comm_data, 88) <= 0)
                     {
-                        state = 1;
+                        state = 0;
                     }
-                    intevel = clock();
+                    else
+                    {
+                        intevel = clock();
+                    }
                 }
                 break;
             default:

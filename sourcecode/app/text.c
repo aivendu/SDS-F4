@@ -89,29 +89,47 @@ void UpdataYWInput(void)
 
 void SIM7600Test(void)
 {
-    uint8_t state = 0;
     int32_t len = 0;
     uint8_t buffer[128];
     s_UartStr_t com_arg = {38400, 8,0,1};
     OSTimeDly(OS_TICKS_PER_SEC * 2);
     IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
     IoOpen(MINI_PCIE, &com_arg, sizeof(s_UartStr_t));
+    while (Ioctl(MINI_PCIE, MINIPCIE_POWRE_ON) != 1) OSTimeDly(10);
     sprintf((char *)buffer, "123\r\n");
     IoWrite(COM1, buffer, 5);
-    //while (Ioctl(MINI_PCIE, MINIPCIE_POWRE_ON) != 1) OSTimeDly(10);
     
     while (1)
     {
-        len += IoRead(COM1, buffer, 128);
+        len = IoRead(MINI_PCIE, buffer, 128);
         if (len>0)
         {
-            //IoWrite(COM1, buffer, len);
+            IoWrite(COM1, buffer, len);
         }
-        //len = IoRead(COM1, buffer, 128);
-        //if (len>0)
-        //{
-        //    IoWrite(MINI_PCIE, buffer, len);
-        //}
+        len = IoRead(COM1, buffer, 128);
+        if (len>0)
+        {
+            IoWrite(MINI_PCIE, buffer, len);
+        }
+    }
+}
+
+void TestF1Uart(void)
+{
+    uint8_t buffer[128];
+    int32_t len = 0;
+    //s_UartStr_t com_arg = {115200, 8,0,1};
+    //IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
+    
+    sprintf((char *)buffer, "123\r\n");
+    IoWrite(COM1, buffer, 5);
+    while (1)
+    {
+        len = SpiUart1Read(MINI_PCIE, buffer, 128);
+        if (len>0)
+        {
+            SpiUart1Write(COM1, buffer, len);
+        }
     }
 }
 
@@ -132,6 +150,7 @@ void TaskInit(void *pdata)
     while (1)
     {
         //SIM7600Test();
+        //TestF1Uart();
         //uint8_t temp = 0x55;
         //IoWrite(COM3, "AT\r\n",4);
         //OSTimeDly(1000);
@@ -201,6 +220,7 @@ void TaskInit(void *pdata)
             OSTimeDly(OS_TICKS_PER_SEC/2);
             Reset();
         }
+        
         IoWrite(WDT, 0, 0);
     }
 }

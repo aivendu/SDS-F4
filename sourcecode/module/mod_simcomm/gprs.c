@@ -453,6 +453,25 @@ static int8_t ExitATMode(int8_t mode)
 }
 #endif
 
+const char * const sim_response[] =
+{
+    "OK",
+    "ERROR",
+    "+CME ERROR:",
+    "+CMS ERROR:",
+    "+IP ERROR:",
+    "STATE:",
+    "ALREADY CONNECT",
+    "CONNECT FAIL",
+    "CONNECT",
+    "SHUT OK",
+    "CLOSE OK",
+    "RDY",
+    "Call Ready",
+    "VOICE CALL:"
+    "NO CARRIER"
+};
+
 static uint32_t ATResponseProccess(char *command)
 {
     char *rec_temp = strtok(sim_buffer, "\r\n");
@@ -647,7 +666,7 @@ int8_t GPRSAttachProccess(void)
                     SetSIMOnlineGPRSState(1);
                     sim_state = SIM_ATCOMMAND;
                     attach_state = GPRSAT_CSQ;
-                     //attach_state = GPRSAT_IPREX;
+                    //attach_state = GPRSAT_IPREX;
                 }
                 else if (rec_buf == SIMRetTIMEOUT)
                 {
@@ -670,7 +689,7 @@ int8_t GPRSAttachProccess(void)
             }
             break;
         case GPRSAT_IPREX:
-            if ((rec_buf = ATCommandProccess(SIM_C_T_SET, 2000, "+IPREX", "38400")) != 0)//执行命令,查询信号强度
+            if ((rec_buf = ATCommandProccess(SIM_C_T_SET, 2000, "+IPREX", "115200")) != 0)//执行命令,查询信号强度
             {
                 if (rec_buf == SIMRetTIMEOUT)
                 {
@@ -962,9 +981,12 @@ int8_t GPRSActivePDPContext(void)
         case GPRSPDP_SHUT:
             if (sys_config_ram.com_mode == CM_4G)
             {
-                pdp_state = GPRSPDP_CSOCKSETPN;
-                sim_state = SIM_ATCOMMAND;
-                break;
+                if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 5000, "+NETCLOSE", 0)) != 0)
+                {
+                    pdp_state = GPRSPDP_CSOCKSETPN;
+                    sim_state = SIM_ATCOMMAND;
+                    break;
+                }
             }
             if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 35000, "+CIPSHUT", 0)) != 0)
             {
@@ -1512,12 +1534,6 @@ void SimHandler(void)
             ResetGPRS();
         }
     }
-//	else if(ReceiveCommand() == 2)
-//	{//断开自动重连
-//		gprs_run_state = GPRS_ATTACH;
-//		attach_state = 0;
-//		reconnect_flag = 1;
-//	}
     switch (gprs_run_state)
     {
         case GPRS_DEBUG:
@@ -1548,21 +1564,6 @@ void SimHandler(void)
                 sim_step_handle_time=0;
             }
             break;
-        // case GPRS_WAIT_RDY:
-            // if (sim_buffer_index == -2)
-            // {
-                // attach_state = GPRSATTACH_E0;
-                // sim_state = SIM_ATCOMMAND;
-                // gprs_run_state = GPRS_ATTACH;
-            // }
-            // else if ((sim_buffer_index < 0) && (ATResponseProccess(0) == SIMRetRDY))
-            // {
-                // SetSIMPowerGPRSState(1);
-                // attach_state = GPRSATTACH_E0;
-                // sim_state = SIM_ATCOMMAND;
-                // gprs_run_state = GPRS_ATTACH;
-            // }
-            // break;
         case GPRS_POWEROFF:
             if (Ioctl(MINI_PCIE, MINIPCIE_POWRE_OFF) == 1)
             {
@@ -1667,7 +1668,7 @@ void SimHandler(void)
 }
 
 
-const s_UartStr_t sim_uart = {38400, 8,0,1};
+const s_UartStr_t sim_uart = {115200, 8,0,1};
 void TaskSim(void *pdata)
 {
     pdata = pdata;

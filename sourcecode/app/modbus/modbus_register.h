@@ -1,4 +1,4 @@
-#ifndef _MODBUS_REGISTER_H
+﻿#ifndef _MODBUS_REGISTER_H
 #define _MODBUS_REGISTER_H
 
 //#include "stm32f10x.h"
@@ -69,7 +69,8 @@ typedef struct s_reg_group_1
     uint16_t pump_open_time_min;  //  泵的最小开启时间, 单位S
     uint16_t linkup_tmo;
     uint32_t device_id;
-    uint32_t unused;
+    uint16_t passwd_tmo;
+    uint16_t unused;
 } s_reg_group_1_t;
 
 enum e_pump_st

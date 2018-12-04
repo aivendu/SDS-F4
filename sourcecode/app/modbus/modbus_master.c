@@ -138,8 +138,8 @@ void * ModbusMasterSend(uint8_t dev, uint8_t code, va_list argv)
 	        send_buffer[5] = len & 0xFF;
 			len =  6;
 			crc = CRC16(crc, send_buffer, len);
-			send_buffer[len++] = crc >> 8;
-			send_buffer[len++] = crc & 0xFF;
+			send_buffer[len++] = (crc) & 0xFF;
+			send_buffer[len++] = (crc >> 8) & 0xFF;
 			send_buffer-=2;
 			send_buffer[0] = len;
 			send_buffer[1] = len >> 8;
@@ -169,8 +169,8 @@ void * ModbusMasterSend(uint8_t dev, uint8_t code, va_list argv)
 	        send_buffer[5] = data[0];
 			len =  6;
 			crc = CRC16(crc, send_buffer, len);
-			send_buffer[len++] = crc >> 8;
-			send_buffer[len++] = crc & 0xFF;
+			send_buffer[len++] = (crc) & 0xFF;
+			send_buffer[len++] = (crc >> 8) & 0xFF;
 			send_buffer-=2;
 			send_buffer[0] = len;
 			send_buffer[1] = len >> 8;
@@ -203,8 +203,8 @@ void * ModbusMasterSend(uint8_t dev, uint8_t code, va_list argv)
             HalfWordBigEndianCopy(&send_buffer[7], data, len);
 			len +=  7;
 			crc = CRC16(crc, send_buffer, len);
-			send_buffer[len++] = crc >> 8;
-			send_buffer[len++] = crc & 0xFF;
+			send_buffer[len++] = (crc) & 0xFF;
+			send_buffer[len++] = (crc >> 8) & 0xFF;
 			send_buffer-=2;
 			send_buffer[0] = len;
 			send_buffer[1] = len >> 8;
@@ -294,7 +294,7 @@ int8_t ModbusMasterRec(uint8_t dev, uint8_t code)
 			{
 				crc = 0xFFFF;
 				crc = CRC16(crc, modbus_rec.buffer, 3);
-				modbus_rec.crc = (modbus_rec.buffer[3] << 8) + modbus_rec.buffer[4];
+				modbus_rec.crc = (modbus_rec.buffer[4] << 8) + modbus_rec.buffer[3];
 
 		        if (crc == modbus_rec.crc)
 		        {
@@ -369,11 +369,11 @@ int8_t ModbusMasterRec(uint8_t dev, uint8_t code)
 	        }
 	        else if (modbus_rec.rec_len == (slave_command_code[index].length + modbus_rec.dat_len + 2))  //  判断是否接收CRC
 	        {
-	            modbus_rec.crc = (temp << 8) & 0xFF00;
+	            modbus_rec.crc = (temp) & 0xFF00;
 	        }
 	        else  //  数据接收完成
 	        {
-	            modbus_rec.crc += temp;
+	            modbus_rec.crc += (temp << 8);
 				crc = 0xFFFF;
 		        crc = CRC16(crc, modbus_rec.buffer, slave_command_code[modbus_code_index[modbus_rec.buffer[1]]].length + 2);
 
