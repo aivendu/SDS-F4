@@ -1,4 +1,4 @@
-﻿#ifndef _GPIO_H_
+#ifndef _GPIO_H_
 #define _GPIO_H_
 
 #define  KEY0      PE4
@@ -7,7 +7,7 @@
 #define  WK_UP     PA0
 
 #include "stdint.h"
-#include "os_includes.h"
+#include "ucos_ii.h"
 
 #define YW_IN1_Pin GPIO_PIN_2
 #define YW_IN1_GPIO_Port GPIOE

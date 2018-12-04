@@ -47,7 +47,7 @@ void W25QxxSetCS(uint8_t st)
 {
     if (st == 0)
     {
-        while ((spi2_lock & (SPI2_LOCK_MASK + SPI2_LOCK_W25Q)) == SPI2_LOCK_MASK)  OSTimeDly(2);
+        while ((spi2_lock & (SPI2_LOCK_MASK + SPI2_LOCK_W25Q)) == SPI2_LOCK_MASK)  OSTimeDly(3);
         if ((spi2_lock & SPI2_LOCK_W25Q) != SPI2_LOCK_W25Q)
         {
             InitSPI(1);
@@ -66,7 +66,7 @@ void WK2124NssSet(uint8_t st)
 {
     if (st == 0)
     {
-        while ((spi2_lock & (SPI2_LOCK_MASK + SPI2_LOCK_WK2124)) == SPI2_LOCK_MASK)  OSTimeDly(2);
+        while ((spi2_lock & (SPI2_LOCK_MASK + SPI2_LOCK_WK2124)) == SPI2_LOCK_MASK)  OSTimeDly(3);
         if ((spi2_lock & SPI2_LOCK_WK2124) != SPI2_LOCK_WK2124)
         {
             InitSPI(0);
@@ -168,7 +168,7 @@ int8_t W25QXX_ReadWriteByte(uint8_t flag, uint8_t *tx, uint8_t *rx, uint32_t siz
         while (SPI_I2S_GetFlagStatus(SPI_USED, SPI_I2S_FLAG_RXNE) == RESET){} //等待接收完一个byte  
         
         temp = SPI_I2S_ReceiveData(SPI_USED); //返回通过SPIx最近接收的数据	
-        if (rx)   tx[i] = temp;
+        if (rx)   rx[i] = temp;
         
     }
     if (flag) 
@@ -194,7 +194,7 @@ int8_t WK2124_ReadWriteByte(uint8_t flag, uint8_t *tx, uint8_t *rx, uint32_t siz
         while (SPI_I2S_GetFlagStatus(SPI_USED, SPI_I2S_FLAG_RXNE) == RESET){} //等待接收完一个byte  
         {
             temp = SPI_I2S_ReceiveData(SPI_USED); //返回通过SPIx最近接收的数据	
-            if (rx)   tx[i] = temp;
+            if (rx)   rx[i] = temp;
         }
     }
     if (flag) 

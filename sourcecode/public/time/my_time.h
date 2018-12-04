@@ -20,12 +20,7 @@ struct tm
 };
 #endif
 
-#define BASE_OF_TIME    2000
-
-#define TIME_API_TYPE      1  //  0--使用clock_t类型配置；1--使用struct tm类型配置
-#define GetLocalTime(t)    {IoOpen(RTC_PORT, 0, 0); IoRead(RTC_PORT, t, sizeof(struct tm)); IoClose(RTC_PORT);}
-#define SetLocalTime(t)    {IoOpen(RTC_PORT, 0, 0); IoWrite(RTC_PORT, t, sizeof(struct tm)); IoClose(RTC_PORT);}
-
+#define BASE_OF_TIME    2010
 
 extern const uint8_t day_Of_month[12];
 

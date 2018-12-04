@@ -70,17 +70,18 @@ typedef int sys_prot_t;				//临界保护型数据
 #define U32_F "8ld"
 #define S32_F "8ld"
 #define X32_F "8lx"
-
+#include "my_debug.h"
+#define lwip_printf(format, ...)   Printf_D("LWIP", format"\r\n", ##__VA_ARGS__)
 //宏定义
 #ifndef LWIP_PLATFORM_ASSERT
 #define LWIP_PLATFORM_ASSERT(x) \
     do \
-    {   printf("Assertion \"%s\" failed at line %d in %s\r\n", x, __LINE__, __MODULE__); \
+    {   lwip_printf("Assertion \"%s\" failed at line %d in %s\r\n", x, __LINE__, __MODULE__); \
     } while(0)
 #endif
 
 #ifndef LWIP_PLATFORM_DIAG
-#define LWIP_PLATFORM_DIAG(x) do {printf x;} while(0)
+#define LWIP_PLATFORM_DIAG(x) do {lwip_printf x;} while(0)
 #endif
 
 #endif /* __CC_H__ */

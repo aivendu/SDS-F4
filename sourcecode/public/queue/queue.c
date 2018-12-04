@@ -26,7 +26,22 @@
 ********************************************************************************************************/
 #include "stdlib.h"
 #include "queue.h"
-//#include "os_includes.h"
+
+/*typedef struct s_queue
+{
+    uint8_t (*create)(uint32_t);
+    int8_t  (*empty)();
+    int32_t (*size)();
+    int8_t  (*front)();
+    int8_t  (*back)();
+    uint8_t (*push)();
+    int8_t  (*emplace)();
+    int8_t  (*pop)();
+    int8_t  (*swap)();
+    uint32_t *buffer;
+} s_queue_t;*/
+
+
 /*********************************************************************************************************
 ** 函数名称: QueueCreate
 ** 功能描述: 初始化数据队列
@@ -112,6 +127,40 @@ uint8_t QueueRead(QUEUE_DATA_TYPE *Ret, void *Buf)
                 Queue->Out = Queue->Buf;
             }
             Queue->NData--;                                     /* 数据减少      */
+            err = QUEUE_OK;
+        }
+        else
+        {
+            /* 空              */
+            err = QUEUE_EMPTY;
+            if (Queue->ReadEmpty != NULL)                       /* 调用用户处理函数 */
+            {
+                err = Queue->ReadEmpty(Ret, Queue);
+            }
+        }
+    }
+    return err;
+}
+uint8_t QueueCheck(QUEUE_DATA_TYPE *Ret, void *Buf)
+{
+    uint8_t err;
+    DataQueue *Queue;
+
+    err = NOT_OK;
+    if (Buf != NULL)                                            /* 队列是否有效 */
+    {
+        /* 有效 */
+        Queue = (DataQueue *)Buf;
+        if (Queue->NData > 0)                                   /* 队列是否为空 */
+        {
+            /* 不空         */
+            *Ret = Queue->Out[0];                               /* 数据出队     */
+            //Queue->Out++;                                       /* 调整出队指针 */
+            //if (Queue->Out >= Queue->End)
+            //{
+            //    Queue->Out = Queue->Buf;
+            //}
+            //Queue->NData--;                                     /* 数据减少      */
             err = QUEUE_OK;
         }
         else

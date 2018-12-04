@@ -2,7 +2,7 @@
 #include "ff.h"
 #include "sys_config.h"
 #include "ucos_ii.h"
-#include "debug_log.h"
+#include "my_debug.h"
 #include "cj01_hardware.h"
 #include "cj01_io_api.h"
 #include "chip_communication.h"
@@ -17,6 +17,7 @@
 #include "sys_timer.h"
 #include "gprs.h"
 #include "server_comm.h"
+#include "mini_pcie.h"
 
 
 
@@ -86,6 +87,34 @@ void UpdataYWInput(void)
 }
 
 
+void SIM7600Test(void)
+{
+    uint8_t state = 0;
+    int32_t len = 0;
+    uint8_t buffer[128];
+    s_UartStr_t com_arg = {38400, 8,0,1};
+    OSTimeDly(OS_TICKS_PER_SEC * 2);
+    IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
+    IoOpen(MINI_PCIE, &com_arg, sizeof(s_UartStr_t));
+    sprintf((char *)buffer, "123\r\n");
+    IoWrite(COM1, buffer, 5);
+    //while (Ioctl(MINI_PCIE, MINIPCIE_POWRE_ON) != 1) OSTimeDly(10);
+    
+    while (1)
+    {
+        len += IoRead(COM1, buffer, 128);
+        if (len>0)
+        {
+            //IoWrite(COM1, buffer, len);
+        }
+        //len = IoRead(COM1, buffer, 128);
+        //if (len>0)
+        //{
+        //    IoWrite(MINI_PCIE, buffer, len);
+        //}
+    }
+}
+
 int8_t channel_modbus_test;
 uint8_t  open[14];
 void TaskInit(void *pdata)
@@ -96,11 +125,13 @@ void TaskInit(void *pdata)
     InitSpiUart(TaskSpiUartPrio);
     //IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
     //IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
-    IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));
+    IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));  // 初始化modbus串口
     PumpCtrl(0xFFFF, 0);
     IoOpen(WDT, (void *)10000, 0);
+    
     while (1)
     {
+        //SIM7600Test();
         //uint8_t temp = 0x55;
         //IoWrite(COM3, "AT\r\n",4);
         //OSTimeDly(1000);

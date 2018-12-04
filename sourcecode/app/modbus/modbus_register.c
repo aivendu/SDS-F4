@@ -3,7 +3,7 @@
 #include "modbus_slave.h"
 #include "sys_config.h"
 #include "modbus_core.h"
-#include "mod_time.h"
+#include "my_time.h"
 #include "version.h"
 #include "stdlib.h"
 #include "stdio.h"

@@ -39,10 +39,10 @@ void LS595Update(uint16_t * value)
         ls595_pin_status = *value;
     }
     
+    __set_PRIMASK(1);
     if (ls595_pin_status & 0xFF00)
     {
         ls595_pin_status |= (1 << LS595_PWR_IO_EN);
-        __set_PRIMASK(1);
         GPIO_WriteBit(LS595_LCLK_GPIO_Port, LS595_LCLK_Pin, GPIO_PIN_RESET);
         for (i=0; i<16; i++)
         {

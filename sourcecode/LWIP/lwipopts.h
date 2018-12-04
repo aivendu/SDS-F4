@@ -2,6 +2,7 @@
 #define __LWIPOPTS_H__
 
 //线程优先级
+#include "sys_task_config.h"
 #ifndef TCPIP_THREAD_PRIO
 #define TCPIP_THREAD_PRIO		TaskTCPIPThreadPrio	//定义内核任务的优先级为5
 #endif
@@ -47,6 +48,7 @@
 #define LWIP_ICMP               1 	//使用ICMP协议
 #define LWIP_DHCP               1	//使用DHCP
 #define LWIP_UDP                1 	//使用UDP服务
+#define LWIP_DNS                1
 #define UDP_TTL                 255 //UDP数据包生存时间
 #define LWIP_STATS 0
 #define LWIP_PROVIDE_ERRNO 1
@@ -82,6 +84,8 @@
   #define CHECKSUM_CHECK_TCP              1
 #endif
 
+#define LWIP_SO_SNDTIMEO                1
+#define LWIP_SO_RCVTIMEO                1
 
 
 #define LWIP_NETCONN                    1 	//LWIP_NETCONN==1:使能NETCON函数(要求使用api_lib.c)

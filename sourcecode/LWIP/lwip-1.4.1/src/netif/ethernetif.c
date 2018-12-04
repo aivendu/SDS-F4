@@ -8,7 +8,7 @@
 #include "lwip/ip_frag.h"
 #include "lwip/tcpip.h" 
 #include "string.h"  
-#include "mod_malloc.h"
+#include "my_malloc.h"
 #include "tcpip.h"
 #include "memp.h"
 
@@ -26,8 +26,8 @@ extern uint8_t *ram_heap;					//在mem.c里面定义.
 //lwip内核部分,内存释放
 void lwip_comm_mem_free(void)
 { 	
-	myfree(SRAMIN,memp_memory);
-	myfree(SRAMIN,ram_heap);
+	myfree(SRAMEX,memp_memory);
+	myfree(SRAMEX,ram_heap);
 }
 
 //lwip内核部分,内存申请
@@ -38,9 +38,9 @@ uint8_t lwip_comm_mem_malloc(void)
 	uint32_t mempsize;
 	uint32_t ramheapsize; 
 	mempsize=memp_get_memorysize();			//得到memp_memory数组大小
-	memp_memory=mymalloc(SRAMIN,mempsize);	//为memp_memory申请内存
+	memp_memory=mymalloc(SRAMEX,mempsize);	//为memp_memory申请内存
 	ramheapsize=LWIP_MEM_ALIGN_SIZE(MEM_SIZE)+2*LWIP_MEM_ALIGN_SIZE(4*3)+MEM_ALIGNMENT;//得到ram heap大小
-	ram_heap=mymalloc(SRAMIN,ramheapsize);	//为ram_heap申请内存 
+	ram_heap=mymalloc(SRAMEX,ramheapsize);	//为ram_heap申请内存 
 	if(!memp_memory||!ram_heap)//有申请失败的
 	{
 		lwip_comm_mem_free();
@@ -53,13 +53,10 @@ uint8_t lwip_comm_mem_malloc(void)
 //      1,内存错误
 //      2,LAN8720初始化失败
 //      3,网卡添加失败.
-int8_t InitLocalNet(void)
+int8_t InitLocalNet(uint8_t dhcp, ip_addr_t ipaddr, ip_addr_t netmask, ip_addr_t gateway)
 {   
 	OS_CPU_SR cpu_sr;
 	struct netif *Netif_Init_Flag;		//调用netif_add()函数时的返回值,用于判断网络初始化是否成功
-	struct ip_addr ipaddr;  			//ip地址
-	struct ip_addr netmask; 			//子网掩码
-	struct ip_addr gateway;      			//默认网关 
 	if(ETH_Mem_Malloc())
     {
         return 1;		//内存申请失败
@@ -73,7 +70,12 @@ int8_t InitLocalNet(void)
         return 2;			//初始化LAN8720失败 
     }
 	tcpip_init(NULL,NULL);				//初始化tcp ip内核,该函数里面会创建tcpip_thread内核任务
-    
+    if (dhcp)
+    {
+        ipaddr.addr = 0;
+        netmask.addr = 0;
+        gateway.addr = 0;
+    }
 	OS_ENTER_CRITICAL();  //进入临界区
 	Netif_Init_Flag=netif_add(&lwip_netif,&ipaddr,&netmask,&gateway,NULL,&ethernetif_init,&tcpip_input);//向网卡列表中添加一个网口
 	OS_EXIT_CRITICAL();  //退出临界区
@@ -87,7 +89,14 @@ int8_t InitLocalNet(void)
 		netif_set_up(&lwip_netif);		//打开netif网口
 	}
     
-    dhcp_start(&lwip_netif);//开启DHCP 
+    if (dhcp)
+    {
+        dhcp_start(&lwip_netif);//开启DHCP 
+        //while (lwip_netif.dhcp->state != DHCP_BOUND)
+        {
+            OSTimeDly(OS_TICKS_PER_SEC/50);
+        }
+    }
 	return 0;//初始化成功
 }
 
@@ -218,8 +227,10 @@ err_t ethernetif_init(struct netif *netif)
 	return ERR_OK;
 }
 
-
-
+int8_t IsNetCableConnect(void)
+{
+    return ((ETH_ReadPHYRegister(LAN8720_PHY_ADDRESS, PHY_BSR) & PHY_Linked_Status) != 0x00)?1:0;
+}
 
 
 

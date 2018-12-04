@@ -252,9 +252,9 @@
 #define FF_FS_TIMEOUT   1000
 //#define FF_SYNC_t       HANDLE
 /* uC/OS-II */
-//#include "ucos_ii.h"
-//#define FF_SYNC_t       OS_EVENT *
-//#define OS_ERR          uint8_t
+#include "ucos_ii.h"
+#define FF_SYNC_t       OS_EVENT *
+#define OS_ERR          uint8_t
 
 /* The option FF_FS_REENTRANT switches the re-entrancy (thread safe) of the FatFs
 /  module itself. Note that regardless of this option, file access to different

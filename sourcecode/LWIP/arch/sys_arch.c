@@ -39,7 +39,7 @@
 #include "lwip/lwip_sys.h"
 #include "lwip/mem.h"
 #include "arch/sys_arch.h"
-#include "mod_malloc.h"
+#include "my_malloc.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -64,9 +64,9 @@ const void * const pvNullPointer = (mem_ptr_t*)0xffffffff;
 err_t sys_mbox_new( sys_mbox_t *mbox, int size)
 {
 	(*mbox)=mymalloc(SRAMIN,sizeof(TQ_DESCR));	//为消息邮箱申请内存
-	mymemset((*mbox),0,sizeof(TQ_DESCR)); 		//清除mbox的内存
 	if(*mbox)//内存分配成功
 	{
+	    mymemset((*mbox),0,sizeof(TQ_DESCR)); 		//清除mbox的内存
 		if(size>MAX_QUEUE_ENTRIES)size=MAX_QUEUE_ENTRIES;		//消息队列最多容纳MAX_QUEUE_ENTRIES消息数目 
  		(*mbox)->pQ=OSQCreate(&((*mbox)->pvQEntries[0]),size);  //使用UCOS创建一个消息队列
 		LWIP_ASSERT("OSQCreate",(*mbox)->pQ!=NULL); 

@@ -1,4 +1,4 @@
-﻿#ifndef _MALLOC_H
+#ifndef _MALLOC_H
 #define _MALLOC_H
 #include "stdint.h"
 	 
@@ -19,12 +19,12 @@
 
 //mem1内存参数设定,mem1完全处于内部SRAM里面
 #define MEM1_BLOCK_SIZE	32  			//内存块大小为32字节
-#define MEM1_MAX_SIZE		55*1024 	//最大管理内存
+#define MEM1_MAX_SIZE		32*1024 	//最大管理内存
 #define MEM1_ALLOC_TABLE_SIZE MEM1_MAX_SIZE/MEM1_BLOCK_SIZE  //内存表大小
 
 //mem2内存参数设定,mem2处于外部SRAM里面
 #define MEM2_BLOCK_SIZE	32  			//内存块大小为32字节
-#define MEM2_MAX_SIZE		1*1024 	//最大管理内存 k
+#define MEM2_MAX_SIZE		2*512*1024 	//最大管理内存 k
 #define MEM2_ALLOC_TABLE_SIZE MEM2_MAX_SIZE/MEM2_BLOCK_SIZE  //内存表大小
 
 //mem3内存参数设定,mem3处于CCM,用于管理CCM(特别注意,这部分SRAM,近CPU可以访问)
@@ -54,6 +54,11 @@ uint8_t mem_perused(uint8_t memx);				        //获得内存使用率(外/内部
 void myfree(uint8_t memx,void *ptr);  			//内存释放(外部调用)
 void *mymalloc(uint8_t memx,uint32_t size);			//内存分配(外部调用)
 void *myrealloc(uint8_t memx,void *ptr,uint32_t size);//重新分配内存(外部调用)
+
+#include "stdarg.h"
+#include "my_debug.h"
+#define memeryDebug(format, ...)   {}//Printf_D("memery", format, ##__VA_ARGS__)
+
 #endif
 
 

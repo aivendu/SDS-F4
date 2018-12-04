@@ -6,7 +6,7 @@
 //#include "bsp_includes.h"
 #include "stdlib.h"
 #include "stdint.h"
-#include "mod_malloc.h"
+#include "my_malloc.h"
 #include "ff.h"
 
 
@@ -22,7 +22,7 @@ void *ff_memalloc(  /* Returns pointer to the allocated memory block (null on no
 )
 {
     //return (void*)mallocApi(SRAMIN,msize);
-    return malloc(msize);   /* Allocate a new memory block with POSIX API */
+    return mymalloc(SRAMIN,msize);   /* Allocate a new memory block with POSIX API */
 }
 
 
@@ -35,7 +35,7 @@ void ff_memfree(
 )
 {
     //freeApi(SRAMIN,mblock);
-    free(mblock);   /* Free the memory block with POSIX API */
+    myfree(SRAMIN, mblock);   /* Free the memory block with POSIX API */
 }
 
 #endif

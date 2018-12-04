@@ -70,6 +70,14 @@ void MX_FATFS_Init(void)
 
   /* USER CODE BEGIN Init */
   /* additional user code for init */     
+  f_mount(&SDFatFS, "0:", 1);   
+  if (f_mount(&USERFatFS, "1:", 1) == FR_NO_FILESYSTEM)
+  {
+      if (f_mkfs("1:", FM_EXFAT, 0, 0, 0) == FR_OK)
+      {
+          f_mount(&USERFatFS, "1:", 1);
+      }
+  }
   /* USER CODE END Init */
 }
 

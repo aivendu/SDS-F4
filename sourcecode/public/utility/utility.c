@@ -7,7 +7,7 @@
 **  输入:   ip -- ip的字符串格式xxx.xxx.xxx.xxx,xxx取值范围0-255
 **          ip_return -- ip的整数格式
 **  返回:   0 -- 转换成功，
-**          1 -- 转换失败, 中间出现非法字符，或者转换出来的整数大于255
+**          -1 -- 转换失败, 中间出现非法字符，或者转换出来的整数大于255
 **  说明:   字符串自能有'"'、'.'、空格、数字组成
 **  调用:    memset() -- 对数据进行赋值操作
 **  作者:   杜其俊/aiven
@@ -153,5 +153,31 @@ int8_t strtoint(uint8_t scale, uint8_t s_len, const char *str, uint8_t *ret)
 
     return 0;
 }
+
+
+uint32_t strntoul(char * s, uint32_t len, char **endptr, int base)
+{
+    uint8_t	ch;
+    uint8_t	ln;
+    uint32_t	n=0;
+    if ((base == 2) ||(base == 8) || (base == 10) || (base ==16))
+    {
+        ln = 0;
+        ch = *s++;
+        while(((ch >= '0') && (ch <= '9')) || ((ch >= 'A') && (ch <= 'F')) || ((ch >= 'a') && (ch <= 'f')))
+        {
+            if(((ch >= '0') && (ch <= '9')))		ch = ch - '0';
+            if((base == 16) && ((ch >= 'a') && (ch <= 'f')))		ch = 10 + ch - 'a';
+            if((base == 16) && ((ch >= 'A') && (ch <= 'F')))		ch = 10 + ch - 'A';
+            n = n * base + ch;
+            ch = *s++;
+            ln++;
+            if((ln > 8) || (ln >= len))				break;											//防止长度溢出
+        }
+    }
+    return(n);
+}
+
+
 
 

@@ -124,14 +124,21 @@ const Diskio_drvTypeDef  SD_Driver =
 /* Private functions ---------------------------------------------------------*/
 static DSTATUS SD_CheckStatus(BYTE lun)
 {
-  Stat = STA_NOINIT;
-  //IoOpen()
-  if(SD_GetState() == SD_CARD_TRANSFER)
-  {
-    Stat &= ~STA_NOINIT;
-  }
-  //IoClose()
-  return Stat;
+    SDCardState  sd_st =SD_GetState(); 
+    switch (sd_st)
+    {
+        case SD_CARD_READY          :    Stat = STA_NOINIT;    break;
+        case SD_CARD_IDENTIFICATION :    Stat = STA_NOINIT;    break;
+        case SD_CARD_STANDBY        :    Stat = 0;       break;
+        case SD_CARD_TRANSFER       :    Stat = 0;       break;
+        case SD_CARD_SENDING        :    Stat = 0;       break;
+        case SD_CARD_RECEIVING      :    Stat = 0;       break;
+        case SD_CARD_PROGRAMMING    :    Stat = 0;       break;
+        case SD_CARD_DISCONNECTED   :    Stat = STA_NODISK;       break;
+        case SD_CARD_ERROR          :    Stat = STA_NODISK;       break;
+        default :     Stat = STA_NODISK;       break;
+    }
+    return Stat;
 }
 
 /**

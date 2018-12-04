@@ -1,12 +1,12 @@
-﻿#include "server_comm.h"
+#include "server_comm.h"
 #include "string.h"
 #include "stdio.h"
 #include "stm32f4xx.h"
 #include "ucos_ii.h"
 #include "sys_config.h"
 #include "gprs_socket.h"
-#include "mod_time.h"
-#include "crc.h"
+#include "my_time.h"
+#include "crc_lib.h"
 
 
 

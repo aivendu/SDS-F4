@@ -1,4 +1,4 @@
-﻿/*****************************************************************
+/*****************************************************************
 ** Copyright (c) 2017, 	 XXXXXXXXXXXX有限公司 
 ** All rights reserved.
 ** 文件名称： adc.c
@@ -46,8 +46,8 @@ void ADC_Configuration(void)
     ADC_InitTypeDef         ADC_InitStructure;
 
     //RCC_ADCCLKConfig(RCC_PCLK2_Div6); //设置ADC时钟分频因子为6(72M/6=12M),ADC最大工作频率为14M
-   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC, ENABLE);//使能GPIOA\B\C时钟
-   RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 | RCC_APB2Periph_ADC2 | RCC_APB2Periph_ADC3, ENABLE); //使能ADC1时钟，使能ADC2时钟，使能ADC3时钟
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC, ENABLE);//使能GPIOA\B\C时钟
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 | RCC_APB2Periph_ADC2 | RCC_APB2Periph_ADC3, ENABLE); //使能ADC1时钟，使能ADC2时钟，使能ADC3时钟
     
     //PA口
 	GPIO_InitStructure.GPIO_Pin =  ADC_CUR_IN1_Pin | ADC_CUR_IN2_Pin | ADC_CUR_IN3_Pin | ADC_CUR_IN4_Pin;//电流采样口

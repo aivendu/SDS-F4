@@ -6,7 +6,7 @@
 #include "cj01_usart.h"
 #include "stm32f4xx.h"
 #include "modbus_register.h"
-#include "crc.h"
+#include "crc_lib.h"
 #include "modbus_slave.h"
 #include "modbus_core.h"
 
@@ -944,9 +944,9 @@ void ModbusReply(uint8_t *sendbuf,uint8_t len)
 		USART_SendData(USART6,sendbuf[temp]); //通过外设 USART1 发送单个数据 
 	    while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
 	}
-	USART_SendData(USART6,(crc>>8)&0xFF); //通过外设 USART1 发送单个数据 
+	USART_SendData(USART6,(crc)&0xFF); //通过外设 USART1 发送单个数据 
 	while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
-	USART_SendData(USART6,crc&0xFF); //通过外设 USART1 发送单个数据 
+	USART_SendData(USART6,(crc>>8)&0xFF); //通过外设 USART1 发送单个数据 
 	while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
 	//CLAR_QUEUE_UART1R;//清接收队列
     Delay_ms(3);
@@ -1075,7 +1075,7 @@ void ModbusSlaveReceive(uint8_t *dat)
 	        modbus_rec_buffer[modbus_rec_index] = *dat;
 
 	        if (modbus_crc ==
-	                ((modbus_rec_buffer[modbus_rec_index - 1] << 8) + modbus_rec_buffer[modbus_rec_index]))
+	                ((modbus_rec_buffer[modbus_rec_index] << 8) + modbus_rec_buffer[modbus_rec_index - 1]))
 	        {
 	            if ((dat = malloc(modbus_rec_index + 8)) != 0)
 	            {

@@ -17,7 +17,7 @@
 //修改信息
 //无
 ////////////////////////////////////////////////////////////////////////////////// 	   
-
+#include "stdint.h"
 
 //网卡的名字
 #define IFNAME0 'e'
@@ -26,4 +26,6 @@
 
 err_t ethernetif_init(struct netif *netif);
 err_t ethernetif_input(struct netif *netif);
+extern int8_t IsNetCableConnect(void);
+
 #endif

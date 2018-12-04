@@ -75,7 +75,7 @@ s_sys_config_t  sys_config_ram;
 /*密码*/    "123456",\
 /*通信方式位4G*/  CM_4G,\
 /*DHCP使能*/      1,\
-/*apn 连接点*/    "",\
+/*apn 连接点*/    "CTNET",\
 /*apn 用户名*/    "",\
 /*apn 密码*/      "",\
 /*本地IP*/        0,\
@@ -123,7 +123,7 @@ FATFS flash_fatfs;
 #define SYS_CFG_F_PATH        "1:sys_cfg_f.inc"
 
 
-#include "debug_log.h"
+#include "my_debug.h"
 #define cfgDebug       Printf_D
 
 static FRESULT InitFileSystemT(void)

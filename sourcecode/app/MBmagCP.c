@@ -2,7 +2,7 @@
 #include "spi_uart.h"
 #include "math.h"
 #include "utility.h"
-#include "mod_time.h"
+#include "my_time.h"
 #include "ucos_ii.h"
 
 #define mbmagcpRead()

@@ -224,6 +224,43 @@ int8_t UartOpen(int32_t port, const void *config, uint8_t len)
     return 1;   //串口打开成功
 }
 
+
+void ReInitUart(USART_TypeDef *USARTPort)
+{
+    
+    uint8_t  USART_IRQn;   //中断通道
+//    uint8_t IRQChannelPreemptionPriority;   //抢占优先级
+    uint8_t IRQChannelSubPriority;//子优先级
+    NVIC_InitTypeDef NVIC_InitStructure;
+    USART_Cmd(USARTPort, ENABLE);  //使能串口
+
+    USART_ClearFlag(USARTPort, 0xFFFF);
+
+    USART_ITConfig(USARTPort, USART_IT_RXNE, ENABLE);//开启相关中断
+    if (USARTPort == USART1)
+    {
+        USART_IRQn = USART1_IRQn;
+        IRQChannelSubPriority = SUB_PRIORITY_USART1;
+    }
+    else if (USARTPort == USART3)
+    {
+        USART_IRQn = USART3_IRQn;
+        IRQChannelSubPriority = SUB_PRIORITY_USART3;
+    }
+    else if (USARTPort == USART6)
+    {
+        USART_IRQn = USART6_IRQn;
+        IRQChannelSubPriority = SUB_PRIORITY_USART6;
+    }
+    
+    //Usart NVIC 中断配置
+    NVIC_InitStructure.NVIC_IRQChannel = USART_IRQn;//串口中断通道
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PREEMPTION_PRIORITY_0; //抢占优先级
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = IRQChannelSubPriority;      //子优先级
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;         //IRQ通道使能
+    NVIC_Init(&NVIC_InitStructure); //根据指定的参数初始化VIC寄存器
+}
+
 /*****************************************************************************************
 ** 函 数 名 称 ：Uart0_Close
 ** 函 数 功 能 ：关闭相应的端口，释放资源
@@ -311,7 +348,7 @@ int8_t UartWrite(int32_t port, void *buf, uint32_t buf_len)
         queue_temp = (DataQueue *)UART1SendBuf;
         GPIOPort = USART1;
     }
-	else if ((port == COM3))
+	else if (port == COM3)
     {
         queue_temp = (DataQueue *)UART3SendBuf;
         GPIOPort = USART3;
@@ -336,6 +373,17 @@ int8_t UartWrite(int32_t port, void *buf, uint32_t buf_len)
             OS_EXIT_CRITICAL();
             OSTimeDly(OS_TICKS_PER_SEC/100);
             OS_ENTER_CRITICAL();
+            if (QueueNData((void *)queue_temp) == QueueSize((void *)queue_temp))
+            {
+                ReInitUart(GPIOPort);
+                if(USART_GetFlagStatus(GPIOPort, USART_FLAG_TXE) != RESET)                
+                {
+                    //UART1发送保持寄存器空
+                    QueueRead(&temp, queue_temp);         //发送最初入队的数据/
+                    USART_SendData(GPIOPort, (uint8_t) temp); //通过外设 USART 发送单个数据 
+                    USART_ITConfig(GPIOPort, USART_IT_TC, ENABLE);//使能发送中断
+                }
+            }
         }
     }
     if(USART_GetFlagStatus(GPIOPort, USART_FLAG_TXE) != RESET)                
@@ -538,6 +586,26 @@ void USART2_IRQHandler(void)                //串口2中断服务程序
 #endif
 }
 
+void USART3_IRQHandler(void)    //串口3中断服务程序
+{
+    if (usart_mode == 1)
+    {   //如果工作模式为MDB模式，执行MDB中断函数
+        //MDB_IRQHandler();
+    }
+    else
+    {
+#if SYSTEM_SUPPORT_OS  //使用UCOS操作系统
+        OSIntEnter();
+#endif
+        usart_IRQHandler(USART3, (DataQueue *)UART3RecvBuf, (DataQueue *)UART3SendBuf);
+
+#if SYSTEM_SUPPORT_OS
+        OSIntExit();        //退出中断
+#endif
+    }
+    return;
+}
+
 extern void ModbusSlaveReceive(uint8_t *dat);
 void USART6_IRQHandler(void)      //串口2中断服务程序
 {
@@ -575,28 +643,6 @@ void USART6_IRQHandler(void)      //串口2中断服务程序
 #endif
 }
 
-void USART3_IRQHandler(void)    //串口3中断服务程序
-{
-    if (usart_mode == 1)
-    {   //如果工作模式为MDB模式，执行MDB中断函数
-        //MDB_IRQHandler();
-        return;
-    }
-    else
-    {
-#if SYSTEM_SUPPORT_OS  //使用UCOS操作系统
-        OSIntEnter();
-#endif
-        usart_IRQHandler(USART3, (DataQueue *)UART3RecvBuf, (DataQueue *)UART3SendBuf);
-
-#if SYSTEM_SUPPORT_OS
-        OSIntExit();        //退出中断
-#endif
-        return;
-    }
-
-
-}
 
 
 

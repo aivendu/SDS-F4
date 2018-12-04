@@ -7,7 +7,7 @@ extern "C" {
 //#include    "os_cpu.h"
 //#include    ".\os\os_cfg.h"
 //#include    ".\os\ucos_ii.h"
-#include    "os_includes.h"
+#include    "ucos_ii.h"
 #ifdef __cplusplus
 }
 #endif

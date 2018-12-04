@@ -1,4 +1,4 @@
-﻿#include "string.h"
+#include "string.h"
 #include "stdint.h"
 #include "stdlib.h"
 //#include "sim_at.h"
@@ -9,7 +9,8 @@
 #include "sys_config.h"
 #include "cj01_io_api.h"
 #include "bsp_includes.h"
-#include "mod_malloc.h"
+#include "my_malloc.h"
+#include "my_time.h"
 
 #define gprsDebug(format, ...)    {}
 #define SIMIOSend(data, len)   IoWrite(MINI_PCIE, data, len)
@@ -292,6 +293,7 @@ int8_t SendATCommand(e_sim_c_type_t type, uint32_t time, char * command, char * 
 #define GPRSATTACH_CGDCONT              7    //  设置PDP上下文
 #define GPRSAT_CREG                     8    //  CREG
 #define GPRSAT_CSMINS                   9
+#define GPRSAT_IPREX                   10
 
 
 //static   uint8_t attach_state = 0;  //  attach执行状态
@@ -306,6 +308,7 @@ int8_t SendATCommand(e_sim_c_type_t type, uint32_t time, char * command, char * 
 #define  GPRSPDP_CDNSCFG                6  //  CDNSCFG配置DNS服务器地址
 #define  GPRSPDP_CSOCKSETPN             7
 #define  GPRSPDP_CIPMODE_TEST           8
+#define  GPRSPDP_STATUS                 9
 
 //static   uint8_t gprs_state.pdp_state      //  激活pdp执行状态
 #define  pdp_state gprs_state.sim_pdp_state
@@ -476,10 +479,10 @@ static uint32_t ATResponseProccess(char *command)
         {
             return SIMRetCMS;
         }
-        else if (strstr(rec_temp, "CONNECT") != 0)
-        {
-            return SIMRetConnect;
-        }
+		else if (strncmp(rec_temp, "STATE:", 6) == 0)
+		{
+			return SIMRetState;
+		}
         else if (strcmp(rec_temp, "ALREADY CONNECT") == 0)
         {
             return SIMRetALREADYCONNECT;
@@ -487,6 +490,10 @@ static uint32_t ATResponseProccess(char *command)
         else if (strcmp(rec_temp, "CONNECT FAIL") == 0)
         {
             return SIMRetConnectFail;
+        }
+        else if (strncmp(rec_temp, "CONNECT", 7) == 0)
+        {
+            return SIMRetConnect;
         }
         else if (strcmp(rec_temp, "SHUT OK") == 0)
         {
@@ -503,11 +510,7 @@ static uint32_t ATResponseProccess(char *command)
         else if (strcmp(rec_temp, "Call Ready") == 0)
         {
             return SIMRetCallReady;
-        }
-		else if (strncmp(rec_temp, "STATE:", 6) == 0)
-		{
-			return SIMRetState;
-		}		
+        }		
         else
         {
             return SIMRetUNKNOW;
@@ -644,6 +647,7 @@ int8_t GPRSAttachProccess(void)
                     SetSIMOnlineGPRSState(1);
                     sim_state = SIM_ATCOMMAND;
                     attach_state = GPRSAT_CSQ;
+                     //attach_state = GPRSAT_IPREX;
                 }
                 else if (rec_buf == SIMRetTIMEOUT)
                 {
@@ -665,6 +669,20 @@ int8_t GPRSAttachProccess(void)
                 sim_state = SIM_ATCOMMAND;
             }
             break;
+        case GPRSAT_IPREX:
+            if ((rec_buf = ATCommandProccess(SIM_C_T_SET, 2000, "+IPREX", "38400")) != 0)//执行命令,查询信号强度
+            {
+                if (rec_buf == SIMRetTIMEOUT)
+                {
+                    sim_state = SIM_ATCOMMAND;
+                }
+                else if (rec_buf == SIMRetOK)//测试命令 回复 OK
+                {
+                    sim_state = SIM_ATCOMMAND;
+                    attach_state = GPRSAT_CSQ;
+                }
+            }
+            break;
 		case GPRSAT_CSQ:
 			if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 2000, "+CSQ", 0)) != 0)//执行命令,查询信号强度
             {
@@ -682,7 +700,7 @@ int8_t GPRSAttachProccess(void)
         case GPRSAT_CSMINS:
             if (sys_config_ram.com_mode == CM_4G)
             {
-                attach_state = GPRSAT_CREG;
+                attach_state = GPRSATTACH_CGDCONT;
                 break;
 //                rec_buf = ATCommandProccess(SIM_C_T_SET, 2000, "+CSIM", "1,242"); 
 //                if (rec_buf != 0)
@@ -716,6 +734,11 @@ int8_t GPRSAttachProccess(void)
                     sim_state = SIM_ATCOMMAND;
                     if (GetSIMCardGPRSState())   attach_state = GPRSATTACH_CGDCONT;
                 }
+//                else if (rec_buf == SIMRetError)
+//                {
+//                    sim_state = SIM_ATCOMMAND;
+//                    attach_state = GPRSATTACH_CGDCONT;
+//                }
             }
             break;
         case GPRSATTACH_CGDCONT:
@@ -741,8 +764,7 @@ int8_t GPRSAttachProccess(void)
                     sim_state = SIM_ATCOMMAND;
                     if (sys_config_ram.com_mode == CM_4G)
                     {
-                        attach_state = GPRSATTACH_E0;
-                        return 1;
+                        attach_state = GPRSAT_CREG;
                     }
                     else
                     {
@@ -762,15 +784,19 @@ int8_t GPRSAttachProccess(void)
                 else if (rec_buf == SIMRetTIMEOUT)
                 {
                     sim_state = SIM_ATCOMMAND;
-					attach_state = GPRSATTACH_E0;
+                    if (GetSIMRegisterGPRSState() == 0)
+                    {
+					    attach_state = GPRSATTACH_E0;
+                    }
+                    SetSIMRegisterGPRSState(0);
                 }
                 else if (rec_buf == SIMRetOK)
                 {
                     if ((GetSIMRegisterGPRSState() == 1) || (GetSIMRegisterGPRSState() == 5))
                     {
                         attach_state = GPRSATTACH_CGREG;
-                    }
-                    sim_state = SIM_ATCOMMAND;
+                        sim_state = SIM_ATCOMMAND;
+                    }                    
                 }
             }
             break;
@@ -792,7 +818,8 @@ int8_t GPRSAttachProccess(void)
                     {
                         if (sys_config_ram.com_mode == CM_4G)
                         {
-                            attach_state = GPRSATTACH_CGDCONT;
+                            attach_state = GPRSATTACH_E0;
+                            return 1;
                         }
                         else
                         {
@@ -805,7 +832,7 @@ int8_t GPRSAttachProccess(void)
                     else
                     {
                         sim_step_handle_time=0;  //  只要注册命令一直回复OK， 就不要重启模块
-                        sim_state = SIM_ATCOMMAND;
+                        //sim_state = SIM_ATCOMMAND;
                         //return 2;
                     }
                 }
@@ -869,10 +896,73 @@ int8_t GPRSActivePDPContext(void)
     uint32_t rec_buf;
     switch (pdp_state)
     {
+        case GPRSPDP_STATUS:
+            if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 2000, "+CIPSTATUS", 0)) != 0)
+            {
+                if (rec_buf == SIMRetState)
+                {
+                    if (strncmp((char *)&sim_buffer[7], "IP INITIAL", 10) == 0)//初始化
+                    {
+                        if (sys_config_ram.com_mode == CM_4G)
+                        {
+                            pdp_state = GPRSPDP_CSOCKSETPN;
+                        }
+                        else
+                        {
+                            pdp_state = GPRSPDP_CIPMUX;
+                        }
+                        sim_state = SIM_ATCOMMAND;
+                    }
+                    else if (strncmp((char *)&sim_buffer[7], "IP START", 8) == 0)//获得本地IP地址
+                    {
+                        pdp_state = GPRSPDP_CIICR;
+                    }
+                    else if (strncmp((char *)&sim_buffer[7], "IP CONFIG", 9) == 0)//配置场景
+                    {
+                        if (sys_config_ram.com_mode == CM_4G)
+                        {
+                            pdp_state = GPRSPDP_CSOCKSETPN;
+                        }
+                        else
+                        {
+                            pdp_state = GPRSPDP_CIPMUX;
+                        }
+                        sim_state = SIM_ATCOMMAND;
+                    }
+                    else if (strncmp((char *)&sim_buffer[7], "IP GPRSACT", 10) == 0)//接受场景
+                    {
+                        pdp_state = GPRSPDP_CIFSR;
+                    }
+                    else if ((strncmp((char *)&sim_buffer[7], "IP STATUS", 9) == 0))//启动任务
+                    {
+                        return 1;
+                    }
+                    else if (strncmp((char *)&sim_buffer[7], "PDP DEACT", 9) == 0)//场景被释放
+                    {
+                        return GPRS_ATTACH;
+                    }
+                    else
+                    {
+                        pdp_state = GPRSPDP_SHUT;
+                    }
+                    sim_state = SIM_ATCOMMAND;
+                }
+                else if (rec_buf == SIMRetError)
+                {
+                    
+                }
+                else if (rec_buf == SIMRetTIMEOUT)
+                {
+                    SetSIMSocketGPRSState(0);
+                    return GPRS_ATTACH;
+                }
+            }
+            break;
+            
         case GPRSPDP_SHUT:
             if (sys_config_ram.com_mode == CM_4G)
             {
-                pdp_state = GPRSPDP_CIPMODE_TEST;
+                pdp_state = GPRSPDP_CSOCKSETPN;
                 sim_state = SIM_ATCOMMAND;
                 break;
             }
@@ -893,11 +983,11 @@ int8_t GPRSActivePDPContext(void)
                     pdp_state = GPRSPDP_CIPMODE_TEST;
                     sim_state = SIM_ATCOMMAND;
                 }
-                else if (rec_buf == SIMRetTIMEOUT)
-                {
+				else if (rec_buf == SIMRetTIMEOUT)
+				{
                     pdp_state = GPRSPDP_CIPMODE_TEST;
                     sim_state = SIM_ATCOMMAND;
-                }
+				}
             }
 			break;
         case GPRSPDP_CIPMUX:
@@ -928,8 +1018,23 @@ int8_t GPRSActivePDPContext(void)
                 {
                     sim_state = SIM_ATCOMMAND;
 					if(GetSIMModeGPRSState() == 0)  pdp_state = GPRSPDP_CIPMODE;
-					else {pdp_state = GPRSPDP_SHUT; return 1;}
+					else {
+						if (sys_config_ram.com_mode == CM_4G)
+	                    {
+	                        SetSIMModeGPRSState(1);
+	                        pdp_state = GPRSPDP_SHUT;
+	                        return 1;
+	                    }
+	                    else
+	                    {
+	                        pdp_state = GPRSPDP_CSTT;
+	                    }
+					}
                 }
+				else if (rec_buf == SIMRetTIMEOUT)
+				{
+                    sim_state = SIM_ATCOMMAND;
+				}
             }
             break;
         case GPRSPDP_CIPMODE:
@@ -937,6 +1042,7 @@ int8_t GPRSActivePDPContext(void)
             {
                 if (rec_buf == SIMRetOK)
                 {
+                    SetSIMModeGPRSState(1);
                     if (sys_config_ram.com_mode == CM_4G)
                     {
                         pdp_state = GPRSPDP_SHUT;
@@ -1058,7 +1164,7 @@ int8_t GPRSActivePDPContext(void)
 ** 作者:	   杜其俊
 ** 日期:	   20160815
 ******************************************************************/
-
+char gprs_old_ip[20];
 int8_t GPRSTcpProccess(void)
 {
     uint16_t i;
@@ -1084,9 +1190,13 @@ int8_t GPRSTcpProccess(void)
                     tcp_state = GPRSTCP_GETIP_FROM_DNS;
                 }
             }
+            else
+            {
+                return -1;  //  等待应用层操作
+            }
             break;
         case GPRSTCP_DATA:  //  数据模式
-            if (socket.state == 3)
+            if ((socket.state == 3) || (IsSIMSocketConnect() == 0))
             {
                 //  关闭socket
                 SetSIMSocketGPRSState(0);
@@ -1108,14 +1218,9 @@ int8_t GPRSTcpProccess(void)
 				else if(strncmp((char *)sim_buffer,"+PDP: DEACT",11) == 0)
 				{
                     gprsDebug("+PDP: DEACT,disconnected by network\r\n");
-//				    if (socket.state == 1) 
-//                        socket.state = 4;
-//                    }
-                    
                     SetSIMAttatchGPRSState(0);//附着失败
-//                    tcp_state = GPRSTCP_IDLE;
-//                    sim_state = SIM_ATCOMMAND;
-                    return 2;
+                    sim_state = SIM_ATCOMMAND;
+                    return GPRS_CONNECT;
 				}
                 else
                 {
@@ -1130,7 +1235,11 @@ int8_t GPRSTcpProccess(void)
                 for (i=0; i<strlen(sim_buffer); i++)
                     QueueWrite((uint8_t *)tcp_buffer, sim_buffer[i]);
             }
-            TCPDataForward();
+            else
+            {
+                TCPDataForward();
+                return -1;  //  等待应用层操作
+            }
             //sim_state = SIM_CONNECT;
             break;
         case GPRSTCP_EXIT_PASSTHROUGH:
@@ -1197,16 +1306,16 @@ int8_t GPRSTcpProccess(void)
             }
             if (rec_buf != 0)
             {
-                if ((rec_buf == SIMRetCloseOk) || (rec_buf == SIMRetError))
+                if (rec_buf == SIMRetCloseOk)
                 {
                     SetSIMSocketGPRSState(0);
-                    tcp_state = GPRSTCP_OPEN;
+                    tcp_state = GPRSTCP_IDLE;
                     sim_state = SIM_ATCOMMAND;
-                }
-                else if (rec_buf == SIMRetTIMEOUT)
+                }                  
+                else if ((rec_buf == SIMRetTIMEOUT) || (rec_buf == SIMRetError))
                 {
                     sim_state = SIM_ATCOMMAND;
-                    return 2;
+                    return GPRS_CONNECT;
                 }
             }
             break;
@@ -1228,8 +1337,24 @@ int8_t GPRSTcpProccess(void)
                         i = 0;
                         while ((sizeof(socket.socket_ip) > i) &&  (socket.socket_ip[i] != '\"')) i++;
                         socket.socket_ip[i] = 0;
+                        strcpy(gprs_old_ip, socket.socket_ip);
+                        tcp_state = GPRSTCP_OPEN;
                     }
-                    tcp_state = GPRSTCP_OPEN;
+                    else
+                    {
+                        return GPRS_POWEROFF;
+//                        if (strlen(gprs_old_ip) >= 8)
+//                        {
+//                            tcp_state = GPRSTCP_OPEN;
+//                            Printf_D("GPRS", "use old ip: %s\r\n", gprs_old_ip);
+//                        }
+//                        else
+//                        {
+//                            socket.state = 4;
+//                            SetSIMSocketGPRSState(0);
+//                            tcp_state = GPRSTCP_IDLE;
+//                        }
+                    }
                 }
                 else if (rec_buf == SIMRetOK)
                 {
@@ -1241,7 +1366,7 @@ int8_t GPRSTcpProccess(void)
                 }
                 else if (rec_buf == SIMRetTIMEOUT)
                 {
-                    tcp_state = GPRSTCP_STATUS;
+                    //tcp_state = GPRSTCP_STATUS;
                     //return 2;
                 }
                 sim_state = SIM_ATCOMMAND;
@@ -1253,24 +1378,17 @@ int8_t GPRSTcpProccess(void)
             if (sys_config_ram.com_mode == CM_4G)
             {
                 sprintf(arg, "0,\"TCP\",\"%s\",%u", socket.socket_ip, socket.socket_port);
-                if ((rec_buf = ATCommandProccess(SIM_C_T_SET, 10000, "+CIPOPEN", arg)) != 0)
+                if ((rec_buf = ATCommandProccess(SIM_C_T_SET, 30000, "+CIPOPEN", arg)) != 0)
                 {
                     if ((rec_buf == SIMRetALREADYCONNECT) || (rec_buf == SIMRetOK))
                     {
                         SendATCommand(SIM_C_T_WAIT, 120000, 0, 0);
                         tcp_state = GPRSTCP_WAIT_CONNECT;
                     }
-                    else if (rec_buf == SIMRetError)
+                    else if ((rec_buf == SIMRetError) || (rec_buf == SIMRetConnectFail) || 
+                             (rec_buf == SIMRetTIMEOUT))
                     {
-    					tcp_state = GPRSTCP_STATUS;
-                    }
-                    else if (rec_buf == SIMRetConnectFail)
-                    {
-    					tcp_state = GPRSTCP_STATUS;
-                    }
-                    else if (rec_buf == SIMRetTIMEOUT)
-                    {
-    					tcp_state = GPRSTCP_STATUS;
+    					return GPRS_CONNECT;
                     }
                     else if (rec_buf == SIMRetConnect)
                     {
@@ -1290,15 +1408,10 @@ int8_t GPRSTcpProccess(void)
                     SendATCommand(SIM_C_T_WAIT, 120000, 0, 0);
                     tcp_state = GPRSTCP_WAIT_CONNECT;
                 }
-                else if (rec_buf == SIMRetError)
+                else if ((rec_buf == SIMRetError) || (rec_buf == SIMRetConnectFail))
                 {
                     socket.state = 4;
-                    tcp_state = GPRSTCP_SHUT;
-                }
-                else if (rec_buf == SIMRetConnectFail)
-                {
-                    socket.state = 4;
-                    tcp_state = GPRSTCP_IDLE;
+                    return GPRS_CONNECT;
                 }
                 else if (rec_buf == SIMRetTIMEOUT)
                 {
@@ -1344,99 +1457,7 @@ int8_t GPRSTcpProccess(void)
                 tcp_state = GPRSTCP_EXIT_PASSTHROUGH;
             }
             break;
-        case GPRSTCP_SHUT:
-            if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 5000, "+CIPSHUT", 0)) != 0)
-            {
-                if ((uint32_t)rec_buf == SIMRetShutOk)
-                {
-                    tcp_state = GPRSTCP_STATUS;
-                }
-                sim_state = SIM_ATCOMMAND;
-            }
-            break;
-        case GPRSTCP_STATUS:
-            if (sys_config_ram.com_mode == CM_4G)
-            {
-                if ((rec_buf = ATCommandProccess(SIM_C_T_READ, 2000, "+NETOPEN", 0)) != 0)
-                {
-                    if (rec_buf == SIMRetCommand)
-                    {
-                        strtok((char *)sim_buffer, ":");
-                        SetSIMAttatchGPRSState(atoi(strtok(0, ":")));
-                    }
-                    else if (rec_buf == SIMRetTIMEOUT)
-                    {
-                        SetSIMSocketGPRSState(0);
-                        tcp_state = GPRSTCP_EXIT_PASSTHROUGH;
-                        sim_state = SIM_ATCOMMAND;
-                    }
-                    else if (rec_buf == SIMRetOK)
-                    {
-                        if (GetSIMAttatchGPRSState() == 1)
-                        {
-                            tcp_state = GPRSTCP_CLOSE;
-                        }
-    					else
-    					{
-    						 tcp_state = GPRSTCP_NETOPEN;
-    					}
-                        sim_state = SIM_ATCOMMAND;
-                    }
-                }
-                break;
-            }
-            if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 2000, "+CIPSTATUS", 0)) != 0)
-            {
-                if (rec_buf == SIMRetState)
-                {
-                    if (strncmp((char *)&sim_buffer[7], "PDP DEACT", 9) == 0)//场景被释放
-                    {
-                        return 2;
-                    }
-                    else if ((strncmp((char *)&sim_buffer[7], "IP START", 8) == 0) ||//获得本地IP地址
-                             (strncmp((char *)&sim_buffer[7], "IP CONFIG", 9) == 0) ||//配置场景
-                             (strncmp((char *)&sim_buffer[7], "IP GPRSACT", 10) == 0))//接受场景
-                    {
-                        return 1;
-                    }
-                    else if ((strncmp((char *)&sim_buffer[7], "IP INITIAL", 10) == 0) ||//初始化
-                             (strncmp((char *)&sim_buffer[7], "IP STATUS", 9) == 0))//启动任务
-                    {
-                        if (socket.state == 1)
-                        {
-                            if ((socket.socket_ip[0] >= '0') && (socket.socket_ip[0] <= '9'))
-                            {
-                                tcp_state = GPRSTCP_OPEN;   //  已经是IP地址
-                            }
-                            else
-                            {
-                                tcp_state = GPRSTCP_GETIP_FROM_DNS;
-                            }
-                        }
-                        else
-                        {
-                            tcp_state = GPRSTCP_IDLE;
-                        }
-                    }
-                    else
-                    {
-                        tcp_state = GPRSTCP_SHUT;
-                    }
-                    sim_state = SIM_ATCOMMAND;
-                }
-                else if (rec_buf == SIMRetError)
-                {
-                    return 2;
-                }
-                else if (rec_buf == SIMRetTIMEOUT)
-                {
-                    SetSIMSocketGPRSState(0);
-                    tcp_state = GPRSTCP_EXIT_PASSTHROUGH;
-                    sim_state = SIM_ATCOMMAND;
-                }
-            }
-            break;
-        default: tcp_state = GPRSTCP_STATUS; return 1;
+        default:  return GPRS_CONNECT;
     }
     return 0;
 }
@@ -1511,8 +1532,12 @@ void SimHandler(void)
             break;
         case GPRS_INIT:  //
             //GPRS_IOInit();
-            QueueCreate(tcp_buffer, sizeof(tcp_buffer), 0, 0);
-            gprs_run_state = GPRS_POWERON;
+            if (clock() > OS_TICKS_PER_SEC * 2)  //  系统启动2S后才进行初始化
+            {
+                QueueCreate(tcp_buffer, sizeof(tcp_buffer), 0, 0);
+                gprs_run_state = GPRS_POWERON;
+            }
+            break;
         case GPRS_POWERON:
             state = Ioctl(MINI_PCIE, MINIPCIE_POWRE_ON);
             if (state == 1)
@@ -1552,6 +1577,7 @@ void SimHandler(void)
                 sim_state = SIM_ATCOMMAND;  //  表示模块脱机
                 sim_step_handle_time=0;
                 gprs_run_state = GPRS_POWEROFF;
+                break;
             }
             else
             {
@@ -1563,6 +1589,7 @@ void SimHandler(void)
                 sim_step_handle_time=0;
                 pdp_state = GPRSPDP_SHUT;
                 gprs_run_state = GPRS_CONNECT;
+                sim_state = SIM_ATCOMMAND;
             }
             else if (state == 2)
             {
@@ -1580,6 +1607,7 @@ void SimHandler(void)
                 sim_state = SIM_ATCOMMAND;  //  表示模块脱机
                 sim_step_handle_time=0;
                 gprs_run_state = GPRS_POWEROFF;
+                break;
             }
             else
             {
@@ -1591,6 +1619,7 @@ void SimHandler(void)
                 sim_step_handle_time=0;
                 tcp_state = GPRSTCP_IDLE;
                 gprs_run_state = GPRS_TCP;
+                sim_state = SIM_ATCOMMAND;
             }
             else if (GetSIMPowerGPRSState() == 0)
             {
@@ -1598,22 +1627,33 @@ void SimHandler(void)
             }
             break;
         case GPRS_TCP:  //  模块TCP连接
-            state = GPRSTcpProccess();
-            if (state == 1)
+            if(sim_step_handle_time>(200*140))
             {
+                sim_state = SIM_ATCOMMAND;  //  表示模块脱机
                 sim_step_handle_time=0;
-                gprs_run_state = GPRS_CONNECT;
+                gprs_run_state = GPRS_POWEROFF;
+                break;
             }
-            else if (state == 2)
+            else
+            {
+                sim_step_handle_time++;
+            }
+            state = GPRSTcpProccess();
+            if (state == -1)
             {
                 sim_step_handle_time=0;
-                gprs_run_state = GPRS_ATTACH;
             }
             else if (GetSIMPowerGPRSState() == 0)
             {
                 SetSIMSocketGPRSState(0);
-                tcp_state = GPRSTCP_STATUS;
                 gprs_run_state = GPRS_POWERON;
+            }
+            else if (state)
+            {
+                sim_state = SIM_ATCOMMAND;  //  表示模块脱机
+                sim_step_handle_time=0;
+                gprs_run_state = state;
+                break;
             }
             break;
         default :
@@ -1627,7 +1667,7 @@ void SimHandler(void)
 }
 
 
-const s_UartStr_t sim_uart = {115200, 8,0,1};
+const s_UartStr_t sim_uart = {38400, 8,0,1};
 void TaskSim(void *pdata)
 {
     pdata = pdata;

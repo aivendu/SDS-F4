@@ -8,7 +8,7 @@
 ** 说明：
 ***********************************************************/
 #include "includes.h"
-#include "mod_malloc.h"
+#include "my_malloc.h"
 
 void testSRAM(void)
 {

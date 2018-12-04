@@ -156,5 +156,8 @@ extern s_gprs_state_t gprs_state;
 #define SetSIMModeGPRSState(a)        (gprs_state.sim_mode     = (a))
 #define SetSIMCardGPRSState(a)        (gprs_state.sim_card     = (a))
 
+#define IsSIMNetReady()          ((GetSIMOnlineGPRSState() == 1) && (GetSIMPowerGPRSState() == 1) &&\
+                                  (GetSIMRegisterGPRSState() == 1) && (GetSIMAttatchGPRSState() == 1))
+#define IsSIMSocketConnect()     ((GetSIMSocketGPRSState() == 1) && IsSIMNetReady())
 
 #endif

@@ -1,6 +1,7 @@
-﻿#include "cj01_io_api.h"
+#include "cj01_io_api.h"
 #include "bsp_includes.h"
 #include "spi.h"
+#include "lwip\ip_addr.h"
 
 #define IOFunc(port)    port##Open,##port##Close,##port##Read,##port##Write,##port##Ioctl,0,0 
 
@@ -406,7 +407,7 @@ uint8_t GetCurrentTaskPrio(void)
     return OSTCBCur->OSTCBPrio;
 }
 
-extern int8_t InitLocalNet(void);
+extern int8_t InitLocalNet(uint8_t dhcp, ip_addr_t ipaddr, ip_addr_t netmask, ip_addr_t gateway);
 extern void TaskModbus(void);
 extern void ChipCommInit(void);
 void BSPInit(void)
@@ -438,12 +439,13 @@ uint8_t  openddd[14];
 void TaskBsp(void *pdata)
 {
     uint8_t err;
+    ip_addr_t ip = {0};
     u_bsp_os_flag_t bsp_flag;
     pdata = pdata;
     CheckIoOpreations();
     BSPInit();
     //OSStatInit();
-    InitLocalNet();
+    InitLocalNet(1, ip, ip, ip);
     bsp_os_flag = OSFlagCreate(0, &err);
 
     while (bsp_os_flag == 0);

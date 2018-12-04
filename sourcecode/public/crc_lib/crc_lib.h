@@ -11,8 +11,10 @@
 // CRC-16:     x^16 + x^15 + x^2 + x^0                 (0x8005)
 //#define        CRC_16_POLYNOMIALS      0x8005
 
-extern unsigned short CRC16(unsigned short uchCRC, unsigned char *puchMsg, int usDataLen);
+extern uint16_t CRC16(uint16_t crc, uint8_t *crc_data, uint8_t crc_data_len);
 
-extern uint32_t crc_32(char *buf, int16_t length);
+extern uint32_t crc_32(uint8_t *buf, uint32_t length);
+
+extern uint16_t CRC_ccitt(uint8_t *b, uint16_t crcx, uint8_t n);
 
 #endif

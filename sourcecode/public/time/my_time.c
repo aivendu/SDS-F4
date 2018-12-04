@@ -1,11 +1,20 @@
 ﻿#include "stdint.h"
 #include "string.h"
 #include "stdio.h"
-#include "mod_time.h"
+#include "ucos_ii.h"
+#include "my_time.h"
 #include "cj01_rtc.h"
 #include "ucos_ii.h"
 #include "cj01_hardware.h"
 #include "cj01_io_api.h"
+
+
+
+#include "cj01_io_api.h"
+#define TIME_API_TYPE      1  //  0--使用clock_t类型配置；1--使用struct tm类型配置
+#define GetLocalTime(t)    {IoOpen(RTC_PORT, 0, 0); IoRead(RTC_PORT, t, sizeof(struct tm)); IoClose(RTC_PORT);}
+#define SetLocalTime(t)    {IoOpen(RTC_PORT, 0, 0); IoWrite(RTC_PORT, t, sizeof(struct tm)); IoClose(RTC_PORT);}
+#define SystemTick()       OSTimeGet()
 
 //  获取从当前年到0年的闰年数量, 包括当年
 #define GetLeapYearNumber(a)  (((a) / 4) - ((a) / 100) + ((a) / 400))
@@ -112,7 +121,10 @@ time_t MKTime(struct tm *t/*timeptr*/)
 {
     uint8_t  iflag = 0;
     uint32_t Continueddaynow = 0;
-
+    if (t->tm_year < BASE_OF_TIME)
+    {
+        return 0;
+    }
     //  计算当年的天数
     if(t->tm_mon >= 3)
     {
@@ -150,22 +162,10 @@ time_t DiffTime(struct tm *t1, struct tm *t2)
     return MKTime(t1) - MKTime(t2);
 }
 
-#include "ucos_ii.h"
 //  获取mcu tick，基于time.h中对时间的定义
-#ifndef OS_VERSION
-static uint32_t time_sys_tick;
-void SysTickCount(void)
-{
-    time_sys_tick++;
-}
 clock_t clock(void)
 {
-    return time_sys_tick;
-#else
-clock_t clock(void)
-{
-    return OSTimeGet();
-#endif
+    return SystemTick();
 }
 
 

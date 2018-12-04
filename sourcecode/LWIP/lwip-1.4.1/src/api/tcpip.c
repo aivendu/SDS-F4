@@ -48,7 +48,6 @@
 #include "lwip/init.h"
 #include "netif/etharp.h"
 #include "netif/ppp_oe.h"
-#include "sys_task_config.h"
 
 
 /* global variables */

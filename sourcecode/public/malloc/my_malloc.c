@@ -1,4 +1,4 @@
-﻿#include "mod_malloc.h"
+#include "my_malloc.h"
 
 
 //内存池(4字节对齐)
@@ -6,9 +6,9 @@ __align(4) uint8_t mem1base[MEM1_MAX_SIZE];
 __align(4) uint8_t mem2base[MEM2_MAX_SIZE] __attribute__((at(0x68000000))); //外部SRAM内存池
 __align(4) uint8_t mem3base[MEM3_MAX_SIZE] __attribute__((at(0x10000000))); //内部CMM内存池
 //内存管理表
-uint16_t mem1mapbase[MEM1_ALLOC_TABLE_SIZE];													//内部SRAM内存池MAP
-uint16_t mem2mapbase[MEM2_ALLOC_TABLE_SIZE] __attribute__((at(0X68000000+MEM2_MAX_SIZE)));	//外部SRAM内存池MAP
-uint16_t mem3mapbase[MEM3_ALLOC_TABLE_SIZE] __attribute__((at(0X10000000+MEM3_MAX_SIZE)));	//内部CCM内存池MAP
+__align(4) uint16_t mem1mapbase[MEM1_ALLOC_TABLE_SIZE];													//内部SRAM内存池MAP
+__align(4) uint16_t mem2mapbase[MEM2_ALLOC_TABLE_SIZE] __attribute__((at(0X68000000+MEM2_MAX_SIZE)));	//外部SRAM内存池MAP
+__align(4) uint16_t mem3mapbase[MEM3_ALLOC_TABLE_SIZE] __attribute__((at(0X10000000+MEM3_MAX_SIZE)));	//内部CCM内存池MAP
 //内存管理参数	   
 const uint32_t memtblsize[SRAMBANK]={MEM1_ALLOC_TABLE_SIZE,MEM2_ALLOC_TABLE_SIZE,MEM3_ALLOC_TABLE_SIZE};	//内存表大小
 const uint32_t memblksize[SRAMBANK]={MEM1_BLOCK_SIZE,MEM2_BLOCK_SIZE,MEM3_BLOCK_SIZE};					//内存分块大小
@@ -91,10 +91,10 @@ uint32_t mymem_malloc(uint8_t memx,uint32_t size)
             for(i=0;i<nmemb;i++)  					//标注内存块非空 
             {  
                 mallco_dev.memmap[memx][offset+i]=nmemb;  
-            }  
+            }
             return (offset*memblksize[memx]);//返回偏移地址  
 		}
-    }  
+    }
     return 0XFFFFFFFF;//未找到符合分配条件的内存块  
 }  
 
@@ -106,8 +106,9 @@ uint8_t mymem_free(uint8_t memx,uint32_t offset)
 {  
 	int i;  
   if(!mallco_dev.memrdy[memx])//未初始化,先执行初始化
-	{
-		mallco_dev.init(memx);    
+  {
+		mallco_dev.init(memx); 
+        memeryDebug("init\r\n");
     return 1;//未初始化  
   }  
   if(offset<memsize[memx])//偏移在内存池内. 
@@ -119,7 +120,11 @@ uint8_t mymem_free(uint8_t memx,uint32_t offset)
 			mallco_dev.memmap[memx][index+i]=0;  
     }  
     return 0;  
-  }else return 2;//偏移超区了.  
+  }else
+  {
+    memeryDebug("free: failed  %08X, %08X\r\n", memx, offset);
+    return 2;//偏移超区了.  
+  }
 }  
 
 //释放内存(外部调用) 
@@ -128,9 +133,15 @@ uint8_t mymem_free(uint8_t memx,uint32_t offset)
 void myfree(uint8_t memx,void *ptr)  
 {  
 	uint32_t offset;  
-    if(ptr==NULL)return;//地址为0.  
+    
+    if(ptr==NULL)
+    {
+        memeryDebug("free: NULL\r\n");
+        return;//地址为0.  
+    }
  	offset=(uint32_t)ptr-(uint32_t)mallco_dev.membase[memx];  
-    mymem_free(memx,offset);//释放内存     
+    mymem_free(memx,offset);//释放内存   
+    memeryDebug("free: %08X, %08X\r\n", ptr, offset);  
 }  
 
 //分配内存(外部调用)
@@ -141,8 +152,16 @@ void *mymalloc(uint8_t memx,uint32_t size)
 {  
   uint32_t offset;  									      
 	offset=mymem_malloc(memx,size);  	   				   
-  if(offset==0XFFFFFFFF)return NULL;  
-  else return (void*)((uint32_t)mallco_dev.membase[memx]+offset);  
+  if(offset==0XFFFFFFFF)
+  {
+    memeryDebug("malloc(%08X): NULL\r\n", size);
+    return NULL;  
+  }
+  else 
+  {
+    memeryDebug("malloc(%08X): %08X, %08X\r\n",size, (void*)((uint32_t)mallco_dev.membase[memx]+offset), offset);
+    return (void*)((uint32_t)mallco_dev.membase[memx]+offset);  
+  }
 }  
 
 //重新分配内存(外部调用)

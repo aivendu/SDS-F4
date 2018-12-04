@@ -1,4 +1,4 @@
-﻿/*  A2O.c
+/*  A2O.c
  *  实现A2O(商达)工艺的处理
  *  设备1、曝气泵
         3台（端口3-5），三台泵分别单独时间控制，默认0：00~23:00开启，23:01~23:59停止，时间可调。
@@ -28,7 +28,7 @@
  */
 #include "a2o.h"
 #include "pump.h"
-#include "mod_time.h"
+#include "my_time.h"
 #include "sys_config.h"
 
 typedef struct s_subm_open
