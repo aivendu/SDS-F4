@@ -91,9 +91,18 @@ int ff_cre_syncobj(  /* 1:Function succeeded, 0:Could not create the sync object
     //  return (int)(*sobj > 0);
 
     /* uC/OS-II */
-      OS_ERR err;
-      *sobj = OSMutexCreate(FS_MUTEX_PRIO, &err);
-      return (int)(err == OS_NO_ERR);
+    OS_ERR err = OS_PRIO_ERR;
+    switch (vol)
+    {
+        case 0:
+            *sobj = OSMutexCreate(MUTEX_PRIO_FS_SD, &err);
+            break;
+        case 1:
+            *sobj = OSMutexCreate(MUTEX_PRIO_FS_FLASH, &err);
+            break;
+    }
+    
+    return (int)(err == OS_NO_ERR);
 
     /* FreeRTOS */
     //  *sobj = xSemaphoreCreateMutex();

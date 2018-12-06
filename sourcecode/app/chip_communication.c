@@ -73,14 +73,20 @@ uint16_t CRCByte(uint16_t crc, uint8_t data)
 uint8_t Spi0TranceByte(uint8_t data)
 {
     uint8_t temp;
+    uint32_t timeout = 100000;
     
-    while (SPI_GetFlagStatus(SPI2, SPI_FLAG_TXE) == RESET){}
+    while (SPI_GetFlagStatus(SPI2, SPI_FLAG_TXE) == RESET){  
+        if ((timeout--) == 0)    break;
+    }
     
     SPI_SendData(SPI2, data); 
-    
-    while (SPI_GetFlagStatus(SPI2, SPI_FLAG_RXNE) == RESET){}
+    timeout = 100000;
+    while (SPI_GetFlagStatus(SPI2, SPI_FLAG_RXNE) == RESET){
+        if ((timeout--) == 0)    break;
+    }
     
     temp = SPI_ReceiveData(SPI2); 
+    if (timeout == 0)   ChipSPIInit();
     return temp;   
 }
 
@@ -171,7 +177,7 @@ int8_t ChipWriteFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
 	{
 		return 0;
 	}
-    ChipSPIInit();
+    //ChipSPIInit();
 	return -1;
 }
 
@@ -214,7 +220,7 @@ int8_t ChipReadFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
 	{
 		return 0;
 	}
-    ChipSPIInit();
+    //ChipSPIInit();
 	return -1;
 }
 

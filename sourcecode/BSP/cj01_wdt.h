@@ -2,9 +2,9 @@
 #define _WDT_H
 #include "stdint.h"
 #if (__DEBUG_FLASH == 0)            //Release模式下的看门狗设置
-#define WDT_ENABLE				0	//	1--看门狗使能，0--看门狗禁止
-#else                               //Debug模式下的看门狗设置
 #define WDT_ENABLE				1	//	1--看门狗使能，0--看门狗禁止
+#else                               //Debug模式下的看门狗设置
+#define WDT_ENABLE				0	//	1--看门狗使能，0--看门狗禁止
 #endif
 
 

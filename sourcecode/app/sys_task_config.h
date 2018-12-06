@@ -5,8 +5,7 @@
 
 typedef enum
 {
-    PRIOSTART = 3,
-    FS_MUTEX_PRIO,
+    PRIOSTART = 4,
     TaskBspPrio,  // 4
     TaskTCPIPThreadPrio,//定义内核任务的优先级
     TaskDHCPPrio,       //定义DHCP任务的优先级

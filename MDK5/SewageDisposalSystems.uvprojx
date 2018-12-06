@@ -335,7 +335,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--c99 --diag_suppress=161</MiscControls>
-              <Define>CHINA_STD=1,USE_STDPERIPH_DRIVER,STM32F40_41xxx,STM32F4XX,__DEBUG_FLASH=0,_TEST_FLASH=0,_TEST_FLASH_2=0,__CC_ARM</Define>
+              <Define>CHINA_STD=1,USE_STDPERIPH_DRIVER,STM32F40_41xxx,STM32F4XX,__DEBUG_FLASH=1,_TEST_FLASH=0,_TEST_FLASH_2=0,__CC_ARM</Define>
               <Undefine></Undefine>
               <IncludePath>..\sourcecode\app\;..\sourcecode\module\;..\sourcecode\module\mod_time;..\sourcecode\module\utility;..\sourcecode\module\FATFS\exfuns;..\sourcecode\module\mod_malloc;..\sourcecode\BSP\;..\sourcecode\BSP\fatfs;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver;..\sourcecode\BSP\STM32F4xx_StdPeriph_Driver\inc;..\sourcecode\UCOSII\CONFIG;..\sourcecode\UCOSII\CORE;..\sourcecode\UCOSII\PORT;..\sourcecode;..\sourcecode\module\debug_log;..\sourcecode\LWIP\lwip-1.4.1\src\include\netif;..\sourcecode\LWIP\lwip-1.4.1\src\include\lwip;..\sourcecode\LWIP\lwip-1.4.1\src\include\ipv4;..\sourcecode\LWIP\lwip-1.4.1\src\include;..\sourcecode\LWIP\app\TCP_Client;..\sourcecode\LWIP\lwip_header;..\sourcecode\LWIP\arch;..\sourcecode\LWIP;..\sourcecode\public\queue;..\sourcecode\public\sys_config;..\sourcecode\public\utility;..\sourcecode\public\crc;..\sourcecode\public\sys_error_manage;..\sourcecode\FATFS\source;..\sourcecode\module\mod_log;..\sourcecode\app\modbus;..\sourcecode\module\mod_simcomm;..\sourcecode\public\crc_lib;..\sourcecode\public\debug;..\sourcecode\public\malloc;..\sourcecode\public\time</IncludePath>
             </VariousControls>

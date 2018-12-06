@@ -1,4 +1,4 @@
-#include "string.h"
+﻿#include "string.h"
 #include "stdint.h"
 #include "stdlib.h"
 //#include "sim_at.h"
@@ -12,7 +12,12 @@
 #include "my_malloc.h"
 #include "my_time.h"
 
+
+const s_UartStr_t sim_uart = {115200, 8,0,1};
+
 #define gprsDebug(format, ...)    {}
+#define SIMOpenPort()          IoOpen(MINI_PCIE, &sim_uart, sizeof(s_UartStr_t))
+#define SIMClosePort()         IoClose(MINI_PCIE)
 #define SIMIOSend(data, len)   IoWrite(MINI_PCIE, data, len)
 int16_t  sim_buffer_index;    //  正在接收数据时接收索引,-1表示接收完成, -2表示接收超时，-3表示buffer接收满
 char     sim_buffer[560];     //  接收的数据缓存器, 长度根据模块文档设置, 每一个命令行buffer最大556个字符
@@ -152,7 +157,7 @@ int8_t SendExitPassthroughCommand(void)
         //SIMIOSend("+++",3);
         gprsDebug("+++\r\n");
         //sim_data_empty_time = -1000;
-        sim_delay_time = 6000;
+        sim_delay_time = 3000;
         return 1;
     }
     return 0;
@@ -659,7 +664,7 @@ int8_t GPRSAttachProccess(void)
 //            }
 //		    break;
         case GPRSATTACH_E0:
-            if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 5000, "E0", 0)) != 0)
+            if ((rec_buf = ATCommandProccess(SIM_C_T_EXE, 4000, "E0", 0)) != 0)
             {
                 if (rec_buf == SIMRetOK)
                 {
@@ -1043,7 +1048,6 @@ int8_t GPRSActivePDPContext(void)
 					else {
 						if (sys_config_ram.com_mode == CM_4G)
 	                    {
-	                        SetSIMModeGPRSState(1);
 	                        pdp_state = GPRSPDP_SHUT;
 	                        return 1;
 	                    }
@@ -1212,6 +1216,10 @@ int8_t GPRSTcpProccess(void)
                     tcp_state = GPRSTCP_GETIP_FROM_DNS;
                 }
             }
+            else if (IsSIMNetReady() == 0)
+            {
+                return GPRS_ATTACH;
+            }
             else
             {
                 return -1;  //  等待应用层操作
@@ -1256,6 +1264,8 @@ int8_t GPRSTcpProccess(void)
                 //  转发数据
                 for (i=0; i<strlen(sim_buffer); i++)
                     QueueWrite((uint8_t *)tcp_buffer, sim_buffer[i]);
+                TCPDataForward();
+                return -1;  //  等待应用层操作
             }
             else
             {
@@ -1559,6 +1569,8 @@ void SimHandler(void)
             if (state == 1)
             {
                 SetSIMPowerGPRSState(1);
+                SIMClosePort();
+                SIMOpenPort();
                 sim_state = SIM_ATCOMMAND;
                 gprs_run_state = GPRS_ATTACH;
                 sim_step_handle_time=0;
@@ -1573,7 +1585,7 @@ void SimHandler(void)
             }
             break;
         case GPRS_ATTACH:   //  模块附着操作
-            if(sim_step_handle_time>(200*30))
+            if(sim_step_handle_time>((1000/SIM_TIMER_TICK)*30))
             {
                 sim_state = SIM_ATCOMMAND;  //  表示模块脱机
                 sim_step_handle_time=0;
@@ -1603,7 +1615,7 @@ void SimHandler(void)
 
             break;
         case GPRS_CONNECT:  //  模块GPRS连接
-            if(sim_step_handle_time>(200*20))
+            if(sim_step_handle_time>((1000/SIM_TIMER_TICK)*20))
             {
                 sim_state = SIM_ATCOMMAND;  //  表示模块脱机
                 sim_step_handle_time=0;
@@ -1628,7 +1640,7 @@ void SimHandler(void)
             }
             break;
         case GPRS_TCP:  //  模块TCP连接
-            if(sim_step_handle_time>(200*140))
+            if(sim_step_handle_time>((1000/SIM_TIMER_TICK)*140))
             {
                 sim_state = SIM_ATCOMMAND;  //  表示模块脱机
                 sim_step_handle_time=0;
@@ -1668,12 +1680,11 @@ void SimHandler(void)
 }
 
 
-const s_UartStr_t sim_uart = {115200, 8,0,1};
 void TaskSim(void *pdata)
 {
     pdata = pdata;
     tcp_q = OSQCreate((void **)tcp_q_buffer, sizeof(tcp_q_buffer)/4);
-    IoOpen(MINI_PCIE, &sim_uart, sizeof(s_UartStr_t));
+    SIMOpenPort();
     while (1)
     {
         OSTimeDly(OS_TICKS_PER_SEC/200);

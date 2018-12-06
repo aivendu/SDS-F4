@@ -1,9 +1,9 @@
-#ifndef _GPRS_H
+﻿#ifndef _GPRS_H
 #define _GPRS_H
 #include "stdint.h"
 
 
-#define SIM_TIMER_TICK      5  //  定时器的tick时间, 单位ms
+#define SIM_TIMER_TICK      10  //  定时器的tick时间, 单位ms
 
 //GPRS状态
 #define GPRS_OK					 1

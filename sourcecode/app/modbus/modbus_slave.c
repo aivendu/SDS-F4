@@ -931,6 +931,7 @@ enum e_modbus_state
 ** 作者:	   arjun
 ** 日期:	   20150405
 ******************************************************************/
+#define MODBUS_PORT   USART6 
 void ModbusReply(uint8_t *sendbuf,uint8_t len)
 {
 	uint8_t temp;
@@ -938,16 +939,16 @@ void ModbusReply(uint8_t *sendbuf,uint8_t len)
     crc = CRC16(crc, sendbuf, len);
 //	GPIO_SetBits(GPIOB, RS485_CTL1);//485发送使能，接收禁止
 //    for(temp=0; temp<50; temp++);  延时一会儿，保证IO口变化成功
-	while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
+	while (USART_GetFlagStatus(MODBUS_PORT, USART_FLAG_TXE) == RESET);
 	for (temp = 0; temp < len; temp++)
 	{
-		USART_SendData(USART6,sendbuf[temp]); //通过外设 USART1 发送单个数据 
-	    while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
+		USART_SendData(MODBUS_PORT,sendbuf[temp]); //通过外设 USART1 发送单个数据 
+	    while (USART_GetFlagStatus(MODBUS_PORT, USART_FLAG_TC) == RESET);
 	}
-	USART_SendData(USART6,(crc)&0xFF); //通过外设 USART1 发送单个数据 
-	while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
-	USART_SendData(USART6,(crc>>8)&0xFF); //通过外设 USART1 发送单个数据 
-	while (USART_GetFlagStatus(USART6, USART_FLAG_TC) == RESET);
+	USART_SendData(MODBUS_PORT,(crc)&0xFF); //通过外设 USART1 发送单个数据 
+	while (USART_GetFlagStatus(MODBUS_PORT, USART_FLAG_TC) == RESET);
+	USART_SendData(MODBUS_PORT,(crc>>8)&0xFF); //通过外设 USART1 发送单个数据 
+	while (USART_GetFlagStatus(MODBUS_PORT, USART_FLAG_TC) == RESET);
 	//CLAR_QUEUE_UART1R;//清接收队列
     Delay_ms(3);
 //	GPIO_ResetBits(GPIOB, RS485_CTL1);//485接收使能，发送禁止

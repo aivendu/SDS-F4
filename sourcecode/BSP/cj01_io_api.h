@@ -175,6 +175,7 @@ extern int8_t  IoWrite(int32_t port, void *buf, uint32_t buf_len);
 extern int8_t  IoAsynchronWrite(int32_t port, void *buf, uint32_t buf_len, void * callback);
 extern int8_t  Ioctl(int32_t port, uint32_t cmd, ...);
 
+
 extern uint8_t GetCurrentTaskPrio(void);
 extern void TaskBsp(void *pdata);
 

@@ -1,4 +1,4 @@
-#include "mini_pcie.h"
+﻿#include "mini_pcie.h"
 #include "cj01_gpio.h"
 #include "cj01_usart.h"
 #include "cj01_io_api.h"
@@ -209,7 +209,7 @@ int8_t  MiniPcieIoctl(int32_t port, uint32_t cmd, va_list args)
 {
     uint8_t *data = va_arg(args, uint8_t*);
     uint32_t len  = va_arg(args, uint32_t);
-    uint32_t i;
+    uint32_t i = 100000;
     switch (cmd)
     {
         case MINIPCIE_POWRE_ON:
@@ -222,13 +222,15 @@ int8_t  MiniPcieIoctl(int32_t port, uint32_t cmd, va_list args)
             return minipci_sim_status;
             //break;
         case MINIPCIE_SENDDATA_REALTIME:
-            for (i=0; i<len; i++)
-            {
-                if(USART_GetFlagStatus(USART3, USART_FLAG_TXE) != RESET)                
+            for (; len--; data++)
+            { 
+                //UART1发送保持寄存器空   
+                USART_SendData(USART3, data[i]); //通过外设 USART 发送单个数据 
+                i = 100000;
+                while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET)
                 {
-                    //UART1发送保持寄存器空
-                    USART_SendData(USART3, data[i]); //通过外设 USART 发送单个数据 
-                 }
+                    if ((i--) == 0)   break;
+                }
             }
         default:
             break;
