@@ -1,4 +1,4 @@
-#ifndef _SYS_CONFIG_H_
+﻿#ifndef _SYS_CONFIG_H_
 #define _SYS_CONFIG_H_
 
 #include "stdint.h"
@@ -18,7 +18,7 @@ typedef struct
     uint16_t crc;
     //uint16_t tech_type;
     s_reg_group_1_t reg_group_1;
-    u_A2O_technology_argv_t tech_argv;
+    u_A2O_technology_argv_t a2o_argv;
     u_MBR_technology_argv_t mbr_argv;
     u_SBR_technology_argv_t sbr_argv;
     u_sensor_reg_t  sensor;
@@ -65,7 +65,7 @@ extern s_sys_config_t  sys_config_ram;
 extern const s_sys_config_t sys_config_rom;
 
 #define process_technology_type     sys_config_ram.reg_group_1.technology_type
-#define a2o_technology_argv         sys_config_ram.tech_argv
+#define a2o_technology_argv         sys_config_ram.a2o_argv
 #define mbr_technology_argv         sys_config_ram.mbr_argv
 #define sbr_technology_argv         sys_config_ram.sbr_argv
 #define sensor_reg                  sys_config_ram.sensor

@@ -74,13 +74,13 @@ typedef struct s_reg_group_1
     uint16_t unused;
 } s_reg_group_1_t;
 
-enum e_pump_st
-{
-    PUMP_ST_CLOSE,
-    PUMP_ST_OPEN,
-    PUMP_ST_WARING,
-    PUMP_ST_ERROR,
-};
+//enum e_pump_st
+//{
+//    PUMP_ST_CLOSE,
+//    PUMP_ST_OPEN,
+//    PUMP_ST_WARING,
+//    PUMP_ST_ERROR,
+//};
 
 typedef struct s_pump_st
 {
@@ -160,8 +160,8 @@ typedef struct s_MBR_technology_argv
     uint16_t pump_wmbr2_port;  //  洗膜泵2
     uint16_t pump_rflx1_port;  //  回流泵1
     uint16_t pump_rflx2_port;  //  回流泵2
-    uint16_t pump_ambr1_port;  //  吸膜泵1
-    uint16_t pump_ambr2_port;  //  吸膜泵2
+    uint16_t pump_smbr1_port;  //  吸膜泵1
+    uint16_t pump_smbr2_port;  //  吸膜泵2
     uint16_t pump_dosg1_port;  //  加药泵1
     uint16_t pump_dosg2_port;  //  加药泵2
     uint16_t pump_lift1_port;  //  提升泵1
@@ -169,9 +169,9 @@ typedef struct s_MBR_technology_argv
     uint16_t unused1[48-14];
     
     //  吸膜泵  
-    uint16_t pump_ambr_on_time;
-    uint16_t pump_ambr_off_time;
-    uint16_t pump_ambr_cycle_time;
+    uint16_t pump_smbr_on_time;
+    uint16_t pump_smbr_off_time;
+    uint16_t pump_smbr_cycle_time;
     uint16_t unused5[16-3];
     //  加药泵
     uint16_t pump_dosg_delay_time;
@@ -209,19 +209,21 @@ typedef union  u_MBR_technology_argv
 
 typedef struct s_SBR_technology_argv
 {
-    uint16_t pump_aera1_port;
-    uint16_t pump_aera2_port;
-    uint16_t pump_aera3_port;
-    uint16_t pump_subm1_port;
-    uint16_t pump_subm2_port;
-    uint16_t pump_subm3_port;
-    uint16_t pump_watr1_port;
-    uint16_t pump_watr2_port;
-    uint16_t pump_dosg1_port;
-    uint16_t pump_dosg2_port;
-    uint16_t pump_lift1_port;
-    uint16_t pump_lift2_port;
-    uint16_t unused1[48-16];
+    uint16_t pump_aera1_port;  //  曝气泵1
+    uint16_t pump_aera2_port;  //  曝气泵2
+    uint16_t pump_aera3_port;  //  曝气泵3
+    uint16_t pump_aera4_port;  //  曝气泵4
+    uint16_t pump_subm1_port;  //  潜污泵1
+    uint16_t pump_subm2_port;  //  潜污泵2
+    uint16_t pump_watr1_port;  //  出水泵1
+    uint16_t pump_watr2_port;  //  出水泵2
+    uint16_t pump_rflx1_port;  //  回流泵1
+    uint16_t pump_rflx2_port;  //  回流泵2
+    uint16_t pump_dosg1_port;  //  加药泵1
+    uint16_t pump_dosg2_port;  //  加药泵2
+    uint16_t pump_lift1_port;  //  提升泵1
+    uint16_t pump_lift2_port;  //  提升泵2
+    uint16_t unused1[48-16]; 
     
     //  当前阶段
     uint16_t current_phase;
@@ -316,6 +318,9 @@ extern uint16_t relay_state[14];
 extern u_pump_st_t  pump_state;
 
 #define GetLiquidLevel(channel)    (yw_input & (1<<((channel>0?(channel-1):0))))
+//  获取对应工艺的泵的端口号
+#define GetPumpPort(tech, pump)    (sys_config_ram.##tech##_argv.member.pump_##pump##_port)
+#define GetPumpArgv(tech, argv)    (sys_config_ram.##tech##_argv.member.##argv)
 
 #endif
 

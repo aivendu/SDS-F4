@@ -152,13 +152,67 @@ int8_t GetPumpCtrlState(uint32_t channel)
 }
 
 //  
-int8_t GetPumpState(uint32_t channel)
+e_pump_state_t GetPumpState(uint32_t channel)
 {
     if ((channel == 0) || (channel > MAX_PUMP_CHANNEL))
     {
+        return PUMP_ST_NOINIT;
+    }
+    return pump[channel-1].active?PUMP_ST_ON:PUMP_ST_OFF;
+}
+
+//  成对的泵控制, 实现主泵坏了，开启从泵的功能
+//  返回 0-所有泵都坏了
+//       >0--已经打开的泵的通道
+int8_t PairOfPumpCtrl(uint8_t primary, uint8_t standby, uint8_t both)
+{
+    if (both == 0)  //  同时关闭
+    {
+        SinglePumpCtrl(primary, 0);
+        SinglePumpCtrl(standby, 0);
         return 0;
     }
-    return pump[channel-1].active?1:0;
-    //return (relay_out & (1 << (channel-1)))?1:0;
+    if (IsPumpFault(GetPumpState(primary)))
+    {
+        if (IsPumpFault(GetPumpState(standby)))
+        {
+            return -1;
+        }
+        else
+        {
+            SinglePumpCtrl(standby, 1);
+            SinglePumpCtrl(primary, 0);
+            return standby;
+        }
+    }
+    else
+    {
+        SinglePumpCtrl(primary, 1);
+        if (both == 2)
+        {
+            if (IsPumpFault(GetPumpState(standby)))
+            {
+                SinglePumpCtrl(standby, 0);
+            }
+            else
+            {
+                SinglePumpCtrl(standby, 1);
+            }
+        }
+        else
+        {
+            SinglePumpCtrl(standby, 1);
+        }
+        return primary;
+    }
 }
+
+int8_t ClearPump(uint8_t primary)
+{
+    return 1;
+}
+
+
+
+
 
