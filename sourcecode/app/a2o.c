@@ -45,6 +45,7 @@ s_subm_open_t *subm_open_head = 0;
 s_subm_open_t *subm_open_free_head = subm_open;
 s_subm_open_t subm_open_current;
 
+
 void AddSubmOpenTimestamp(s_subm_open_t *curr)
 {
     int32_t i;
@@ -82,7 +83,6 @@ s_subm_open_t *GetSubmOpenTimestamp(void)
     s_subm_open_t * temp = 0, *next;
     if (subm_open_head)
     {
-        
         if (subm_open_free_head > subm_open_head)
         {
             temp = subm_open_head->next;
@@ -134,16 +134,6 @@ enum e_a2o_pump_state
 } ;
 
 extern void PumpCtl(uint8_t channel, uint8_t open);
-
-//  曝气泵处理
-int8_t GetPumpState(uint32_t channel)
-{
-    if ((channel == 0) || (channel > MAX_PUMP_CHANNEL))
-    {
-        return 0;
-    }
-    return (relay_out & (1 << (channel-1)))?1:0;
-}
 
 #define IsAerationPumpOpen()   \
             (GetPumpState(a2o_technology_argv.member.pump_aera1_port) || \
@@ -259,7 +249,7 @@ void A2OSubmersibleSewagePumpCtrl(void)
     static uint8_t state = A2O_PUMP_ST_INIT;
     static uint32_t time_change = 0;
     static uint32_t time_cycle = 0;
-    static uint32_t open_time;
+    static uint8_t open_state;
     uint32_t time_now = time(0)/60;   //  以分钟为单位
     switch (state)
     {
@@ -338,36 +328,21 @@ void A2OSubmersibleSewagePumpCtrl(void)
             state = A2O_PUMP_ST_INIT;
             break;
     }
-    if (IsSubmersibleSewagePumpOpen())
+    if (open_state != IsSubmersibleSewagePumpOpen())
     {
-        pump_state.pump_st.pump_subm = 1;
-        if (open_time == 0)   open_time = time(0);
-        if (subm_open_current.start == 0)
+        open_state = IsSubmersibleSewagePumpOpen();
+        if (IsSubmersibleSewagePumpOpen())
         {
-            if ((state == A2O_PUMP_ST_PRIMARY_A) || (state == A2O_PUMP_ST_MINOR_A))
-            {
-                subm_open_current.start = time(0);
-                subm_open_current.time = 0;
-            }
+            pump_state.pump_st.pump_subm = 1;
+            subm_open_current.type = 1;
         }
-    }
-    else
-    {
-        pump_state.pump_st.pump_subm = 0;
-        if (open_time) 
+        else
         {
-            subm_open_current.time += time(0) - open_time;
-            open_time = 0;
+            pump_state.pump_st.pump_subm = 0;
+            subm_open_current.type = 0;
         }
-        if (subm_open_current.start)
-        {
-            if ((state != A2O_PUMP_ST_PRIMARY_A) && (state != A2O_PUMP_ST_MINOR_A))
-            {
-                subm_open_current.type = 2;
-                AddSubmOpenTimestamp(&subm_open_current);
-                subm_open_current.start = 0;
-            }
-        }
+        subm_open_current.start = time(0);
+        AddSubmOpenTimestamp(&subm_open_current);
     }
 }
 
@@ -587,18 +562,18 @@ void A2ODosingPumpCtrl(void)
             if ((subm_open_ptr = GetSubmOpenTimestamp()) != 0)
             {
                 subm_open_temp = *subm_open_ptr;
-                //watr_time_delay = subm_open_temp.start;
-                dosg_state = A2O_PUMP_ST_PRIMARY_A;
+                if (subm_open_temp.type == 0)
+                {
+                    dosg_state = A2O_PUMP_ST_PRIMARY_B;
+                }
+                else
+                {
+                    dosg_state = A2O_PUMP_ST_PRIMARY_A;
+                }
             }
             break;
         case A2O_PUMP_ST_PRIMARY_A:
-            if ((time_now - subm_open_temp.start) > ((a2o_technology_argv.member.pump_dosg_delay_time * 60) + subm_open_temp.time))
-            {
-                SinglePumpCtrl(a2o_technology_argv.member.pump_dosg1_port, 0);
-                SinglePumpCtrl(a2o_technology_argv.member.pump_dosg2_port, 0);
-                dosg_state = A2O_PUMP_ST_INIT;
-            }
-            else if ((time_now - subm_open_temp.start) > (a2o_technology_argv.member.pump_dosg_delay_time * 60))
+            if ((time_now - subm_open_temp.start) > (a2o_technology_argv.member.pump_dosg_delay_time * 60))
             {
                 if ((GetLiquidLevel(A2O_LLP_DOSING1_HIGH)) && (GetLiquidLevel(A2O_LLP_DOSING2_HIGH)))
                 {
@@ -609,30 +584,25 @@ void A2ODosingPumpCtrl(void)
                 {
                     SinglePumpCtrl(a2o_technology_argv.member.pump_dosg1_port, 0);
                     SinglePumpCtrl(a2o_technology_argv.member.pump_dosg2_port, 0);
-                }    
+                }   
+                if ((subm_open_ptr = GetSubmOpenTimestamp()) != 0)
+                {
+                    if (subm_open_ptr->type == 0)
+                    {
+                        subm_open_temp = *subm_open_ptr;
+                        dosg_state = A2O_PUMP_ST_PRIMARY_B;
+                    }
+                }
             }
             break;
-//        case A2O_PUMP_ST_PRIMARY_B:
-//            if ((time_now - watr_time_delay) > (a2o_technology_argv.member.pump_dosg_delay_time * 60))
-//            {  
-//                SinglePumpCtrl(a2o_technology_argv.member.pump_dosg1_port, 0);
-//                SinglePumpCtrl(a2o_technology_argv.member.pump_dosg2_port, 0);
-//                dosg_state = A2O_PUMP_ST_INIT;
-//            }
-//            else
-//            {
-//                if ((GetLiquidLevel(A2O_LLP_DOSING1_HIGH)) && (GetLiquidLevel(A2O_LLP_DOSING2_HIGH)))
-//                {
-//                    SinglePumpCtrl(a2o_technology_argv.member.pump_dosg1_port, 1);
-//                    SinglePumpCtrl(a2o_technology_argv.member.pump_dosg2_port, 1);
-//                }  
-//                else
-//                {
-//                    SinglePumpCtrl(a2o_technology_argv.member.pump_dosg1_port, 0);
-//                    SinglePumpCtrl(a2o_technology_argv.member.pump_dosg2_port, 0);
-//                }  
-//            }
-//            break;
+        case A2O_PUMP_ST_PRIMARY_B:
+            if ((time_now - subm_open_temp.start) > (a2o_technology_argv.member.pump_dosg_delay_time * 60))
+            {
+                SinglePumpCtrl(a2o_technology_argv.member.pump_dosg1_port, 0);
+                SinglePumpCtrl(a2o_technology_argv.member.pump_dosg2_port, 0);
+                dosg_state = A2O_PUMP_ST_INIT;
+            }
+            break;
         default:
             
             break;
@@ -674,7 +644,7 @@ void A2OLiftingPumpCtrl(void)
                 lift_state = A2O_PUMP_ST_MINOR_A;
                 lift_time_cycle = time_now;
             }
-            if ((GetLiquidLevel(A2O_LLP_SUBM_HIGH)) || (GetLiquidLevel(A2O_LLP_LIFTING_HIGH) == 0))
+            if ((GetLiquidLevel(A2O_LLP_SUBM_HIGH)) || (GetLiquidLevel(A2O_LLP_SUBM_ULTRAHIGH)))
             {
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift1_port, 0);
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift2_port, 0);                
@@ -684,9 +654,14 @@ void A2OLiftingPumpCtrl(void)
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift1_port, 1);
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift2_port, 1);
             }
-            else 
+            else if (GetLiquidLevel(A2O_LLP_LIFTING_HIGH))
             {
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift1_port, 1);
+                SinglePumpCtrl(a2o_technology_argv.member.pump_lift2_port, 0);
+            }
+            else
+            {
+                SinglePumpCtrl(a2o_technology_argv.member.pump_lift1_port, 0);
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift2_port, 0);
             }
             break;
@@ -700,7 +675,7 @@ void A2OLiftingPumpCtrl(void)
             else if (GetPumpState(a2o_technology_argv.member.pump_lift2_port - 1) == PUMP_ST_ERROR)
             {
             }
-            if ((GetLiquidLevel(A2O_LLP_SUBM_HIGH)) || (GetLiquidLevel(A2O_LLP_LIFTING_HIGH) == 0))
+            if ((GetLiquidLevel(A2O_LLP_SUBM_HIGH)) || (GetLiquidLevel(A2O_LLP_SUBM_ULTRAHIGH)))
             {
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift1_port, 0);
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift2_port, 0);                
@@ -710,10 +685,15 @@ void A2OLiftingPumpCtrl(void)
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift1_port, 1);
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift2_port, 1);
             }
-            else 
+            else if (GetLiquidLevel(A2O_LLP_LIFTING_HIGH))
             {
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift1_port, 0);
                 SinglePumpCtrl(a2o_technology_argv.member.pump_lift2_port, 1);
+            }
+            else
+            {
+                SinglePumpCtrl(a2o_technology_argv.member.pump_lift1_port, 0);
+                SinglePumpCtrl(a2o_technology_argv.member.pump_lift2_port, 0);
             }
             break;
         default:

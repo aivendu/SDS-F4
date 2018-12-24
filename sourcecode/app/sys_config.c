@@ -1,4 +1,4 @@
-
+﻿
 #include "sys_config.h"
 #define  DEVICE_TYPE     0x58465344  //"XFSD"
 s_sys_config_t  sys_config_ram;
@@ -9,16 +9,16 @@ s_sys_config_t  sys_config_ram;
 /*设备类型*/    DEVICE_TYPE,\
 /*配置版本*/    1,\
 /*数据校验*/    0,\
-/*工艺类型*/   {0,\
+/*工艺类型*/   {1,\
 /*Port, IP*/    8992, IP_ADDR_GET(61,147,198,178),\
 /*pump min open*/    60,\
-/*server interval*/  600,\
+/*server interval*/  15,\
 /*device id*/        0x0001,\
-/*密码有效时间*/     20,\
+/*密码有效时间*/     600,\
 /*unused*/      0},\
-/*A2O端口设置*/ {3,4,5,6,7,8,9,10,11,12,13,14,1,2,\
+/*A2O端口设置*/ {6,7,8,2,9,14,3,10,4,11,5,12,1,13,\
 /*未使用*/       {0},\
-/*曝气泵*/       0xFFFFFF,0xFFFFFF,0xFFFFFF,\
+/*曝气泵*/       0xFFFFFE,0xFFFFFE,0xFFFFFE,\
 /*未使用*/       {0},\
 /*潜污泵*/       30,30,1440,\
 /*未使用*/       {0},\
@@ -35,23 +35,23 @@ s_sys_config_t  sys_config_ram;
 /*SBR端口设置*/ {0},\
 /*sensor值*/   {20,7.5f,49,-300,6,3.5f,12,1,0,0,\
 /*未使用*/     {0},\
-               /*最大   最小    精度     端口                  标定*/\
- /*t*/         {20,      10,    0.5f,    SensorPortADC(1)   , 0, 0, 0, 0, 0},\
- /*ph*/        {8,        7,    0.2f,    SensorPortADC(2)   , 0, 0, 0, 0, 0},\
- /*cod*/       {55,      40,       1,    SensorPortMODBUS(4), 0, 0, 0, 0, 0},\
- /*orp*/       {-200,  -400,       5,    SensorPortADC(3)   , 0, 0, 0, 0, 0},\
- /*nh3*/       {7,        5,    0.1f,    SensorPortMODBUS(3), 0, 0, 0, 0, 0},\
- /*DO*/        {5,        2,    0.2f,    SensorPortADC(4)   , 0, 0, 0, 0, 0},\
- /*ss*/        {15,      10,    0.2f,    SensorPortMODBUS(1), 0, 0, 0, 0, 0},\
- /*p*/         {1,        1,    0.2f,    SensorPortMODBUS(2), 0, 0, 0, 0, 0},\
- /*flux*/      {200,    -30,       1,    SensorPortCOM2(1)  , 0, 0, 0, 0, 0},\
+               /*最大     最小       精度           端口                  标定*/\
+ /*t*/         {20,      10,    0.01f,    SensorPortADC(1)   , 0, 0, 0, 0, 0},\
+ /*ph*/        {9,        6,    0.01f,    SensorPortADC(2)   , 0, 0, 0, 0, 0},\
+ /*cod*/       {55,      40,    0.01f,    SensorPortMODBUS(4), 0, 0, 0, 0, 0},\
+ /*orp*/       {-200,  -700,        2,    SensorPortADC(3)   , 0, 0, 0, 0, 0},\
+ /*nh3*/       {7,        5,    0.01f,    SensorPortMODBUS(3), 0, 0, 0, 0, 0},\
+ /*DO*/        {5,        2,    0.01f,    SensorPortADC(4)   , 0, 0, 0, 0, 0},\
+ /*ss*/        {15,      10,    0.01f,    SensorPortMODBUS(1), 0, 0, 0, 0, 0},\
+ /*p*/         {1,      0.3,    0.01f,    SensorPortMODBUS(2), 0, 0, 0, 0, 0},\
+ /*flux*/      {200,      0,       1,    SensorPortCOM2(1)  , 0, 0, 0, 0, 0},\
                },\
 /*net  */    {0,\
 /*sd   */    0,\
 /*usb  */    0,\
 /*save */    0,\
 /*calib*/    0,\
-/*manual*/   0,\
+/*pump_audo*/   1,\
 /*init*/     0,\
 /*reboot*/   0,\
 /*back*/     0,\

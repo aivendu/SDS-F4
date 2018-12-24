@@ -24,7 +24,10 @@ extern int8_t SinglePumpCtrl(uint8_t channel, uint8_t open);
 
 extern int8_t PumpCtrl(uint32_t channel, uint8_t open);
 
+extern void UpdateRelayCtl(void);
+
 extern int8_t GetPumpCtrlState(uint32_t channel);
 
+extern int8_t GetPumpState(uint32_t channel);
 #endif
 

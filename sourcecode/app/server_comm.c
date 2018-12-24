@@ -1,4 +1,4 @@
-﻿#include "server_comm.h"
+#include "server_comm.h"
 #include "string.h"
 #include "stdio.h"
 #include "stm32f4xx.h"
@@ -162,7 +162,7 @@ void ServerCommFramingData(void)
     memcpy(&temp, &sys_config_ram.sensor.ctrl.nh3_value, 4);
     memcpy(&comm_data[index], &temp, 4);
     index+=4;
-    memcpy(&temp, &sys_config_ram.sensor.ctrl.p_value, 4);
+    memcpy(&temp, &sys_config_ram.sensor.ctrl.tp_value, 4);
     memcpy(&comm_data[index], &temp, 4);
     index+=4;
     memcpy(&temp, &sys_config_ram.sensor.ctrl.ss_value, 4);
@@ -199,6 +199,7 @@ void TaskServerComm(void *pdata)
     uint8_t state = 0;
     uint32_t intevel = clock();
     pdata = pdata;
+    sys_config_ram.coil_g1.ctrl.communication = 1;   //  启动自动发送一条
     while (1)
     {
         OSTimeDly(OS_TICKS_PER_SEC);
@@ -213,7 +214,7 @@ void TaskServerComm(void *pdata)
                 }
                 break;
             case 1:
-                if ((ComputeTickTime(intevel) > sys_config_ram.reg_group_1.linkup_tmo*OS_TICKS_PER_SEC) || 
+                if ((ComputeTickTime(intevel) > sys_config_ram.reg_group_1.linkup_tmo*OS_TICKS_PER_SEC*60) || 
                     (sys_config_ram.coil_g1.ctrl.communication))
                 {
                     sys_config_ram.coil_g1.ctrl.communication = 0;
@@ -222,7 +223,7 @@ void TaskServerComm(void *pdata)
                     {
                         state = 0;
                     }
-                    else
+                    else if (ComputeTickTime(intevel) > sys_config_ram.reg_group_1.linkup_tmo*OS_TICKS_PER_SEC*60)
                     {
                         intevel = clock();
                     }

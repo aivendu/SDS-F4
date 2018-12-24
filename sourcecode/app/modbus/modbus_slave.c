@@ -1,4 +1,4 @@
-
+﻿
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -37,81 +37,29 @@ uint8_t reboot_flag;    //  485重启标志
 //匹配功能码、启始地址、数据长度是否满足协议规定
 static int8_t MatchModbusRegister(uint8_t func_code, uint16_t addr, uint16_t len)
 {
-    uint8_t i;
-	uint8_t max_i;
-	uint8_t min_i;
-	min_i = 0;	
-	i = reg_number / 2;
-	max_i = reg_number; 
+    int16_t i, start = -1;
     if (modbus_register == NULL)
     {
         return -1;
     }
-	if((addr == 0x0020)&&(func_code == 0x05)&&(len == 0x0001))//特殊处理0x0020的写操作
-	{
-		return 3;	
-	}
-	else if((addr == 0x0020)&&(func_code == 0x02)&&(len == 0x0008))//特殊处理0x0020的连续读操作
-	{
-		return 2;
-	}
-	else if((addr == 0x0021)&&(func_code == 0x05)&&(len == 0x0001))//特殊处理0x0021的写操作
-	{
-		return 4;
-	}
 
-    if ((modbus_register[0].start_addr <= addr) &&
-       ((modbus_register[0].start_addr + modbus_register[0].length) > addr))  //
+    for (i = 0; i < reg_number; i++)
     {
-        if (modbus_register[0].cmd_support[func_code / 32] & (1 << (func_code % 32)))
-        {
-            if (((modbus_register[0].start_addr + modbus_register[0].length) < (addr + len)) || (len == 0))
-            {
-                //return -2;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-        else
-        {
-            //return -1;
-        }
-    }
-    while (i != min_i)  // 判断是否到最后三个
-    {
-        //  采用二分法查找
-        if ((modbus_register[i].start_addr > addr) || (modbus_register[i].length == 0))
-        {
-            //  需要找的code在小半区
-            max_i = i;
-            i = (i + min_i) >> 1;
-        }
-        else if (((modbus_register[i].length > 0) &&
-                 ((modbus_register[i].start_addr + modbus_register[i].length) <= addr)) ||
-                 ((modbus_register[i].length < 0) && (modbus_register[i].start_addr < addr)))
-        {
-            //  需要找的code在大半区
-            min_i = i;
-            i = (i + max_i) >> 1;
-        }
-        else
+        if ((modbus_register[i].start_addr <= addr) &&
+            ((modbus_register[i].start_addr + modbus_register[i].length) > addr))
         {
             if (modbus_register[i].cmd_support[func_code / 32] & (1 << (func_code % 32)))
             {
-                if ((modbus_register[i].length > 0) &&
-                   ((modbus_register[i].start_addr + modbus_register[i].length) >= (addr + len)))
+                if ((modbus_register[i].start_addr + modbus_register[i].length) >= (addr + len))
                 {
-                    return i;
-                }
-                else if ((modbus_register[i].length < 0) && (modbus_register[i].start_addr == addr))
-                {
-                    return i;
+                    if (start == -1)     return i;
+                    else                 return start;
                 }
                 else
                 {
-                    return -2;
+                    if (start == -1)   start = i;
+                    len -= modbus_register[i].start_addr + modbus_register[i].length - addr;
+                    addr = modbus_register[i].start_addr + modbus_register[i].length;
                 }
             }
             else
@@ -119,85 +67,54 @@ static int8_t MatchModbusRegister(uint8_t func_code, uint16_t addr, uint16_t len
                 return -1;
             }
         }
+        else
+        {
+            if (start != -1)   return -2;
+        }
     }
-    return -1;
+    return -2;
 }
 
 //func_code:功能码；addr：启始地址；len:数据的长度
 //匹配功能码、启始地址、数据长度是否满足协议规定
 static int8_t MatchModbusCoils(uint8_t func_code, uint16_t addr, uint16_t len)
 {
-    uint8_t i;
-	uint8_t max_i;
-	uint8_t min_i;
-	min_i = 0;	
-	i = COILS_NUM / 2;
-	max_i = COILS_NUM; 
+    int16_t i, start = -1;
     if (modbus_coil == NULL)
     {
         return -1;
     }
-    if ((modbus_coil[0].start_addr <= addr) &&
-       ((modbus_coil[0].start_addr + modbus_coil[0].coils_num) > addr))  //
+    
+    for (i = 0; i < coils_num; i++)
     {
-        if (modbus_coil[0].cmd_support[func_code / 32] & (1 << (func_code % 32)))
-        {
-            if (((modbus_coil[0].start_addr + modbus_coil[0].coils_num) < (addr + len)) || (len == 0))
-            {
-                //return -2;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-        else
-        {
-            //return -1;
-        }
-    }
-    while (i != min_i)  // 判断是否到最后三个
-    {
-        //  采用二分法查找
-        if ((modbus_coil[i].start_addr > addr) || (modbus_coil[i].coils_num == 0))
-        {
-            //  需要找的code在小半区
-            max_i = i;
-            i = (i + min_i) >> 1;
-        }
-        else if (((modbus_coil[i].coils_num > 0) &&
-                 ((modbus_coil[i].start_addr + modbus_coil[i].coils_num) <= addr)) ||
-                 ((modbus_coil[i].coils_num < 0) && (modbus_coil[i].start_addr < addr)))
-        {
-            //  需要找的code在大半区
-            min_i = i;
-            i = (i + max_i) >> 1;
-        }
-        else
+        if ((modbus_coil[i].start_addr <= addr) &&
+            ((modbus_coil[i].start_addr + modbus_coil[i].coils_num) > addr))
         {
             if (modbus_coil[i].cmd_support[func_code / 32] & (1 << (func_code % 32)))
             {
-                if ((modbus_coil[i].coils_num > 0) &&
-                   ((modbus_coil[i].start_addr + modbus_coil[i].coils_num) >= (addr + len)))
+                if ((modbus_coil[i].start_addr + modbus_coil[i].coils_num) >= (addr + len))
                 {
-                    return i;
-                }
-                else if ((modbus_coil[i].coils_num < 0) && (modbus_coil[i].start_addr == addr))
-                {
-                    return i;
+                    if (start == -1)     return i;
+                    else                 return start;
                 }
                 else
                 {
-                    //return -2;
+                    if (start == -1)   start = i;
+                    len -= modbus_coil[i].start_addr + modbus_coil[i].coils_num - addr;
+                    addr = modbus_coil[i].start_addr + modbus_coil[i].coils_num;
                 }
             }
             else
             {
-                //return -1;
+                return -1;
             }
         }
+        else
+        {
+            if (start != -1)   return -2;
+        }
     }
-    return -1;
+    return -2;
 }
 
 const uint32_t bit_mask[33] = 
@@ -210,7 +127,7 @@ const uint32_t bit_mask[33] =
 };
 void CopyCoilFromBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data)
 {
-    uint8_t j;
+    uint8_t j, i;
     uint8_t offset = start & 0x07;
     uint16_t start_byte = start>>3;  //  16bit 对齐
     uint16_t temp;
@@ -219,10 +136,17 @@ void CopyCoilFromBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *da
         *data = 0;
         return ;
     }
-    for (j=0; j<((size+7)>>3); j++)
+    for (j=0, i=0; j<((size+7)>>3); j++)
     {
-        temp = ((modbus_coil[reg].coils[start_byte+j] >> offset) & bit_mask[8-offset])
-                   |(((modbus_coil[reg].coils[start_byte+j+1]) & bit_mask[offset]) << (8-offset));
+        temp = (modbus_coil[reg].coils[start_byte+i] >> offset) & bit_mask[8-offset];
+        i++;
+        if ((start_byte + i) >= ((modbus_coil[reg].coils_num + 7)>>3))
+        {
+            reg++;
+            start_byte = 0;
+            i = 0;
+        }
+        temp |= ((modbus_coil[reg].coils[start_byte+i]) & bit_mask[offset]) << (8-offset);
         data[j] = temp & 0xFF;
     }
     if (size & 0x07) {
@@ -231,26 +155,77 @@ void CopyCoilFromBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *da
 }
 void CopyCoilToBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data)
 {
-    uint8_t j;
+    uint8_t j, i;
     uint8_t offset = start & 0x07;
     uint16_t start_byte = start>>3;  //  16bit 对齐
     uint16_t temp;
-    for (j=0; j<((size)>>3); j++)
+    for (j=0, i=0; j<((size)>>3); j++)
     {
         temp = data[j] + (data[(j)+1] << 8);
-        modbus_coil[reg].coils[start_byte+j] &= bit_mask[offset];
-        modbus_coil[reg].coils[start_byte+j] |= (temp << offset);
+        modbus_coil[reg].coils[start_byte+i] &= bit_mask[offset];
+        modbus_coil[reg].coils[start_byte+i] |= (temp << offset);
+        i++;
+        if ((start_byte + i) >= ((modbus_coil[reg].coils_num + 7)>>3))
+        {
+            reg++;
+            start_byte = 0;
+            i = 0;
+        }
         if (offset)
         {
-            modbus_coil[reg].coils[start_byte+j+1] &= (~bit_mask[offset]);
-            modbus_coil[reg].coils[start_byte+j+1] |= (temp >> (8-offset));
+            modbus_coil[reg].coils[start_byte+i] &= (~bit_mask[offset]);
+            modbus_coil[reg].coils[start_byte+i] |= (temp >> (8-offset));
         }
     }
-    if (size & 0x07)
+}
+
+void CopyRegisterFromBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data)
+{
+    uint16_t j, i;
+    uint16_t start_byte = start;  //  16bit 对齐
+    if (size == 0)
     {
-        //temp = data
+        *data = 0;
+        return ;
+    }
+    size <<= 1;
+    for (j=0, i=0; j<size; j+=2)
+    {
+        modbus_register[reg].buffer[start_byte+i] = (data[j]<<8) + data[j+1];
+        i++;
+        if ((start_byte + i) >= (modbus_register[reg].length))
+        {
+            reg++;
+            start_byte = 0;
+            i = 0;
+        }
     }
 }
+void CopyRegisterToBuffer(uint16_t start, uint16_t size, uint32_t reg, uint8_t *data)
+{
+    uint16_t j, i;
+    uint16_t start_byte = start;  //  16bit 对齐
+    if (size == 0)
+    {
+        *data = 0;
+        return ;
+    }
+    size <<= 1;
+    for (j=0, i=0; j<size; )
+    {
+        data[j++] = modbus_register[reg].buffer[start_byte+i]>>8;
+        data[j++] = modbus_register[reg].buffer[start_byte+i];
+        i++;
+        if ((start_byte + i) >= (modbus_register[reg].length))
+        {
+            reg++;
+            start_byte = 0;
+            i = 0;
+        }
+    }
+}
+
+
 
 //  读多个线圈
 uint32_t ModbusSlave_01_Reply(uint8_t code, uint8_t *dat)
@@ -380,21 +355,21 @@ uint32_t ModbusSlave_02_Reply(uint8_t code, uint8_t *dat)
 uint32_t ModbusSlave_03_Reply(uint8_t code, uint8_t *dat)
 {
     uint8_t *buff, *rec_dat;
-    int8_t i = MatchModbusRegister(code,
-                                    (dat[2] << 8) + dat[3],
-                                    (dat[4] << 8) + dat[5]);
+    uint16_t addr = (dat[2] << 8) + dat[3];
+    uint16_t len = (dat[4] << 8) + dat[5];
+    int8_t i = MatchModbusRegister(code, addr, len);
     if (i < 0)
     {
         return -i;
     }
     buff = 0;
-    while ((buff = malloc(dat[5] * 2 + 4)) == 0)
+    while ((buff = malloc(len * 2 + 4)) == 0)
     {
         OSTimeDly(1);
     }
     buff[1] = ModbusLocalAddr();
     buff[2] = 0x03;
-    buff[3] = dat[5] * 2;
+    buff[3] = len * 2;
     buff[0] = buff[3] + 3;
 
     if (modbus_register[i].func)
@@ -404,9 +379,7 @@ uint32_t ModbusSlave_03_Reply(uint8_t code, uint8_t *dat)
         {
             if (modbus_register[i].buffer)
             {
-                HalfWordBigEndianCopy(&buff[4],
-                                      &modbus_register[i].buffer[(dat[2] << 8) + dat[3] - modbus_register[i].start_addr],
-                                      buff[3]);
+                CopyRegisterToBuffer(addr - modbus_register[i].start_addr, len, i, &buff[4]);
             }
             else
             {
@@ -427,9 +400,7 @@ uint32_t ModbusSlave_03_Reply(uint8_t code, uint8_t *dat)
     }
     else if (modbus_register[i].buffer)
     {
-        HalfWordBigEndianCopy(&buff[4],
-                              &modbus_register[i].buffer[(dat[2] << 8) + dat[3] - modbus_register[i].start_addr],
-                              buff[3]);
+        CopyRegisterToBuffer(addr - modbus_register[i].start_addr, len, i, &buff[4]);
     }
     else
     {
@@ -659,9 +630,7 @@ uint32_t ModbusSlave_10_Reply(uint8_t code, uint8_t *dat)
     }
     else if (modbus_register[i].buffer)
     {
-        //memset(modbus_register[i].buffer, 0, modbus_register[i].length*2);
-        buff = (uint8_t *)&modbus_register[i].buffer[(dat[2] << 8) + dat[3] - modbus_register[i].start_addr];
-        HalfWordBigEndianCopy(buff, &dat[7], dat[5] * 2);
+        CopyRegisterFromBuffer((dat[2] << 8) + dat[3] - modbus_register[i].start_addr, dat[5], i, &dat[7]);
     }
     while ((buff = malloc(8)) == 0)
     {

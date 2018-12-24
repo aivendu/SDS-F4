@@ -3,6 +3,13 @@
 #include "string.h"
 #include "chip_communication.h"
 #include "sys_config.h"
+#include "my_time.h"
+#include "ucos_ii.h"
+
+
+
+uint16_t relay_out;
+
 
 #define PUMP_STATE_NOINIT             0
 #define PUMP_STATE_RUNNING            1
@@ -16,24 +23,80 @@
 typedef struct s_pump_ctl
 {
     uint8_t  sw;         //  控制开关, 0-禁能, 1-使能
-    uint8_t  active;     //  控制执行状态, 0-run, 1-off
-    uint8_t  opratinon;  //  操作控制状态, 0-run, 1-off
+    uint8_t  active;     //  控制执行状态, 0-off, 1-short
+    uint8_t  opratinon;  //  操作控制状态, 0-off, 1-short
     uint8_t  status;     //  状态, 0-未初始化, 1-打开, 2-关闭, 3-开路, 4-短路, 15-其他未定义状态
-    uint32_t timer;      //  当前状态的时间(定时器)
+    uint32_t timer;      //  最后一次状态转换的时间
 } s_pump_ctl_t;
 
 s_pump_ctl_t  pump[16];
 
+void UpdateRelayCtl(void)
+{
+    uint16_t temp;//relay_ctl ^ relay_out;
+    uint16_t ctrl = 0;
+    uint16_t change = 0;
+    static uint16_t manual = 0;
+    uint16_t manual_change = manual ^ pump_manual_ctrl;
+    uint8_t i;
+    uint32_t cpu_sr;
+    temp = relay_out;
+    manual = pump_manual_ctrl;
+    for (i=0; i<14; i++)
+    {
+        if (manual_change & (1 << i))  //  优先处理手动控制
+        {
+            pump[i].opratinon = ((manual>>i) & 1);
+            if (pump[i].active != pump[i].opratinon)
+            {
+                pump[i].timer = clock();
+                pump[i].active = pump[i].opratinon;
+                change |= (1<<i); 
+            }
+        }
+        else
+        {
+            pump[i].opratinon = ((temp>>i) & 1);
+            if (pump[i].active != pump[i].opratinon)
+            {
+                //  一旦继电器打开，则必须打开到最小时间
+                if (((pump[i].timer == 0) || (ComputeTickTime(pump[i].timer)/OS_TICKS_PER_SEC  
+                                          >= sys_config_ram.reg_group_1.pump_open_time_min)))
+                {
+                    sys_config_ram.coil_g1.ctrl.communication = 1;  //  控制泵有变化，发送一条数据
+                    pump[i].timer = clock();
+                    pump[i].active = pump[i].opratinon;
+                    change |= (1<<i); 
+                }
+            }  
+        }
+         
+        if (pump[i].active)  ctrl |= (1<<i);
+    }    
+    PumpCtrl(change & ctrl, 1);     //  开
+    PumpCtrl(change & (~ctrl), 0);  //  关
+    OS_ENTER_CRITICAL();
+    //  组合手动未处理的状态和当前控制状态给手动控制变量, 可以在屏上显示当前状态
+    manual_change = manual ^ pump_manual_ctrl;
+    pump_manual_ctrl = (pump_manual_ctrl & manual_change) | (ctrl & (~manual_change));  
+    manual = ctrl;
+    manual_change = temp ^ relay_out;
+    relay_out = (relay_out & manual_change) | (ctrl & (~manual_change));  
+    OS_EXIT_CRITICAL();
+}
+
+
+
 int8_t SinglePumpCtrl(uint8_t channel, uint8_t open)
 {
 //    uint8_t  relay_ctl_data[MAX_PUMP_CHANNEL];
-    if ((sys_config_ram.coil_g1.ctrl.manual) || 
+    if ((sys_config_ram.coil_g1.ctrl.pump_auto == 0) || 
         (channel == 0) || (channel > MAX_PUMP_CHANNEL))
     {
         return -1;
     }
     channel -= 1;
-    if (sys_config_ram.coil_g1.ctrl.manual == 0)  //  是否进入手动控制
+    if (sys_config_ram.coil_g1.ctrl.pump_auto == 1)  //  是否进入手动控制
     {
         if (open)    relay_out |= (1 << channel);    //  开启
         else         relay_out &= ~(1 << channel);   //  关闭
@@ -57,7 +120,11 @@ int8_t PumpCtrl(uint32_t channel, uint8_t open)
             relay_ctl_data[i] = open;
         }
     }
-    return ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data);
+    if (ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data) != 0)
+    {
+        return ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data);
+    }
+    return 0;
 }
 
 
@@ -82,5 +149,16 @@ int8_t GetPumpCtrlState(uint32_t channel)
         return -1;
     }
     return status;
+}
+
+//  
+int8_t GetPumpState(uint32_t channel)
+{
+    if ((channel == 0) || (channel > MAX_PUMP_CHANNEL))
+    {
+        return 0;
+    }
+    return pump[channel-1].active?1:0;
+    //return (relay_out & (1 << (channel-1)))?1:0;
 }
 

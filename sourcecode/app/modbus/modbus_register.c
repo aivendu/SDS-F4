@@ -1,4 +1,4 @@
-#include "modbus_register.h"
+﻿#include "modbus_register.h"
 #include "string.h"
 #include "modbus_slave.h"
 #include "sys_config.h"
@@ -26,8 +26,8 @@ const s_device_info_t  Device_info = {
     ""
 }; 
 
-uint16_t relay_out;
-uint16_t yw_input;
+volatile uint16_t pump_manual_ctrl;
+volatile uint16_t yw_input;
 uint16_t senser_ad[4];
 uint16_t relay_state[14];
 char     userpassword[100];
@@ -96,10 +96,22 @@ uint32_t PermissionVerify(struct s_modbus_register *reg, const uint8_t *data)
     
     name = strtok_r(userpassword, ",", &userpassword);
     password = strtok_r(0, ",", &userpassword);
-    if ((strncmp(name, sys_config_ram.username, sizeof(sys_config_ram.username)) == 0) &&
-        (strncmp(password, sys_config_ram.password, sizeof(sys_config_ram.password)) == 0))
+//    if ((strncmp(name, sys_config_ram.username, sizeof(sys_config_ram.username)) == 0) &&
+//        (strncmp(password, sys_config_ram.password, sizeof(sys_config_ram.password)) == 0))
+//    {
+//        permission[0] = 1;
+//    }
+    if ((strncmp(password, "5290", 4) == 0))
     {
         permission[0] = 1;
+    }
+    else if ((strncmp(password, "5263", 4) == 0))
+    {
+        permission[0] = 2;
+    }
+    else if ((strncmp(password, "3390", 4) == 0))
+    {
+        permission[0] = 4;
     }
     return 0;
 }
@@ -125,6 +137,9 @@ uint32_t ModbusResetSystem(uint8_t func_code, const uint8_t *dat)
     }
     return 2;
 }    
+
+#define GetCoilsLen(a)     (sizeof(a)<<3)
+
 s_modbus_coils_t sds_coils[COILS_NUM] =
 {
     {
@@ -134,7 +149,7 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
         (1 << MODBUS_FUNC_CODE_01) +
         (1 << MODBUS_FUNC_CODE_05) + 
         (1 << MODBUS_FUNC_CODE_0F),
-        (uint8_t *)&relay_out,
+        (uint8_t *)&pump_manual_ctrl,
         0
     },
     {
@@ -149,7 +164,7 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
     {
         //  功能控制输入输出
         0x0800,
-        sizeof(coil_group_1.coil) * 8,
+        GetCoilsLen(coil_group_1.coil),
         (1 << MODBUS_FUNC_CODE_01) +
         (1 << MODBUS_FUNC_CODE_05) +
         (1 << MODBUS_FUNC_CODE_0F),
@@ -159,7 +174,7 @@ s_modbus_coils_t sds_coils[COILS_NUM] =
     {
         //  功能控制输入输出
         0xFE00,
-        sizeof(permission) * 8,
+        GetCoilsLen(permission),
         (1 << MODBUS_FUNC_CODE_01) +
         (1 << MODBUS_FUNC_CODE_05) +
         (1 << MODBUS_FUNC_CODE_0F),

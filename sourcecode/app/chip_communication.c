@@ -1,4 +1,4 @@
-#include "chip_communication.h"
+﻿#include "chip_communication.h"
 #include "ucos_ii.h"
 #include "crc_lib.h"
 #include "stm32f4xx.h"
@@ -148,6 +148,7 @@ uint8_t buffer_tt[128];
 int8_t ChipWriteFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
 {
 	uint8_t i, j=0;
+    uint8_t err;
 	uint16_t bcc = 0;
 	uint16_t res_bcc = 0;
     u_addr_t head;
@@ -155,6 +156,7 @@ int8_t ChipWriteFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
     head.addr.channel = fun;
     head.addr.addr = addr;
     head.addr.comm_len = len;
+    OSSemPend(chip_communication_sem, 3, &err);
     GPIO_WriteBit(GPIOB,  GPIO_PIN_12, GPIO_PIN_RESET);
 	buffer_tt[j++] = Spi0TranceByte('<');
     for (i=3; i > 0; i--)
@@ -173,6 +175,7 @@ int8_t ChipWriteFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
 	res_bcc = ((res_bcc) & 0xff) + (Spi0TranceByte((uint8_t)((bcc >> 8) & 0xff)) << 8);
     for (i=50; i; i++);
     GPIO_WriteBit(GPIOB,  GPIO_PIN_12, GPIO_PIN_SET);
+    OSSemPost(chip_communication_sem);
 	if (res_bcc == bcc)
 	{
 		return 0;
@@ -184,7 +187,7 @@ int8_t ChipWriteFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
 
 int8_t ChipReadFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
 {
-	uint8_t i, temp, j=0;
+	uint8_t i, temp, j=0, err;
 	uint16_t bcc = 0, res_bcc = 0;
     u_addr_t head;
     head.addr.rw = 1;
@@ -195,6 +198,7 @@ int8_t ChipReadFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
 	{
 		return -1;
 	}
+    OSSemPend(chip_communication_sem, 3, &err);
     GPIO_WriteBit(GPIOB,  GPIO_PIN_12, GPIO_PIN_RESET);
 	Spi0TranceByte('<');
     for (i=3; i > 0; i--)
@@ -215,7 +219,7 @@ int8_t ChipReadFrame(uint8_t fun, uint16_t addr, uint8_t len, void *data)
 	res_bcc = ((res_bcc) & 0xff) + (Spi0TranceByte((uint8_t)((bcc >> 8) & 0xff)) << 8);
     for (i=50; i; i++);
     GPIO_WriteBit(GPIOB,  GPIO_PIN_12, GPIO_PIN_SET);
-    
+    OSSemPost(chip_communication_sem);
 	if (res_bcc == bcc)
 	{
 		return 0;

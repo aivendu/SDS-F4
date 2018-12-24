@@ -1,4 +1,4 @@
-#include "stdint.h"
+﻿#include "stdint.h"
 #include "ff.h"
 #include "sys_config.h"
 #include "ucos_ii.h"
@@ -20,21 +20,6 @@
 #include "mini_pcie.h"
 
 
-
-uint16_t relay_ctl;
-void UpdateRelayCtl(void)
-{
-    uint16_t temp = relay_out;//relay_ctl ^ relay_out;
-    uint16_t flag = relay_ctl ^ temp;
-    uint8_t  relay_ctl_data[14];
-    memset(relay_ctl_data, 0, sizeof(relay_ctl_data));
-    if (flag)
-    {
-        relay_ctl = temp;
-        PumpCtrl(flag & temp, 1);     //  开
-        PumpCtrl(flag & (~temp), 0);  //  关
-    }
-}
 
 int8_t ReadYWInput(uint8_t port)
 {
@@ -182,6 +167,11 @@ void TaskInit(void *pdata)
             case 1:
                 FlowA2O();
                 break;
+            case 2:
+                break;
+            case 3:
+                break;
+            default: process_technology_type = 1; break;
         }
         OSTimeDly(10);
         

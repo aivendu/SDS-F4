@@ -18,13 +18,14 @@ typedef union u_coil_rw
         uint16_t  usb    :1; 
         uint16_t  save   :1;
         uint16_t  calib  :1;
-        uint16_t  manual :1;
+        uint16_t  pump_auto   :1;
         uint16_t  init   :1;
         uint16_t  reboot :1;
         uint16_t  back   :1;
         uint16_t  logout :1;
         uint16_t  communication :1;
-        uint16_t  unused0:5; 
+        uint16_t  flux_err :1;
+        uint16_t  unused0:4; 
         uint16_t  unused00:16; 
         
         uint16_t  alarm_pump_1:1;  
@@ -50,7 +51,7 @@ typedef union u_coil_rw
         uint16_t  install_nh3:1;
         uint16_t  install_DO:1;
         uint16_t  install_ss:1;
-        uint16_t  install_p:1;
+        uint16_t  install_tp:1;
         uint16_t  install_flux:1;
         uint16_t  unused3:7;
         
@@ -67,9 +68,9 @@ typedef struct s_reg_group_1
     uint16_t server_port;
     uint32_t server_ip;
     uint16_t pump_open_time_min;  //  泵的最小开启时间, 单位S
-    uint16_t linkup_tmo;
+    uint16_t linkup_tmo;  //  单位分钟
     uint32_t device_id;
-    uint16_t passwd_tmo;
+    uint16_t passwd_tmo;  //  单位分钟
     uint16_t unused;
 } s_reg_group_1_t;
 
@@ -151,26 +152,27 @@ typedef union  u_A2O_technology_argv
 
 typedef struct s_MBR_technology_argv
 {
-    uint16_t pump_aera1_port;
-    uint16_t pump_aera2_port;
-    uint16_t pump_subm1_port;
-    uint16_t pump_subm2_port;
-    uint16_t pump_wmbr1_port;
-    uint16_t pump_wmbr2_port;
-    uint16_t pump_rflx1_port;
-    uint16_t pump_rflx2_port;
-    uint16_t pump_watr1_port;
-    uint16_t pump_watr2_port;
-    uint16_t pump_dosg1_port;
-    uint16_t pump_dosg2_port;
-    uint16_t pump_lift1_port;
-    uint16_t pump_lift2_port;
+    uint16_t pump_aera1_port;  //  曝气泵1
+    uint16_t pump_aera2_port;  //  曝气泵2
+    uint16_t pump_subm1_port;  //  潜污泵1
+    uint16_t pump_subm2_port;  //  潜污泵2
+    uint16_t pump_wmbr1_port;  //  洗膜泵1
+    uint16_t pump_wmbr2_port;  //  洗膜泵2
+    uint16_t pump_rflx1_port;  //  回流泵1
+    uint16_t pump_rflx2_port;  //  回流泵2
+    uint16_t pump_ambr1_port;  //  吸膜泵1
+    uint16_t pump_ambr2_port;  //  吸膜泵2
+    uint16_t pump_dosg1_port;  //  加药泵1
+    uint16_t pump_dosg2_port;  //  加药泵2
+    uint16_t pump_lift1_port;  //  提升泵1
+    uint16_t pump_lift2_port;  //  提升泵2
     uint16_t unused1[48-14];
     
-    //  出水泵
-    uint16_t pump_watr_cycle_time;
-    uint16_t pump_watr_delay_time;
-    uint16_t unused5[16-2];
+    //  吸膜泵  
+    uint16_t pump_ambr_on_time;
+    uint16_t pump_ambr_off_time;
+    uint16_t pump_ambr_cycle_time;
+    uint16_t unused5[16-3];
     //  加药泵
     uint16_t pump_dosg_delay_time;
     uint16_t unused6[16-1];
@@ -183,10 +185,9 @@ typedef struct s_MBR_technology_argv
     uint16_t pump_wmbr_cycle_time;
     uint16_t unused8[16-3];
     //  曝气泵    
-    uint32_t pump_aera1_time;
-    uint32_t pump_aera2_time;
-    uint32_t pump_aera3_time;
-    uint16_t unused2[16-6];
+    uint32_t pump_aera1_time;  //  曝气泵1开启时间
+    uint32_t pump_aera2_time;  //  曝气泵2开启时间
+    uint16_t unused2[16-4];
     //  潜污泵
     uint16_t pump_subm_on_time;
     uint16_t pump_subm_off_time;
@@ -276,7 +277,7 @@ typedef struct s_sensors
     float nh3_value;  //  NH3采样值
     float DO_value;
     float ss_value;
-    float p_value;
+    float tp_value;
     float flux_value;
     float flux_total;
     float unused1[22]; //  占位
@@ -289,7 +290,7 @@ typedef struct s_sensors
     s_sensor_ctrl_t nh3;
     s_sensor_ctrl_t DO;
     s_sensor_ctrl_t ss;
-    s_sensor_ctrl_t p;
+    s_sensor_ctrl_t tp;
     s_sensor_ctrl_t flux;
 } s_sensors_t;
     
@@ -308,8 +309,8 @@ void Updata_Realtime_info(void);
 void UpdataControlRegister(void);
 
 extern uint16_t permission[256/16];
-extern uint16_t relay_out;
-extern uint16_t yw_input;
+extern volatile uint16_t pump_manual_ctrl;
+extern volatile uint16_t yw_input;
 extern uint16_t senser_ad[4];
 extern uint16_t relay_state[14];
 extern u_pump_st_t  pump_state;

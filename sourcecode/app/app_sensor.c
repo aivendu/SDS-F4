@@ -1,4 +1,4 @@
-#include "app_sensor.h"
+﻿#include "app_sensor.h"
 #include "sys_config.h"
 #include "ucos_ii.h"
 #include "modbus_master.h"
@@ -135,13 +135,19 @@ int8_t SensorMapping(float *r_value, s_sensor_ctrl_t *ctrl)
     }\
     else\
     {\
-        sys_config_ram.sensor.ctrl.##name##_value = 0;\
+        sys_config_ram.sensor.ctrl.##name##_value = \
+                        SensorAdjust(sys_config_ram.sensor.ctrl.##name##_value, \
+                                     &sys_config_ram.sensor.ctrl.##name##);\
     }
 
 
 void TaskSensor(void *pdata)
 {
     float value;
+    uint32_t temp;
+    
+    pdata = pdata;
+    sys_config_ram.coil_g1.ctrl.flux_err = 0;
     while (1)
     {
         UpdateSensor(t, value);
@@ -151,28 +157,58 @@ void TaskSensor(void *pdata)
         UpdateSensor(nh3, value);
         UpdateSensor(DO, value);
         UpdateSensor(ss, value);
-        UpdateSensor(p, value);
+        UpdateSensor(tp, value);
         
-        if (sys_config_ram.sensor.ctrl.flux.port == 0x70)
+        if (sys_config_ram.coil_g1.ctrl.install_flux)
         {
-            if (sys_config_ram.coil_g1.ctrl.install_flux)
+            if (sys_config_ram.sensor.ctrl.flux.port == 0x70)
             {
-                MBmagCPReadFlux(&sys_config_ram.sensor.ctrl.flux_value);
-                OSTimeDly(OS_TICKS_PER_SEC/10);
-                MBmagCPReadTotalFlux(&sys_config_ram.sensor.ctrl.flux_total);
+                if (MBmagCPReadFlux(&sys_config_ram.sensor.ctrl.flux_value) == -1)
+                {
+                    sys_config_ram.coil_g1.ctrl.flux_err = 1;
+                    memset(&sys_config_ram.sensor.ctrl.flux_value, 0xFF, 4);
+                }
+                else
+                {
+                    OSTimeDly(OS_TICKS_PER_SEC/10);
+                    if (MBmagCPReadTotalFlux(&sys_config_ram.sensor.ctrl.flux_total))
+                    {
+                        sys_config_ram.coil_g1.ctrl.flux_err = 1;
+                        memset(&sys_config_ram.sensor.ctrl.flux_total, 0xFF, 4);
+                    }
+                    
+                    temp = (uint32_t)(sys_config_ram.sensor.ctrl.flux_value * 100);
+                    sys_config_ram.sensor.ctrl.flux_value = temp / 100;
+                    temp = (uint32_t)(sys_config_ram.sensor.ctrl.flux_total * 100);
+                    sys_config_ram.sensor.ctrl.flux_value = temp / 100;
+                    sys_config_ram.coil_g1.ctrl.flux_err = 0;
+                }
             }
             else
             {
-                sys_config_ram.sensor.ctrl.flux_value = 
-                    SensorAdjust(sys_config_ram.sensor.ctrl.flux_value, &sys_config_ram.sensor.ctrl.flux);
+                if (SensorMapping(&sys_config_ram.sensor.ctrl.flux_value, &sys_config_ram.sensor.ctrl.flux) <= 0)
+                {
+                    sys_config_ram.coil_g1.ctrl.flux_err = 1;
+                    memset(&sys_config_ram.sensor.ctrl.flux_value, 0xFF, 4);
+                    memset(&sys_config_ram.sensor.ctrl.flux_total, 0xFF, 4);
+                }
+                else
+                {
+                    temp = (uint32_t)(sys_config_ram.sensor.ctrl.flux_value * 100);
+                    sys_config_ram.sensor.ctrl.flux_value = temp / 100;
+                    temp = (uint32_t)(sys_config_ram.sensor.ctrl.flux_total * 100);
+                    sys_config_ram.sensor.ctrl.flux_value = temp / 100;
+                    sys_config_ram.coil_g1.ctrl.flux_err = 0;
+                }
             }
         }
         else
         {
-            UpdateSensor(flux, value);
+            sys_config_ram.sensor.ctrl.flux_total = 0;
+            sys_config_ram.sensor.ctrl.flux_value = 0;
         }
         
-        OSTimeDly(OS_TICKS_PER_SEC);
+        OSTimeDly(OS_TICKS_PER_SEC*59);
     }
 }
 
