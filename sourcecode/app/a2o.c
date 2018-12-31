@@ -1,4 +1,4 @@
-﻿/*  A2O.c
+/*  A2O.c
  *  实现A2O(商达)工艺的处理
  *  设备1、曝气泵
         3台（端口3-5），三台泵分别单独时间控制，默认0：00~23:00开启，23:01~23:59停止，时间可调。
@@ -141,28 +141,28 @@ void A2OAerationPumpCtrl(void)
     if (GetPumpPort(a2o, aera1))  //  泵是否使能, 配置了端口表示使能
     {
         //  判断对应时间是否需要开启
-        if ((1<< now.tm_hour) & GetPumpArgv(a2o, pump_aera1_time))
+        if ((1<< now.tm_hour) & GetTechArgv(a2o, pump_aera1_time))
         {
             //  当前小时需要开启
-            SinglePumpCtrl(GetPumpPort(a2o, aera1), 1);
+            PumpCtrlByTech(GetPumpPort(a2o, aera1), 1);
         }
         else
         {
-            SinglePumpCtrl(GetPumpPort(a2o, aera1), 0);
+            PumpCtrlByTech(GetPumpPort(a2o, aera1), 0);
         }
     }
     
     if (GetPumpPort(a2o, aera2))  //  泵是否使能, 配置了端口表示使能
     {
         //  判断对应时间是否需要开启
-        if ((1<< now.tm_hour) & GetPumpArgv(a2o, pump_aera2_time))
+        if ((1<< now.tm_hour) & GetTechArgv(a2o, pump_aera2_time))
         {
             //  当前小时需要开启
-            SinglePumpCtrl(GetPumpPort(a2o, aera2), 1);
+            PumpCtrlByTech(GetPumpPort(a2o, aera2), 1);
         }
         else
         {
-            SinglePumpCtrl(GetPumpPort(a2o, aera2), 0);
+            PumpCtrlByTech(GetPumpPort(a2o, aera2), 0);
         }
     }
     
@@ -170,14 +170,14 @@ void A2OAerationPumpCtrl(void)
     if (GetPumpPort(a2o, aera3))  //  泵是否使能, 配置了端口表示使能
     {
         //  判断对应时间是否需要开启
-        if ((1<< now.tm_hour) & GetPumpArgv(a2o, pump_aera3_time))
+        if ((1<< now.tm_hour) & GetTechArgv(a2o, pump_aera3_time))
         {
             //  当前小时需要开启
-            SinglePumpCtrl(GetPumpPort(a2o, aera3), 1);
+            PumpCtrlByTech(GetPumpPort(a2o, aera3), 1);
         }
         else
         {
-            SinglePumpCtrl(GetPumpPort(a2o, aera3), 0);
+            PumpCtrlByTech(GetPumpPort(a2o, aera3), 0);
         }
     }
     if (IsAerationPumpOpen())
@@ -215,15 +215,15 @@ int8_t A2OSubmCtrl(uint32_t channel, uint8_t value)
     }
     if (GetLiquidLevel(A2O_LLP_SUBM_ULTRAHIGH) && value)
     {
-        return PairOfPumpCtrl(channel, standby, 2);
+        return PairOfPumpCtrlByTech(channel, standby, 2);
     }
     else if (GetLiquidLevel(A2O_LLP_SUBM_HIGH) && value)
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -238,7 +238,7 @@ void A2OSubmersibleSewagePumpCtrl(void)
     static uint32_t time_change = 0;
     static uint32_t time_cycle = 0;
     static uint8_t open_state;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     switch (state)
     {
         case A2O_PUMP_ST_INIT:
@@ -249,9 +249,9 @@ void A2OSubmersibleSewagePumpCtrl(void)
             //open_time = 0;
             break;
         case A2O_PUMP_ST_PRIMARY_A:
-            if ((time_now - time_change) > GetPumpArgv(a2o, pump_subm_on_time))  //  开启时间超时
+            if ((time_now - time_change) > GetTechArgv(a2o, pump_subm_on_time) * 60)  //  开启时间超时
             {
-                SinglePumpCtrl(GetPumpPort(a2o, subm1), 0);  //  关闭泵
+                PumpCtrlByTech(GetPumpPort(a2o, subm1), 0);  //  关闭泵
                 time_change = time_now;
                 state = A2O_PUMP_ST_PRIMARY_B;
             }
@@ -261,11 +261,11 @@ void A2OSubmersibleSewagePumpCtrl(void)
             }
             break;
         case A2O_PUMP_ST_PRIMARY_B:
-            if ((time_now - time_change) > GetPumpArgv(a2o, pump_subm_off_time))  //  关闭时间超时
+            if ((time_now - time_change) > GetTechArgv(a2o, pump_subm_off_time) * 60)  //  关闭时间超时
             {
                 //open_time = 0;
                 time_change = time_now;
-                if ((time_now - time_cycle) > GetPumpArgv(a2o, pump_subm_cycle_time))  //  周期切换时间超时
+                if ((time_now - time_cycle) > GetTechArgv(a2o, pump_subm_cycle_time) * 60)  //  周期切换时间超时
                 {
                     state = A2O_PUMP_ST_MINOR_A;
                     time_cycle = time_now;
@@ -277,9 +277,9 @@ void A2OSubmersibleSewagePumpCtrl(void)
             }
             break;
         case A2O_PUMP_ST_MINOR_A:
-            if ((time_now - time_change) > GetPumpArgv(a2o, pump_subm_on_time))  //  开启时间超时
+            if ((time_now - time_change) > GetTechArgv(a2o, pump_subm_on_time) * 60)  //  开启时间超时
             {
-                SinglePumpCtrl(GetPumpPort(a2o, subm2), 0);  //  关闭泵
+                PumpCtrlByTech(GetPumpPort(a2o, subm2), 0);  //  关闭泵
                 time_change = time_now;
                 state = A2O_PUMP_ST_MINOR_B;
             }
@@ -289,10 +289,10 @@ void A2OSubmersibleSewagePumpCtrl(void)
             }
             break;
         case A2O_PUMP_ST_MINOR_B:
-            if ((time_now - time_change) > GetPumpArgv(a2o, pump_subm_off_time))  //  关闭时间超时
+            if ((time_now - time_change) > GetTechArgv(a2o, pump_subm_off_time) * 60)  //  关闭时间超时
             {
                 //open_time = 0;
-                if ((time_now - time_cycle) > GetPumpArgv(a2o, pump_subm_cycle_time))  //  周期切换时间超时
+                if ((time_now - time_cycle) > GetTechArgv(a2o, pump_subm_cycle_time) * 60)  //  周期切换时间超时
                 {
                     state = A2O_PUMP_ST_PRIMARY_A;
                     time_cycle = time_now;
@@ -348,11 +348,11 @@ int8_t A2OReflexCtrl(uint32_t channel, uint8_t value)
     }
     if (value)
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -365,7 +365,7 @@ void A2OReflexPumpCtrl(void)
     static uint8_t refx_state = A2O_PUMP_ST_INIT;
     static uint32_t refx_time_change = 0;
     static uint32_t refx_time_cycle = 0;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     switch (refx_state)
     {
         case A2O_PUMP_ST_INIT:
@@ -375,7 +375,7 @@ void A2OReflexPumpCtrl(void)
             A2OReflexCtrl(GetPumpPort(a2o, rflx1), 1);
             break;
         case A2O_PUMP_ST_PRIMARY_A:
-            if ((time_now - refx_time_change) > GetPumpArgv(a2o, pump_rflx_on_time))  //  开启时间超时
+            if ((time_now - refx_time_change) > GetTechArgv(a2o, pump_rflx_on_time) * 60)  //  开启时间超时
             {
                 A2OReflexCtrl(GetPumpPort(a2o, rflx1), 0);  //  关闭主泵
                 refx_time_change = time_now;
@@ -387,10 +387,10 @@ void A2OReflexPumpCtrl(void)
             }
             break;
         case A2O_PUMP_ST_PRIMARY_B:
-            if ((time_now - refx_time_change) > GetPumpArgv(a2o, pump_rflx_off_time))  //  关闭时间超时
+            if ((time_now - refx_time_change) > GetTechArgv(a2o, pump_rflx_off_time) * 60)  //  关闭时间超时
             {
                 refx_time_change = time_now;
-                if ((time_now - refx_time_cycle) > GetPumpArgv(a2o, pump_rflx_cycle_time))  //  周期切换时间超时
+                if ((time_now - refx_time_cycle) > GetTechArgv(a2o, pump_rflx_cycle_time) * 60)  //  周期切换时间超时
                 {
                     refx_state = A2O_PUMP_ST_MINOR_A;
                     refx_time_cycle = time_now;
@@ -402,7 +402,7 @@ void A2OReflexPumpCtrl(void)
             }
             break;
         case A2O_PUMP_ST_MINOR_A:
-            if ((time_now - refx_time_change) > GetPumpArgv(a2o, pump_rflx_on_time))  //  开启时间超时
+            if ((time_now - refx_time_change) > GetTechArgv(a2o, pump_rflx_on_time) * 60)  //  开启时间超时
             {
                 A2OReflexCtrl(GetPumpPort(a2o, rflx2), 0);  //  关闭备用泵
                 refx_time_change = time_now;
@@ -414,9 +414,9 @@ void A2OReflexPumpCtrl(void)
             }
             break;
         case A2O_PUMP_ST_MINOR_B:
-            if ((time_now - refx_time_change) > GetPumpArgv(a2o, pump_rflx_off_time))  //  关闭时间超时
+            if ((time_now - refx_time_change) > GetTechArgv(a2o, pump_rflx_off_time) * 60)  //  关闭时间超时
             {
-                if ((time_now - refx_time_cycle) > GetPumpArgv(a2o, pump_rflx_cycle_time))  //  周期切换时间超时
+                if ((time_now - refx_time_cycle) > GetTechArgv(a2o, pump_rflx_cycle_time) * 60)  //  周期切换时间超时
                 {
                     refx_state = A2O_PUMP_ST_PRIMARY_A;
                     refx_time_cycle = time_now;
@@ -465,11 +465,11 @@ int8_t A2OWaterCtrl(uint32_t channel, uint8_t value)
     }
     if ((GetLiquidLevel(A2O_LLP_WATER_HIGH)) && value)
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -481,7 +481,7 @@ void A2OWaterPumpCtrl(void)
 //    uint8_t pump_st = 0;
     static uint8_t watr_state = A2O_PUMP_ST_INIT;
     static uint32_t watr_time_cycle = 0;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     switch (watr_state)
     {
         case A2O_PUMP_ST_INIT:
@@ -489,7 +489,7 @@ void A2OWaterPumpCtrl(void)
             watr_state = A2O_PUMP_ST_PRIMARY_A;
             break;
         case A2O_PUMP_ST_PRIMARY_A:
-            if ((time_now - watr_time_cycle) > GetPumpArgv(a2o, pump_watr_cycle_time))  //  周期切换时间超时
+            if ((time_now - watr_time_cycle) > GetTechArgv(a2o, pump_watr_cycle_time) * 60)  //  周期切换时间超时
             {
                 watr_state = A2O_PUMP_ST_MINOR_A;
                 watr_time_cycle = time_now;
@@ -501,7 +501,7 @@ void A2OWaterPumpCtrl(void)
             break;
         
         case A2O_PUMP_ST_MINOR_A:
-            if ((time_now - watr_time_cycle) > GetPumpArgv(a2o, pump_watr_cycle_time))  //  周期切换时间超时
+            if ((time_now - watr_time_cycle) > GetTechArgv(a2o, pump_watr_cycle_time) * 60)  //  周期切换时间超时
             {
                 watr_state = A2O_PUMP_ST_PRIMARY_A;
                 watr_time_cycle = time_now;
@@ -558,17 +558,17 @@ void A2ODosingPumpCtrl(void)
             }
             break;
         case A2O_PUMP_ST_PRIMARY_A:
-            if ((time_now - subm_open_temp.start) > (GetPumpArgv(a2o, pump_dosg_delay_time) * 60))
+            if ((time_now - subm_open_temp.start) > (GetTechArgv(a2o, pump_dosg_delay_time) * 60))
             {
                 if ((GetLiquidLevel(A2O_LLP_DOSING1_HIGH)) && (GetLiquidLevel(A2O_LLP_DOSING2_HIGH)))
                 {
-                    SinglePumpCtrl(GetPumpPort(a2o, dosg1), 1);
-                    SinglePumpCtrl(GetPumpPort(a2o, dosg2), 1);
+                    PumpCtrlByTech(GetPumpPort(a2o, dosg1), 1);
+                    PumpCtrlByTech(GetPumpPort(a2o, dosg2), 1);
                 }  
                 else
                 {
-                    SinglePumpCtrl(GetPumpPort(a2o, dosg1), 0);
-                    SinglePumpCtrl(GetPumpPort(a2o, dosg2), 0);
+                    PumpCtrlByTech(GetPumpPort(a2o, dosg1), 0);
+                    PumpCtrlByTech(GetPumpPort(a2o, dosg2), 0);
                 }   
                 if ((subm_open_ptr = GetSubmOpenTimestamp()) != 0)
                 {
@@ -581,10 +581,10 @@ void A2ODosingPumpCtrl(void)
             }
             break;
         case A2O_PUMP_ST_PRIMARY_B:
-            if ((time_now - subm_open_temp.start) > (GetPumpArgv(a2o, pump_dosg_delay_time) * 60))
+            if ((time_now - subm_open_temp.start) > (GetTechArgv(a2o, pump_dosg_delay_time) * 60))
             {
-                SinglePumpCtrl(GetPumpPort(a2o, dosg1), 0);
-                SinglePumpCtrl(GetPumpPort(a2o, dosg2), 0);
+                PumpCtrlByTech(GetPumpPort(a2o, dosg1), 0);
+                PumpCtrlByTech(GetPumpPort(a2o, dosg2), 0);
                 dosg_state = A2O_PUMP_ST_INIT;
             }
             break;
@@ -626,19 +626,19 @@ int8_t A2OLiftingCtrl(uint32_t channel, uint8_t value)
     
     if ((GetLiquidLevel(A2O_LLP_SUBM_HIGH)) || (GetLiquidLevel(A2O_LLP_SUBM_ULTRAHIGH)))
     {
-        return PairOfPumpCtrl(channel, standby, 0);                
+        return PairOfPumpCtrlByTech(channel, standby, 0);                
     }
     else if (GetLiquidLevel(A2O_LLP_LIFTING_ULTRAHIGH))
     {
-        return PairOfPumpCtrl(channel, standby, 2);
+        return PairOfPumpCtrlByTech(channel, standby, 2);
     }
     else if (GetLiquidLevel(A2O_LLP_LIFTING_HIGH))
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -651,7 +651,7 @@ void A2OLiftingPumpCtrl(void)
 {
     static uint8_t lift_state = A2O_PUMP_ST_INIT;
     static uint32_t lift_time_cycle = 0;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     switch (lift_state)
     {
         case A2O_PUMP_ST_INIT:
@@ -659,7 +659,7 @@ void A2OLiftingPumpCtrl(void)
             lift_state = A2O_PUMP_ST_PRIMARY_A;
             break;
         case A2O_PUMP_ST_PRIMARY_A:
-            if ((time_now - lift_time_cycle) > GetPumpArgv(a2o, pump_lift_cycle_time))  //  周期切换时间超时
+            if ((time_now - lift_time_cycle) > GetTechArgv(a2o, pump_lift_cycle_time) * 60)  //  周期切换时间超时
             {
                 lift_state = A2O_PUMP_ST_MINOR_A;
                 lift_time_cycle = time_now;
@@ -671,7 +671,7 @@ void A2OLiftingPumpCtrl(void)
             break;
             
         case A2O_PUMP_ST_MINOR_A:
-            if ((time_now - lift_time_cycle) > GetPumpArgv(a2o, pump_lift_cycle_time))  //  周期切换时间超时
+            if ((time_now - lift_time_cycle) > GetTechArgv(a2o, pump_lift_cycle_time) * 60)  //  周期切换时间超时
             {
                 lift_state = A2O_PUMP_ST_PRIMARY_A;
                 lift_time_cycle = time_now;
@@ -700,11 +700,11 @@ void A2OStandbyPumpCtrl(void)
 {
     if (GetLiquidLevel(A2O_LLP_STANDBY))
     {
-        SinglePumpCtrl(GetPumpPort(a2o, standby), 1);
+        PumpCtrlByTech(GetPumpPort(a2o, standby), 1);
     }
     else
     {
-        SinglePumpCtrl(GetPumpPort(a2o, standby), 0);
+        PumpCtrlByTech(GetPumpPort(a2o, standby), 0);
     }
 }
 

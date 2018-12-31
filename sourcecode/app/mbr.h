@@ -1,4 +1,4 @@
-﻿#ifndef _MBR_H_
+#ifndef _MBR_H_
 #define _MBR_H_
 
 //  曝气泵
@@ -29,7 +29,7 @@
 #define Wash_membrane_pump_1
 #define Wash_membrane_pump_2
 
-extern void FlowMbr(void);
+extern void FlowMBR(void);
 
 
 #endif

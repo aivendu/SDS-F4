@@ -10,6 +10,8 @@
 #include "modbus_register.h"
 #include "pump.h"
 #include "a2o.h"
+#include "mbr.h"
+#include "sbr.h"
 #include "spi_uart.h"
 #include "sys_task_config.h"
 #include "modbus_master.h"
@@ -123,6 +125,7 @@ uint8_t  open[14];
 void TaskInit(void *pdata)
 {
     s_UartStr_t com_arg = {9600, 8,0,1};
+    uint8_t tech_temp;
     OSTimeDly(1000);
     InitFileSystem();
     InitSpiUart(TaskSpiUartPrio);
@@ -162,14 +165,21 @@ void TaskInit(void *pdata)
         
         UpdateRelayCtl();
         UpdataYWInput();
-        switch (process_technology_type)
+        if (tech_temp != process_technology_type)
+        {
+            ClearPump();
+            tech_temp = process_technology_type;
+        }
+        switch (tech_temp)
         {
             case 1:
                 FlowA2O();
                 break;
             case 2:
+                FlowMBR();
                 break;
             case 3:
+                FlowSBR();
                 break;
             default: process_technology_type = 1; break;
         }
@@ -204,7 +214,7 @@ void TaskInit(void *pdata)
         if (coil_group_1.ctrl.reboot)
         {
             coil_group_1.ctrl.reboot = 0;
-            sys_config_ram.reg_group_1.technology_type = 0;
+            //sys_config_ram.reg_group_1.technology_type = 0;
             //SaveSensorCfg();
             SaveSystemCfg(0, (uint8_t *)&sys_config_ram, sizeof(sys_config_ram));
             OSTimeDly(OS_TICKS_PER_SEC/2);

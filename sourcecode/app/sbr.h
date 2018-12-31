@@ -1,6 +1,6 @@
-﻿#ifndef _SBR_H_
+#ifndef _SBR_H_
 #define _SBR_H_
-
+#include "stdint.h"
 //  曝气泵
 #define aeration_pump_1
 #define aeration_pump_2
@@ -27,7 +27,7 @@
 #define lifting_pump_1
 #define lifting_pump_2
 
-extern void FlowSbr(void);
+extern void FlowSBR(void);
 
 #endif
 

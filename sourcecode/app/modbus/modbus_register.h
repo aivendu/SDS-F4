@@ -217,21 +217,22 @@ typedef struct s_SBR_technology_argv
     uint16_t pump_subm2_port;  //  潜污泵2
     uint16_t pump_watr1_port;  //  出水泵1
     uint16_t pump_watr2_port;  //  出水泵2
-    uint16_t pump_rflx1_port;  //  回流泵1
-    uint16_t pump_rflx2_port;  //  回流泵2
     uint16_t pump_dosg1_port;  //  加药泵1
     uint16_t pump_dosg2_port;  //  加药泵2
     uint16_t pump_lift1_port;  //  提升泵1
     uint16_t pump_lift2_port;  //  提升泵2
-    uint16_t unused1[48-16]; 
+    uint16_t pump_rflx1_port;  //  回流泵1
+    uint16_t pump_rflx2_port;  //  回流泵2
+    uint16_t unused1[48-14]; 
     
     //  当前阶段
     uint16_t current_phase;
     uint16_t precipitate_time;
     uint16_t unused8[16-2];
     //  曝气泵    
-    uint16_t pump_aera_on_time;
-    uint16_t unused2[16-1];
+    uint16_t pump_aera_run_time;
+    uint16_t pump_aera_cycle_time;
+    uint16_t unused2[16-2];
     //  潜污泵
     uint16_t pump_subm_cycle_time;
     uint16_t unused3[16-1];
@@ -244,6 +245,9 @@ typedef struct s_SBR_technology_argv
     //  提升泵
     uint16_t pump_lift_cycle_time;
     uint16_t unused7[16-1];
+    //  回流泵
+    uint16_t pump_rflx_cycle_time;
+    uint16_t unused9[16-1];
 } s_SBR_technology_argv_t;
 
 typedef union  u_SBR_technology_argv
@@ -320,7 +324,7 @@ extern u_pump_st_t  pump_state;
 #define GetLiquidLevel(channel)    (yw_input & (1<<((channel>0?(channel-1):0))))
 //  获取对应工艺的泵的端口号
 #define GetPumpPort(tech, pump)    (sys_config_ram.##tech##_argv.member.pump_##pump##_port)
-#define GetPumpArgv(tech, argv)    (sys_config_ram.##tech##_argv.member.##argv)
+#define GetTechArgv(tech, argv)    (sys_config_ram.##tech##_argv.member.##argv)
 
 #endif
 

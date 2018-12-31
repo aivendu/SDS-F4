@@ -32,16 +32,18 @@ typedef enum {
 } e_pump_state_t;
 #define  IsPumpFault(state)    ((state == PUMP_ST_SHORT) || (state == PUMP_ST_OPEN) || (state == PUMP_ST_NOINIT))
 
-extern int8_t SinglePumpCtrl(uint8_t channel, uint8_t open);
+extern int8_t PumpCtrlByTech(uint8_t channel, uint8_t open);
 
 extern int8_t PumpCtrl(uint32_t channel, uint8_t open);
 
-extern int8_t PairOfPumpCtrl(uint8_t primary, uint8_t standby, uint8_t both);
+extern int8_t PairOfPumpCtrlByTech(uint8_t primary, uint8_t standby, uint8_t both);
 
 extern void UpdateRelayCtl(void);
 
 extern int8_t GetPumpCtrlState(uint32_t channel);
 
 extern e_pump_state_t GetPumpState(uint32_t channel);
+
+extern int8_t ClearPump(void);
 #endif
 

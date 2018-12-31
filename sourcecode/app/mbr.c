@@ -78,28 +78,28 @@ void MBRAerationPumpCtrl(void)
     if (GetPumpPort(mbr, aera1))  //  泵是否使能, 配置了端口表示使能
     {
         //  判断对应时间是否需要开启
-        if ((1<< now.tm_hour) & GetPumpArgv(mbr, pump_aera1_time))
+        if ((1<< now.tm_hour) & GetTechArgv(mbr, pump_aera1_time))
         {
             //  当前小时需要开启
-            SinglePumpCtrl(GetPumpPort(mbr, aera1), 1);
+            PumpCtrlByTech(GetPumpPort(mbr, aera1), 1);
         }
         else
         {
-            SinglePumpCtrl(GetPumpPort(mbr, aera1), 0);
+            PumpCtrlByTech(GetPumpPort(mbr, aera1), 0);
         }
     }
     
     if (GetPumpPort(mbr, aera2))  //  泵是否使能, 配置了端口表示使能
     {
         //  判断对应时间是否需要开启
-        if ((1<< now.tm_hour) & GetPumpArgv(mbr, pump_aera2_time))
+        if ((1<< now.tm_hour) & GetTechArgv(mbr, pump_aera2_time))
         {
             //  当前小时需要开启
-            SinglePumpCtrl(GetPumpPort(mbr, aera2), 1);
+            PumpCtrlByTech(GetPumpPort(mbr, aera2), 1);
         }
         else
         {
-            SinglePumpCtrl(GetPumpPort(mbr, aera2), 0);
+            PumpCtrlByTech(GetPumpPort(mbr, aera2), 0);
         }
     }
     if (IsMBRAerationPumpOpen())
@@ -137,19 +137,19 @@ int8_t MBRSubmCtrl(uint32_t channel, uint8_t value)
     }
     if (GetLiquidLevel(MBR_LLP_MBR_POOL_HIGH))
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
     else if (GetLiquidLevel(MBR_LLP_SUBM_ULTRAHIGH) && value)
     {
-        return PairOfPumpCtrl(channel, standby, 2);
+        return PairOfPumpCtrlByTech(channel, standby, 2);
     }
     else if (GetLiquidLevel(MBR_LLP_SUBM_HIGH) && value)
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -164,7 +164,7 @@ void MBRSubmersibleSewagePumpCtrl(void)
     static uint32_t time_change = 0;
     static uint32_t time_cycle = 0;
     static uint8_t open_state;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     switch (state)
     {
         case MBR_PUMP_ST_INIT:
@@ -175,9 +175,9 @@ void MBRSubmersibleSewagePumpCtrl(void)
             //open_time = 0;
             break;
         case MBR_PUMP_ST_PRIMARY_A:
-            if ((time_now - time_change) > GetPumpArgv(mbr, pump_subm_on_time))  //  开启时间超时
+            if ((time_now - time_change) > GetTechArgv(mbr, pump_subm_on_time) * 60)  //  开启时间超时
             {
-                SinglePumpCtrl(GetPumpPort(mbr, subm1), 0);  //  关闭泵
+                PumpCtrlByTech(GetPumpPort(mbr, subm1), 0);  //  关闭泵
                 time_change = time_now;
                 state = MBR_PUMP_ST_PRIMARY_B;
             }
@@ -187,11 +187,11 @@ void MBRSubmersibleSewagePumpCtrl(void)
             }
             break;
         case MBR_PUMP_ST_PRIMARY_B:
-            if ((time_now - time_change) > GetPumpArgv(mbr, pump_subm_off_time))  //  关闭时间超时
+            if ((time_now - time_change) > GetTechArgv(mbr, pump_subm_off_time) * 60)  //  关闭时间超时
             {
                 //open_time = 0;
                 time_change = time_now;
-                if ((time_now - time_cycle) > GetPumpArgv(mbr, pump_subm_cycle_time))  //  周期切换时间超时
+                if ((time_now - time_cycle) > GetTechArgv(mbr, pump_subm_cycle_time) * 60)  //  周期切换时间超时
                 {
                     state = MBR_PUMP_ST_MINOR_A;
                     time_cycle = time_now;
@@ -203,9 +203,9 @@ void MBRSubmersibleSewagePumpCtrl(void)
             }
             break;
         case MBR_PUMP_ST_MINOR_A:
-            if ((time_now - time_change) > GetPumpArgv(mbr, pump_subm_on_time))  //  开启时间超时
+            if ((time_now - time_change) > GetTechArgv(mbr, pump_subm_on_time) * 60)  //  开启时间超时
             {
-                SinglePumpCtrl(GetPumpPort(mbr, subm2), 0);  //  关闭泵
+                PumpCtrlByTech(GetPumpPort(mbr, subm2), 0);  //  关闭泵
                 time_change = time_now;
                 state = MBR_PUMP_ST_MINOR_B;
             }
@@ -215,10 +215,10 @@ void MBRSubmersibleSewagePumpCtrl(void)
             }
             break;
         case MBR_PUMP_ST_MINOR_B:
-            if ((time_now - time_change) > GetPumpArgv(mbr, pump_subm_off_time))  //  关闭时间超时
+            if ((time_now - time_change) > GetTechArgv(mbr, pump_subm_off_time) * 60)  //  关闭时间超时
             {
                 //open_time = 0;
-                if ((time_now - time_cycle) > GetPumpArgv(mbr, pump_subm_cycle_time))  //  周期切换时间超时
+                if ((time_now - time_cycle) > GetTechArgv(mbr, pump_subm_cycle_time) * 60)  //  周期切换时间超时
                 {
                     state = MBR_PUMP_ST_PRIMARY_A;
                     time_cycle = time_now;
@@ -274,11 +274,11 @@ int8_t MBRReflexCtrl(uint32_t channel, uint8_t value)
     }
     if (value)
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -291,7 +291,7 @@ void MBRReflexPumpCtrl(void)
     static uint8_t refx_state = MBR_PUMP_ST_INIT;
     static uint32_t refx_time_change = 0;
     static uint32_t refx_time_cycle = 0;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     switch (refx_state)
     {
         case MBR_PUMP_ST_INIT:
@@ -301,7 +301,7 @@ void MBRReflexPumpCtrl(void)
             MBRReflexCtrl(GetPumpPort(mbr, rflx1), 1);
             break;
         case MBR_PUMP_ST_PRIMARY_A:
-            if ((time_now - refx_time_change) > GetPumpArgv(mbr, pump_rflx_on_time))  //  开启时间超时
+            if ((time_now - refx_time_change) > GetTechArgv(mbr, pump_rflx_on_time) * 60)  //  开启时间超时
             {
                 MBRReflexCtrl(GetPumpPort(mbr, rflx1), 0);  //  关闭主泵
                 refx_time_change = time_now;
@@ -313,10 +313,10 @@ void MBRReflexPumpCtrl(void)
             }
             break;
         case MBR_PUMP_ST_PRIMARY_B:
-            if ((time_now - refx_time_change) > GetPumpArgv(mbr, pump_rflx_off_time))  //  关闭时间超时
+            if ((time_now - refx_time_change) > GetTechArgv(mbr, pump_rflx_off_time) * 60)  //  关闭时间超时
             {
                 refx_time_change = time_now;
-                if ((time_now - refx_time_cycle) > GetPumpArgv(mbr, pump_rflx_cycle_time))  //  周期切换时间超时
+                if ((time_now - refx_time_cycle) > GetTechArgv(mbr, pump_rflx_cycle_time) * 60)  //  周期切换时间超时
                 {
                     refx_state = MBR_PUMP_ST_MINOR_A;
                     refx_time_cycle = time_now;
@@ -328,7 +328,7 @@ void MBRReflexPumpCtrl(void)
             }
             break;
         case MBR_PUMP_ST_MINOR_A:
-            if ((time_now - refx_time_change) > GetPumpArgv(mbr, pump_rflx_on_time))  //  开启时间超时
+            if ((time_now - refx_time_change) > GetTechArgv(mbr, pump_rflx_on_time) * 60)  //  开启时间超时
             {
                 MBRReflexCtrl(GetPumpPort(mbr, rflx2), 0);  //  关闭备用泵
                 refx_time_change = time_now;
@@ -340,9 +340,9 @@ void MBRReflexPumpCtrl(void)
             }
             break;
         case MBR_PUMP_ST_MINOR_B:
-            if ((time_now - refx_time_change) > GetPumpArgv(mbr, pump_rflx_off_time))  //  关闭时间超时
+            if ((time_now - refx_time_change) > GetTechArgv(mbr, pump_rflx_off_time) * 60)  //  关闭时间超时
             {
-                if ((time_now - refx_time_cycle) > GetPumpArgv(mbr, pump_rflx_cycle_time))  //  周期切换时间超时
+                if ((time_now - refx_time_cycle) > GetTechArgv(mbr, pump_rflx_cycle_time) * 60)  //  周期切换时间超时
                 {
                     refx_state = MBR_PUMP_ST_PRIMARY_A;
                     refx_time_cycle = time_now;
@@ -391,11 +391,11 @@ int8_t MBRWaterMembraneCtrl(uint32_t channel, uint8_t value)
     }
     if ((GetLiquidLevel(MBR_LLP_CLEAN_WATER_HIGH)) && value)
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -408,19 +408,20 @@ void MBRWaterMembranePumpCtrl(void)
     static uint8_t wmbr_state = MBR_PUMP_ST_INIT;
     static uint32_t wmbr_time_change = 0;
     static uint32_t wmbr_time_cycle = 0;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     wmbr_time_cycle = wmbr_time_cycle;  //  去除警告
     switch (wmbr_state)
     {
         case MBR_PUMP_ST_INIT:
 //            wmbr_time_cycle = time_now;
+            wmbr_time_change = time_now;
             wmbr_state = MBR_PUMP_ST_PRIMARY_A;
             break;
         case MBR_PUMP_ST_PRIMARY_A:
-            if ((time_now - wmbr_time_change) > GetPumpArgv(mbr, pump_wmbr_on_time))
+            if ((time_now - wmbr_time_change) > GetTechArgv(mbr, pump_wmbr_on_time) * 60)
             {
                 wmbr_time_change = time_now;
-                SinglePumpCtrl(GetPumpPort(mbr, wmbr1), 0);
+                PumpCtrlByTech(GetPumpPort(mbr, wmbr1), 0);
                 wmbr_state = MBR_PUMP_ST_PRIMARY_B;
                 break;
             }
@@ -431,11 +432,11 @@ void MBRWaterMembranePumpCtrl(void)
             break;
         
         case MBR_PUMP_ST_PRIMARY_B:
-            if ((time_now - wmbr_time_change) > GetPumpArgv(mbr, pump_wmbr_off_time))
+            if ((time_now - wmbr_time_change) > GetTechArgv(mbr, pump_wmbr_off_time) * 60)
             {
                 wmbr_time_change = time_now;
                 //  不要24小时更换
-                //if ((time_now - wmbr_time_cycle) > GetPumpArgv(mbr, pump_wmbr_cycle_time))  //  周期切换时间超时
+                //if ((time_now - wmbr_time_cycle) > GetTechArgv(mbr, pump_wmbr_cycle_time) * 60)  //  周期切换时间超时
                 if (0)
                 {
                     wmbr_state = MBR_PUMP_ST_MINOR_A;
@@ -450,10 +451,10 @@ void MBRWaterMembranePumpCtrl(void)
             break;
             
         case MBR_PUMP_ST_MINOR_A:
-            if ((time_now - wmbr_time_change) > GetPumpArgv(mbr, pump_wmbr_on_time))
+            if ((time_now - wmbr_time_change) > GetTechArgv(mbr, pump_wmbr_on_time) * 60)
             {
                 wmbr_time_change = time_now;
-                SinglePumpCtrl(GetPumpPort(mbr, wmbr2), 0);
+                PumpCtrlByTech(GetPumpPort(mbr, wmbr2), 0);
                 wmbr_state = MBR_PUMP_ST_MINOR_B;
                 break;
             }
@@ -464,11 +465,11 @@ void MBRWaterMembranePumpCtrl(void)
             break;
             
         case MBR_PUMP_ST_MINOR_B:
-            if ((time_now - wmbr_time_change) > GetPumpArgv(mbr, pump_wmbr_off_time))
+            if ((time_now - wmbr_time_change) > GetTechArgv(mbr, pump_wmbr_off_time) * 60)
             {
                 wmbr_time_change = time_now;
                 //  不要24小时更换
-                //if ((time_now - wmbr_time_cycle) > GetPumpArgv(mbr, pump_wmbr_cycle_time))  //  周期切换时间超时
+                //if ((time_now - wmbr_time_cycle) > GetTechArgv(mbr, pump_wmbr_cycle_time) * 60)  //  周期切换时间超时
                 if (1)
                 {
                     wmbr_state = MBR_PUMP_ST_PRIMARY_A;
@@ -520,11 +521,11 @@ int8_t MBRSuckMembraneCtrl(uint32_t channel, uint8_t value)
     if ((GetLiquidLevel(MBR_LLP_MBR_POOL_HIGH)) && (IsMBRAerationPumpOpen()) && 
         (IsMBRWaterMembranePumpOpen() == 0) && value)
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -537,34 +538,35 @@ void MBRSuckMembranePumpCtrl(void)
     static uint8_t smbr_state = MBR_PUMP_ST_INIT;
     static uint32_t smbr_time_change = 0;
     static uint32_t smbr_time_cycle = 0;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     switch (smbr_state)
     {
         case MBR_PUMP_ST_INIT:
             smbr_time_cycle = time_now;
+            smbr_time_change = time_now;
             smbr_state = MBR_PUMP_ST_PRIMARY_A;
             break;
         case MBR_PUMP_ST_PRIMARY_A:
-            if ((time_now - smbr_time_change) > GetPumpArgv(mbr, pump_smbr_on_time))
+            if ((time_now - smbr_time_change) > GetTechArgv(mbr, pump_smbr_on_time) * 60)
             {
-                smbr_time_change = time(0)/60;
-                SinglePumpCtrl(GetPumpPort(mbr, smbr1), 0);
+                smbr_time_change = time_now;
+                PumpCtrlByTech(GetPumpPort(mbr, smbr1), 0);
                 smbr_state = MBR_PUMP_ST_PRIMARY_B;
                 break;
             }
-            else if (MBRWaterMembraneCtrl(GetPumpPort(mbr, smbr1), 1) == GetPumpPort(mbr, smbr2))
+            else if (MBRSuckMembraneCtrl(GetPumpPort(mbr, smbr1), 1) == GetPumpPort(mbr, smbr2))
             {
                 smbr_state = MBR_PUMP_ST_MINOR_A;
             }
             break;
         
         case MBR_PUMP_ST_PRIMARY_B:
-            if ((time_now - smbr_time_change) > GetPumpArgv(mbr, pump_smbr_off_time))
+            if ((time_now - smbr_time_change) > GetTechArgv(mbr, pump_smbr_off_time) * 60)
             {
-                smbr_time_change = time(0)/60;
-                if ((time_now - smbr_time_cycle) > GetPumpArgv(mbr, pump_smbr_cycle_time))  //  周期切换时间超时
+                smbr_time_change = time_now;
+                if ((time_now - smbr_time_cycle) > GetTechArgv(mbr, pump_smbr_cycle_time) * 60)  //  周期切换时间超时
                 {
-                    smbr_time_cycle = time(0)/60;
+                    smbr_time_cycle = time_now;
                     smbr_state = MBR_PUMP_ST_MINOR_A;
                     smbr_time_cycle = time_now;
                 }
@@ -577,26 +579,26 @@ void MBRSuckMembranePumpCtrl(void)
             break;
             
         case MBR_PUMP_ST_MINOR_A:
-            if ((time_now - smbr_time_change) > GetPumpArgv(mbr, pump_smbr_on_time))
+            if ((time_now - smbr_time_change) > GetTechArgv(mbr, pump_smbr_on_time) * 60)
             {
-                smbr_time_change = time(0)/60;
-                SinglePumpCtrl(GetPumpPort(mbr, smbr2), 0);
+                smbr_time_change = time_now;
+                PumpCtrlByTech(GetPumpPort(mbr, smbr2), 0);
                 smbr_state = MBR_PUMP_ST_MINOR_B;
                 break;
             }
-            else if (MBRWaterMembraneCtrl(GetPumpPort(mbr, smbr2), 1) == GetPumpPort(mbr, smbr1))
+            else if (MBRSuckMembraneCtrl(GetPumpPort(mbr, smbr2), 1) == GetPumpPort(mbr, smbr1))
             {
                 smbr_state = MBR_PUMP_ST_PRIMARY_A;
             }
             break;
             
         case MBR_PUMP_ST_MINOR_B:
-            if ((time_now - smbr_time_change) > GetPumpArgv(mbr, pump_smbr_off_time))
+            if ((time_now - smbr_time_change) > GetTechArgv(mbr, pump_smbr_off_time) * 60)
             {
-                smbr_time_change = time(0)/60;
-                if ((time_now - smbr_time_cycle) > GetPumpArgv(mbr, pump_smbr_cycle_time))  //  周期切换时间超时
+                smbr_time_change = time_now;
+                if ((time_now - smbr_time_cycle) > GetTechArgv(mbr, pump_smbr_cycle_time) * 60)  //  周期切换时间超时
                 {
-                    smbr_time_cycle = time(0)/60;
+                    smbr_time_cycle = time_now;
                     smbr_state = MBR_PUMP_ST_PRIMARY_A;
                     smbr_time_cycle = time_now;
                 }
@@ -656,17 +658,17 @@ void MBRDosingPumpCtrl(void)
             }
             break;
         case MBR_PUMP_ST_PRIMARY_A:
-            if ((time_now - subm_open_temp.start) > (GetPumpArgv(mbr, pump_dosg_delay_time) * 60))
+            if ((time_now - subm_open_temp.start) > (GetTechArgv(mbr, pump_dosg_delay_time) * 60))
             {
                 if ((GetLiquidLevel(MBR_LLP_DOSING1_HIGH)) && (GetLiquidLevel(MBR_LLP_DOSING2_HIGH)))
                 {
-                    SinglePumpCtrl(GetPumpPort(mbr, dosg1), 1);
-                    SinglePumpCtrl(GetPumpPort(mbr, dosg2), 1);
+                    PumpCtrlByTech(GetPumpPort(mbr, dosg1), 1);
+                    PumpCtrlByTech(GetPumpPort(mbr, dosg2), 1);
                 }  
                 else
                 {
-                    SinglePumpCtrl(GetPumpPort(mbr, dosg1), 0);
-                    SinglePumpCtrl(GetPumpPort(mbr, dosg2), 0);
+                    PumpCtrlByTech(GetPumpPort(mbr, dosg1), 0);
+                    PumpCtrlByTech(GetPumpPort(mbr, dosg2), 0);
                 }   
                 if ((subm_open_ptr = GetSubmOpenTimestamp()) != 0)
                 {
@@ -679,10 +681,10 @@ void MBRDosingPumpCtrl(void)
             }
             break;
         case MBR_PUMP_ST_PRIMARY_B:
-            if ((time_now - subm_open_temp.start) > (GetPumpArgv(mbr, pump_dosg_delay_time) * 60))
+            if ((time_now - subm_open_temp.start) > (GetTechArgv(mbr, pump_dosg_delay_time) * 60))
             {
-                SinglePumpCtrl(GetPumpPort(mbr, dosg1), 0);
-                SinglePumpCtrl(GetPumpPort(mbr, dosg2), 0);
+                PumpCtrlByTech(GetPumpPort(mbr, dosg1), 0);
+                PumpCtrlByTech(GetPumpPort(mbr, dosg2), 0);
                 dosg_state = MBR_PUMP_ST_INIT;
             }
             break;
@@ -724,19 +726,19 @@ int8_t MBRLiftingCtrl(uint32_t channel, uint8_t value)
     
     if ((GetLiquidLevel(MBR_LLP_SUBM_HIGH)) || (GetLiquidLevel(MBR_LLP_SUBM_ULTRAHIGH)))
     {
-        return PairOfPumpCtrl(channel, standby, 0);                
+        return PairOfPumpCtrlByTech(channel, standby, 0);                
     }
     else if (GetLiquidLevel(MBR_LLP_LIFTING_ULTRAHIGH))
     {
-        return PairOfPumpCtrl(channel, standby, 2);
+        return PairOfPumpCtrlByTech(channel, standby, 2);
     }
     else if (GetLiquidLevel(MBR_LLP_LIFTING_HIGH))
     {
-        return PairOfPumpCtrl(channel, standby, 1);
+        return PairOfPumpCtrlByTech(channel, standby, 1);
     }
     else
     {
-        return PairOfPumpCtrl(channel, standby, 0);
+        return PairOfPumpCtrlByTech(channel, standby, 0);
     }
 }
 
@@ -749,7 +751,7 @@ void MBRLiftingPumpCtrl(void)
 {
     static uint8_t lift_state = MBR_PUMP_ST_INIT;
     static uint32_t lift_time_cycle = 0;
-    uint32_t time_now = time(0)/60;   //  以分钟为单位
+    uint32_t time_now = time(0);   //  以分钟为单位
     switch (lift_state)
     {
         case MBR_PUMP_ST_INIT:
@@ -757,7 +759,7 @@ void MBRLiftingPumpCtrl(void)
             lift_state = MBR_PUMP_ST_PRIMARY_A;
             break;
         case MBR_PUMP_ST_PRIMARY_A:
-            if ((time_now - lift_time_cycle) > GetPumpArgv(mbr, pump_lift_cycle_time))  //  周期切换时间超时
+            if ((time_now - lift_time_cycle) > GetTechArgv(mbr, pump_lift_cycle_time) * 60)  //  周期切换时间超时
             {
                 lift_state = MBR_PUMP_ST_MINOR_A;
                 lift_time_cycle = time_now;
@@ -769,7 +771,7 @@ void MBRLiftingPumpCtrl(void)
             break;
             
         case MBR_PUMP_ST_MINOR_A:
-            if ((time_now - lift_time_cycle) > GetPumpArgv(mbr, pump_lift_cycle_time))  //  周期切换时间超时
+            if ((time_now - lift_time_cycle) > GetTechArgv(mbr, pump_lift_cycle_time) * 60)  //  周期切换时间超时
             {
                 lift_state = MBR_PUMP_ST_PRIMARY_A;
                 lift_time_cycle = time_now;

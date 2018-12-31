@@ -1,4 +1,4 @@
-#include "pump.h"
+﻿#include "pump.h"
 #include "stdlib.h"
 #include "string.h"
 #include "chip_communication.h"
@@ -8,7 +8,7 @@
 
 
 
-uint16_t relay_out;
+static uint16_t tech_relay_out;  //  工艺应用对泵的输出
 
 
 #define PUMP_STATE_NOINIT             0
@@ -40,7 +40,7 @@ void UpdateRelayCtl(void)
     uint16_t manual_change = manual ^ pump_manual_ctrl;
     uint8_t i;
     uint32_t cpu_sr;
-    temp = relay_out;
+    temp = tech_relay_out;
     manual = pump_manual_ctrl;
     for (i=0; i<14; i++)
     {
@@ -54,7 +54,7 @@ void UpdateRelayCtl(void)
                 change |= (1<<i); 
             }
         }
-        else
+        else if (sys_config_ram.coil_g1.ctrl.pump_auto == 1)
         {
             pump[i].opratinon = ((temp>>i) & 1);
             if (pump[i].active != pump[i].opratinon)
@@ -80,30 +80,12 @@ void UpdateRelayCtl(void)
     manual_change = manual ^ pump_manual_ctrl;
     pump_manual_ctrl = (pump_manual_ctrl & manual_change) | (ctrl & (~manual_change));  
     manual = ctrl;
-    manual_change = temp ^ relay_out;
-    relay_out = (relay_out & manual_change) | (ctrl & (~manual_change));  
+    //manual_change = temp ^ relay_out;
+    //relay_out = (relay_out & manual_change) | (ctrl & (~manual_change));  
     OS_EXIT_CRITICAL();
 }
 
 
-
-int8_t SinglePumpCtrl(uint8_t channel, uint8_t open)
-{
-//    uint8_t  relay_ctl_data[MAX_PUMP_CHANNEL];
-    if ((sys_config_ram.coil_g1.ctrl.pump_auto == 0) || 
-        (channel == 0) || (channel > MAX_PUMP_CHANNEL))
-    {
-        return -1;
-    }
-    channel -= 1;
-    if (sys_config_ram.coil_g1.ctrl.pump_auto == 1)  //  是否进入手动控制
-    {
-        if (open)    relay_out |= (1 << channel);    //  开启
-        else         relay_out &= ~(1 << channel);   //  关闭
-    }
-    //return ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data);
-    return 0;
-}
 
 //  可以同时控制多个通道
 int8_t PumpCtrl(uint32_t channel, uint8_t open)
@@ -161,15 +143,29 @@ e_pump_state_t GetPumpState(uint32_t channel)
     return pump[channel-1].active?PUMP_ST_ON:PUMP_ST_OFF;
 }
 
+
+int8_t PumpCtrlByTech(uint8_t channel, uint8_t open)
+{
+    if ((channel == 0) || (channel > MAX_PUMP_CHANNEL))
+    {
+        return -1;
+    }
+    channel -= 1;
+    if (open)    tech_relay_out |= (1 << channel);    //  开启
+    else         tech_relay_out &= ~(1 << channel);   //  关闭
+    return 0;
+}
+
+
 //  成对的泵控制, 实现主泵坏了，开启从泵的功能
 //  返回 0-所有泵都坏了
 //       >0--已经打开的泵的通道
-int8_t PairOfPumpCtrl(uint8_t primary, uint8_t standby, uint8_t both)
+int8_t PairOfPumpCtrlByTech(uint8_t primary, uint8_t standby, uint8_t both)
 {
     if (both == 0)  //  同时关闭
     {
-        SinglePumpCtrl(primary, 0);
-        SinglePumpCtrl(standby, 0);
+        PumpCtrlByTech(primary, 0);
+        PumpCtrlByTech(standby, 0);
         return 0;
     }
     if (IsPumpFault(GetPumpState(primary)))
@@ -180,35 +176,37 @@ int8_t PairOfPumpCtrl(uint8_t primary, uint8_t standby, uint8_t both)
         }
         else
         {
-            SinglePumpCtrl(standby, 1);
-            SinglePumpCtrl(primary, 0);
+            PumpCtrlByTech(standby, 1);
+            PumpCtrlByTech(primary, 0);
             return standby;
         }
     }
     else
     {
-        SinglePumpCtrl(primary, 1);
+        PumpCtrlByTech(primary, 1);
         if (both == 2)
         {
             if (IsPumpFault(GetPumpState(standby)))
             {
-                SinglePumpCtrl(standby, 0);
+                PumpCtrlByTech(standby, 0);
             }
             else
             {
-                SinglePumpCtrl(standby, 1);
+                PumpCtrlByTech(standby, 1);
             }
         }
         else
         {
-            SinglePumpCtrl(standby, 1);
+            PumpCtrlByTech(standby, 1);
         }
         return primary;
     }
 }
 
-int8_t ClearPump(uint8_t primary)
+int8_t ClearPump(void)
 {
+    tech_relay_out = 0;
+    pump_manual_ctrl = 0;
     return 1;
 }
 
