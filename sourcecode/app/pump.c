@@ -1,4 +1,4 @@
-﻿#include "pump.h"
+#include "pump.h"
 #include "stdlib.h"
 #include "string.h"
 #include "chip_communication.h"
@@ -73,8 +73,7 @@ void UpdateRelayCtl(void)
          
         if (pump[i].active)  ctrl |= (1<<i);
     }    
-    PumpCtrl(change & ctrl, 1);     //  开
-    PumpCtrl(change & (~ctrl), 0);  //  关
+    PumpCtrl(change & ctrl, change & (~ctrl));     //  控制开关
     OS_ENTER_CRITICAL();
     //  组合手动未处理的状态和当前控制状态给手动控制变量, 可以在屏上显示当前状态
     manual_change = manual ^ pump_manual_ctrl;
@@ -88,23 +87,31 @@ void UpdateRelayCtl(void)
 
 
 //  可以同时控制多个通道
-int8_t PumpCtrl(uint32_t channel, uint8_t open)
+int8_t PumpCtrl(uint32_t open_channel, uint32_t close_channel)
 {
     uint8_t  relay_ctl_data[MAX_PUMP_CHANNEL];
     uint8_t i;
-    memset(relay_ctl_data, 0, sizeof(relay_ctl_data));
-    if (open)    open = 1;    //  开启
-    else         open = 2;    //  关闭
-    for (i=0; i<MAX_PUMP_CHANNEL; i++)
+    if (open_channel || close_channel)
     {
-        if (channel & (1<<i))
+        for (i=0; i<MAX_PUMP_CHANNEL; i++)
         {
-            relay_ctl_data[i] = open;
+            if (close_channel & (1<<i))
+            {
+                relay_ctl_data[i] = 2;
+            }
+            else if (open_channel & (1<<i))
+            {
+                relay_ctl_data[i] = 1;
+            }
+            else
+            {
+                relay_ctl_data[i] = 0;
+            }
         }
-    }
-    if (ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data) != 0)
-    {
-        return ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data);
+        if (ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data) != 0)
+        {
+            return ChipWriteFrame(0, 0, MAX_PUMP_CHANNEL, relay_ctl_data);
+        }
     }
     return 0;
 }

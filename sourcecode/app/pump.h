@@ -1,4 +1,4 @@
-﻿#ifndef _PUMP_H_
+#ifndef _PUMP_H_
 #define _PUMP_H_
 
 #include "stdint.h"
@@ -34,7 +34,7 @@ typedef enum {
 
 extern int8_t PumpCtrlByTech(uint8_t channel, uint8_t open);
 
-extern int8_t PumpCtrl(uint32_t channel, uint8_t open);
+extern int8_t PumpCtrl(uint32_t open_channel, uint32_t close_channel);
 
 extern int8_t PairOfPumpCtrlByTech(uint8_t primary, uint8_t standby, uint8_t both);
 

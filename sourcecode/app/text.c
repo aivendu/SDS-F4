@@ -1,4 +1,4 @@
-﻿#include "stdint.h"
+#include "stdint.h"
 #include "ff.h"
 #include "sys_config.h"
 #include "ucos_ii.h"
@@ -132,7 +132,7 @@ void TaskInit(void *pdata)
     //IoOpen(COM1, &com_arg, sizeof(s_UartStr_t));
     //IoOpen(COM3, &com_arg, sizeof(s_UartStr_t));
     IoOpen(COM6, &com_arg, sizeof(s_UartStr_t));  // 初始化modbus串口
-    PumpCtrl(0xFFFF, 0);
+    PumpCtrl(0, 0xFFFF);
     IoOpen(WDT, (void *)10000, 0);
     
     while (1)
