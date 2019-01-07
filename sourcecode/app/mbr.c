@@ -1,4 +1,4 @@
-/*  MBR.c
+﻿/*  MBR.c
  *  实现MBR(商达)工艺的处理
  *   设备1、曝气泵
         2台，两台泵分别单独时间控制，默认0：00~23:00开启，23:01~23:59停止，时间可调。
@@ -102,7 +102,12 @@ void MBRAerationPumpCtrl(void)
             PumpCtrlByTech(GetPumpPort(mbr, aera2), 0);
         }
     }
-    if (IsMBRAerationPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(mbr, aera1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(mbr, aera2))))
+    {
+        pump_state.pump_st.pump_aera = 3;
+    }
+    else if (IsMBRAerationPumpOpen())
     {
         pump_state.pump_st.pump_aera = 1;
     }
@@ -238,7 +243,13 @@ void MBRSubmersibleSewagePumpCtrl(void)
     {
         s_subm_open_t subm_open_current;
         open_state = IsMBRSubmersibleSewagePumpOpen();
-        if (IsMBRSubmersibleSewagePumpOpen())
+        if (IsPumpFault(GetPumpState(GetPumpPort(mbr, subm1))) || 
+            IsPumpFault(GetPumpState(GetPumpPort(mbr, subm2))))
+        {
+            pump_state.pump_st.pump_subm = 3;
+            subm_open_current.type = 0;
+        }
+        else if (IsMBRSubmersibleSewagePumpOpen())
         {
             pump_state.pump_st.pump_subm = 1;
             subm_open_current.type = 1;
@@ -358,7 +369,12 @@ void MBRReflexPumpCtrl(void)
             refx_state = MBR_PUMP_ST_INIT;
             break;
     }
-    if (IsMBRReflexPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(mbr, rflx1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(mbr, rflx2))))
+    {
+        pump_state.pump_st.pump_rflx = 3;
+    }
+    else if (IsMBRReflexPumpOpen())
     {
         pump_state.pump_st.pump_rflx = 1;
     }
@@ -486,7 +502,12 @@ void MBRWaterMembranePumpCtrl(void)
             wmbr_state = MBR_PUMP_ST_INIT;
             break;
     }
-    if (IsMBRWaterMembranePumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(mbr, wmbr1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(mbr, wmbr2))))
+    {
+        pump_state.pump_st.pump_wash = 3;
+    }
+    else if (IsMBRWaterMembranePumpOpen())
     {
         pump_state.pump_st.pump_wash = 1;
     }
@@ -613,7 +634,12 @@ void MBRSuckMembranePumpCtrl(void)
             smbr_state = MBR_PUMP_ST_INIT;
             break;
     }
-    if (IsMBRSuckMembranePumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(mbr, smbr1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(mbr, smbr2))))
+    {
+        pump_state.pump_st.pump_watr = 3;
+    }
+    else if (IsMBRSuckMembranePumpOpen())
     {
         pump_state.pump_st.pump_watr = 1;
     }
@@ -692,7 +718,12 @@ void MBRDosingPumpCtrl(void)
             
             break;
     }
-    if (IsMBRDosingPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(mbr, dosg1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(mbr, dosg2))))
+    {
+        pump_state.pump_st.pump_dosg = 3;
+    }
+    else if (IsMBRDosingPumpOpen())
     {
         pump_state.pump_st.pump_dosg = 1;
     }
@@ -785,7 +816,12 @@ void MBRLiftingPumpCtrl(void)
             lift_state = MBR_PUMP_ST_INIT;
             break;
     }
-    if (IsMBRLiftingPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(mbr, lift1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(mbr, lift2))))
+    {
+        pump_state.pump_st.pump_lift = 3;
+    }
+    else if (IsMBRLiftingPumpOpen())
     {
         pump_state.pump_st.pump_lift = 1;
     }

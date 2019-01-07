@@ -31,6 +31,37 @@ typedef struct s_pump_ctl
 
 s_pump_ctl_t  pump[16];
 
+
+void UpdateRelayState(void)
+{
+    int8_t err;
+    uint8_t buffer[14];
+    err = ChipReadFrame(1, CH2_RELAY_ST_ADDR, 14, buffer);
+    if (err != 0)
+    {
+        err = ChipReadFrame(1, CH2_RELAY_ST_ADDR, 14, buffer);
+    }
+    if (err == 0)
+    {
+        for (err = 0; err < 14; err++)
+        {
+            if (buffer[err] == 0)
+            {
+                pump[err].status = PUMP_ST_OFF;
+            }
+            else if (buffer[err] == 1)
+            {
+                pump[err].status = PUMP_ST_ON;
+            }
+            else
+            {
+                pump[err].status = PUMP_ST_OPEN;
+            }
+            
+        }
+    }
+}
+
 void UpdateRelayCtl(void)
 {
     uint16_t temp;//relay_ctl ^ relay_out;
@@ -82,6 +113,7 @@ void UpdateRelayCtl(void)
     //manual_change = temp ^ relay_out;
     //relay_out = (relay_out & manual_change) | (ctrl & (~manual_change));  
     OS_EXIT_CRITICAL();
+    UpdateRelayState();
 }
 
 
@@ -143,11 +175,13 @@ int8_t GetPumpCtrlState(uint32_t channel)
 //  
 e_pump_state_t GetPumpState(uint32_t channel)
 {
+//    uint8_t buffer[14];
     if ((channel == 0) || (channel > MAX_PUMP_CHANNEL))
     {
         return PUMP_ST_NOINIT;
     }
-    return pump[channel-1].active?PUMP_ST_ON:PUMP_ST_OFF;
+    //return pump[channel-1].active?PUMP_ST_ON:PUMP_ST_OFF;
+    return (e_pump_state_t)pump[channel-1].status;
 }
 
 

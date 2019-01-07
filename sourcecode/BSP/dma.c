@@ -186,12 +186,12 @@ void CUR_DataToVoltage(void)
         }
     }
     adc_temp[0] = dis_adc_data[0];
-    adc_temp[1] = dis_adc_data[3];
-    adc_temp[2] = dis_adc_data[6];
+    adc_temp[1] = dis_adc_data[6];
+    adc_temp[2] = dis_adc_data[3];
     adc_temp[3] = dis_adc_data[1];
     adc_temp[4] = dis_adc_data[5];
-    adc_temp[5] = dis_adc_data[2];
-    adc_temp[6] = dis_adc_data[4];
+    adc_temp[5] = dis_adc_data[4];
+    adc_temp[6] = dis_adc_data[2];
     adc_temp[7] = dis_adc_data[7];
     for(j = 0; j < 8; j++)
     {

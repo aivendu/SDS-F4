@@ -180,7 +180,13 @@ void A2OAerationPumpCtrl(void)
             PumpCtrlByTech(GetPumpPort(a2o, aera3), 0);
         }
     }
-    if (IsAerationPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(a2o, aera1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(a2o, aera2))) ||
+        IsPumpFault(GetPumpState(GetPumpPort(a2o, aera3))))
+    {
+        pump_state.pump_st.pump_aera = 3;
+    }
+    else if (IsAerationPumpOpen())
     {
         pump_state.pump_st.pump_aera = 1;
     }
@@ -312,7 +318,13 @@ void A2OSubmersibleSewagePumpCtrl(void)
     {
         s_subm_open_t subm_open_current;
         open_state = IsSubmersibleSewagePumpOpen();
-        if (IsSubmersibleSewagePumpOpen())
+        if (IsPumpFault(GetPumpState(GetPumpPort(a2o, subm1))) || 
+            IsPumpFault(GetPumpState(GetPumpPort(a2o, subm2))))
+        {
+            pump_state.pump_st.pump_subm = 3;
+            subm_open_current.type = 0;
+        }
+        else if (IsSubmersibleSewagePumpOpen())
         {
             pump_state.pump_st.pump_subm = 1;
             subm_open_current.type = 1;
@@ -432,7 +444,12 @@ void A2OReflexPumpCtrl(void)
             refx_state = A2O_PUMP_ST_INIT;
             break;
     }
-    if (IsReflexPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(a2o, rflx1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(a2o, rflx2))))
+    {
+        pump_state.pump_st.pump_rflx = 3;
+    }
+    else if (IsReflexPumpOpen())
     {
         pump_state.pump_st.pump_rflx = 1;
     }
@@ -515,7 +532,12 @@ void A2OWaterPumpCtrl(void)
             watr_state = A2O_PUMP_ST_INIT;
             break;
     }
-    if (IsWaterPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(a2o, watr1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(a2o, watr2))))
+    {
+        pump_state.pump_st.pump_watr = 3;
+    }
+    else if (IsWaterPumpOpen())
     {
         pump_state.pump_st.pump_watr = 1;
     }
@@ -592,7 +614,12 @@ void A2ODosingPumpCtrl(void)
             
             break;
     }
-    if (IsDosingPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(a2o, dosg1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(a2o, dosg1))))
+    {
+        pump_state.pump_st.pump_dosg = 3;
+    }
+    else if (IsDosingPumpOpen())
     {
         pump_state.pump_st.pump_dosg = 1;
     }
@@ -685,7 +712,11 @@ void A2OLiftingPumpCtrl(void)
             lift_state = A2O_PUMP_ST_INIT;
             break;
     }
-    if (IsLiftingPumpOpen())
+    if (GetPumpState(GetPumpPort(a2o, lift1)) || GetPumpState(GetPumpPort(a2o, lift1)))
+    {
+        pump_state.pump_st.pump_lift = 3;
+    }
+    else if (IsLiftingPumpOpen())
     {
         pump_state.pump_st.pump_lift = 1;
     }
@@ -707,6 +738,7 @@ void A2OStandbyPumpCtrl(void)
         PumpCtrlByTech(GetPumpPort(a2o, standby), 0);
     }
 }
+
 
 void FlowA2O(void)
 {

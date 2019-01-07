@@ -1,4 +1,4 @@
-#include "sbr.h"
+﻿#include "sbr.h"
 #include "a2o.h"
 #include "pump.h"
 #include "my_time.h"
@@ -115,7 +115,12 @@ void SBRLiftingPumpCtrl(void)
             lift_state = SBR_PUMP_ST_INIT;
             break;
     }
-    if (IsSBRLiftingPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(sbr, lift1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(sbr, lift2))))
+    {
+        pump_state.pump_st.pump_lift = 3;
+    }
+    else if (IsSBRLiftingPumpOpen())
     {
         pump_state.pump_st.pump_lift = 1;
     }
@@ -238,7 +243,12 @@ void SBRReflexPumpCtrl(void)
             refx_state = SBR_PUMP_ST_INIT;
             break;
     }
-    if (IsSBRReflexPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(sbr, rflx1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(sbr, rflx2))))
+    {
+        pump_state.pump_st.pump_rflx = 3;
+    }
+    else if (IsSBRReflexPumpOpen())
     {
         pump_state.pump_st.pump_rflx = 1;
     }
@@ -317,7 +327,12 @@ void SBRDosingPumpCtrl(void)
             
             break;
     }
-    if (IsSBRDosingPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(sbr, dosg1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(sbr, dosg2))))
+    {
+        pump_state.pump_st.pump_dosg = 3;
+    }
+    else if (IsSBRDosingPumpOpen())
     {
         pump_state.pump_st.pump_dosg = 1;
     }
@@ -453,7 +468,12 @@ int8_t SBRSubmersibleSewagePumpCtrl(void)
             state = SBR_PUMP_ST_INIT;
             break;
     }
-    if (IsSBRSubmersibleSewagePumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(sbr, subm1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(sbr, subm2))))
+    {
+        pump_state.pump_st.pump_subm = 3;
+    }
+    else if (IsSBRSubmersibleSewagePumpOpen())
     {
         pump_state.pump_st.pump_subm = 1;
     }
@@ -551,7 +571,14 @@ int8_t SBRAerationPumpCtrl(void)
             state = SBR_PUMP_ST_INIT;
             break;
     }
-    if (IsSBRAerationPumpOpen())
+    if (IsPumpFault(GetPumpState(GetPumpPort(sbr, aera1))) || 
+        IsPumpFault(GetPumpState(GetPumpPort(sbr, aera2))) ||
+        IsPumpFault(GetPumpState(GetPumpPort(sbr, aera3))) ||
+        IsPumpFault(GetPumpState(GetPumpPort(sbr, aera4))))
+    {
+        pump_state.pump_st.pump_aera = 3;
+    }
+    else if (IsSBRAerationPumpOpen())
     {
         pump_state.pump_st.pump_aera = 1;
     }
@@ -651,7 +678,13 @@ int8_t SBRWaterPumpCtrl(void)
     {
         s_subm_open_t subm_open_current;
         open_state = IsSBRWaterPumpOpen();
-        if (IsSBRWaterPumpOpen())
+        if (IsPumpFault(GetPumpState(GetPumpPort(sbr, watr1))) || 
+            IsPumpFault(GetPumpState(GetPumpPort(sbr, watr2))))
+        {
+            pump_state.pump_st.pump_watr = 3;
+            subm_open_current.type = 0;
+        }
+        else if (IsSBRWaterPumpOpen())
         {
             pump_state.pump_st.pump_watr = 1;
             subm_open_current.type = 1;
